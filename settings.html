@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — الإعدادات</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.main{max-width:960px;margin:0 auto;padding:20px 16px}
+.tb-flex{display:flex;align-items:center;gap:8px}
+.page-nav{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.pnb{padding:7px 14px;font-size:11px;font-weight:600;border:0.5px solid var(--border);border-radius:9px;cursor:pointer;background:var(--bg2);color:var(--text2);white-space:nowrap;font-family:'Cairo',sans-serif}
+.pnb.act{background:#1E3A8A;color:#fff;border-color:var(--accent)}
+.page{display:none;flex-direction:column;gap:12px}
+.page.act{display:flex}
+.form2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.form4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.del-btn{padding:3px 9px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:7px;font-size:10px;cursor:pointer;color:#FCA5A5;font-family:'Cairo',sans-serif}
+.edit-btn{padding:3px 9px;background:#1E3A8A;border:0.5px solid var(--accent);border-radius:7px;font-size:10px;cursor:pointer;color:#93C5FD;font-family:'Cairo',sans-serif}
+.type-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.t-ps5{background:#1E3A8A;color:#93C5FD}
+.t-ps4{background:#2E1065;color:#C4B5FD}
+.t-bil{background:#451A03;color:#FCD34D}
+.t-ping{background:#064E3B;color:#6EE7B7}
+.t-cafe{background:var(--bg3);color:var(--text2)}
+.r-admin{background:#450A0A;color:#FCA5A5}
+.r-cashier{background:#1E3A8A;color:#93C5FD}
+.r-staff{background:#064E3B;color:#6EE7B7}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:10px 13px;min-height:44px}
+.tag{display:flex;align-items:center;gap:5px;padding:4px 11px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;font-size:11px;color:var(--text1)}
+.tag-x{cursor:pointer;color:var(--text3);font-size:14px;line-height:1;margin-right:2px}
+.tag-x:hover{color:var(--red)}
+.perm-grid{display:flex;flex-direction:column;gap:4px}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:9px;font-size:12px}
+.perm-name{color:var(--text1);font-weight:500}
+.tog{width:34px;height:19px;border-radius:10px;cursor:pointer;position:relative;transition:background .15s;flex-shrink:0}
+.tog.on{background:var(--green)}
+.tog.off{background:var(--border)}
+.tog-knob{position:absolute;top:2.5px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.tog.on .tog-knob{left:17px}
+.tog.off .tog-knob{left:3px}
+.tog-lbl{font-size:10px;font-weight:600;margin-right:4px}
+.lbl-on{color:#6EE7B7}
+.lbl-off{color:var(--text3)}
+.user-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.utab{padding:5px 12px;border:0.5px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;background:var(--bg3);color:var(--text2);font-weight:500}
+.utab.act{background:#1E3A8A;color:#fff;border-color:var(--accent)}
+.all-btn{padding:5px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:10px;cursor:pointer;background:var(--bg3);color:var(--text2);font-family:'Cairo',sans-serif}
+.all-on{border-color:var(--green);color:#6EE7B7;background:var(--green-bg)}
+.all-off{border-color:var(--red);color:#FCA5A5;background:var(--red-bg)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-flex">
+    <div class="logo">C</div>
+    <div class="app-name">الإعدادات</div>
+  </div>
+  <div class="tb-flex">
+    <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-nav">
+    <div class="pnb act" onclick="showPage('users')">المستخدمين</div>
+    <div class="pnb" onclick="showPage('tables')">الطاولات</div>
+    <div class="pnb" onclick="showPage('menu')">المنيو</div>
+    <div class="pnb" onclick="showPage('expcats')">تصنيفات المصاريف</div>
+    <div class="pnb" onclick="showPage('invcat')">تصنيفات المخزن</div>
+  </div>
+
+  <!-- USERS -->
+  <div id="p-users" class="page act">
+    <div class="card">
+      <div class="card-head">إضافة مستخدم جديد</div>
+      <div class="card-body">
+        <div class="form3">
+          <div><div class="fl">اسم المستخدم</div><input class="finp" id="u-name" placeholder="مثلاً: ahmed"></div>
+          <div><div class="fl">كلمة السر</div><input class="finp" id="u-pass" type="password" placeholder="••••••"></div>
+          <div><div class="fl">الدور</div>
+            <select class="fsel" id="u-role">
+              <option value="كاشير">كاشير</option>
+              <option value="موظف">موظف</option>
+              <option value="مشرف">مشرف</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary-full" onclick="addUser()">+ إضافة مستخدم</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="dtbl" style="width:100%;border-collapse:collapse;table-layout:fixed">
+        <thead><tr>
+          <th style="width:120px">اسم المستخدم</th>
+          <th style="width:80px">الدور</th>
+          <th>الصلاحيات</th>
+          <th style="width:60px">حذف</th>
+        </tr></thead>
+        <tbody id="u-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLES -->
+  <div id="p-tables" class="page">
+    <div class="card">
+      <div class="card-head">إضافة طاولة / غرفة</div>
+      <div class="card-body">
+        <div class="form4">
+          <div><div class="fl">الاسم</div><input class="finp" id="t-name" placeholder="مثلاً: PS5 غرفة 1"></div>
+          <div><div class="fl">النوع</div>
+            <select class="fsel" id="t-type" onchange="toggleRate()">
+              <option value="ps5">بلايستيشن 5</option>
+              <option value="ps4">بلايستيشن 4</option>
+              <option value="bil">بلياردو</option>
+              <option value="ping">بينج بونج</option>
+              <option value="cafe">كافيه</option>
+            </select>
+          </div>
+          <div id="rate-wrap"><div class="fl">سعر الساعة (ج)</div><input class="finp" id="t-rate" type="text" inputmode="decimal" placeholder="70"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn-primary-full" onclick="addTable()">+ إضافة</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="dtbl" style="width:100%;border-collapse:collapse;table-layout:fixed">
+        <thead><tr>
+          <th style="width:160px">الاسم</th>
+          <th style="width:100px">النوع</th>
+          <th style="width:110px">السعر/ساعة</th>
+          <th style="width:60px">حذف</th>
+        </tr></thead>
+        <tbody id="t-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div id="p-menu" class="page">
+    <div class="card">
+      <div class="card-head">إضافة صنف للمنيو</div>
+      <div class="card-body">
+        <div class="form4">
+          <div><div class="fl">اسم الصنف</div><input class="finp" id="mi-name" placeholder="مثلاً: شاي"></div>
+          <div><div class="fl">السعر (ج)</div><input class="finp" id="mi-price" type="text" inputmode="decimal" placeholder="0"></div>
+          <div><div class="fl">التصنيف</div>
+            <select class="fsel" id="mi-cat">
+              <option>ساخن</option><option>بارد</option><option>فريش</option>
+              <option>أعشاب</option><option>ديزرت</option><option>أخرى</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end"><button class="btn-primary-full" onclick="addMenuItem()">+ إضافة</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="dtbl" style="width:100%;border-collapse:collapse;table-layout:fixed">
+        <thead><tr>
+          <th style="width:70px">الكود</th>
+          <th style="width:150px">الصنف</th>
+          <th style="width:90px">التصنيف</th>
+          <th style="width:80px">السعر</th>
+          <th style="width:60px">حذف</th>
+        </tr></thead>
+        <tbody id="mi-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXP CATS -->
+  <div id="p-expcats" class="page">
+    <div class="card">
+      <div class="card-head">تصنيفات المصاريف اليومية</div>
+      <div class="card-body">
+        <div style="display:flex;gap:7px">
+          <input class="finp" id="dc-inp" placeholder="اسم التصنيف الجديد" style="flex:1">
+          <button class="btn-primary" onclick="addDCat()">+ إضافة</button>
+        </div>
+      </div>
+      <div class="tags-wrap" id="d-cats-wrap"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">تصنيفات المصاريف الشهرية</div>
+      <div class="card-body">
+        <div style="display:flex;gap:7px">
+          <input class="finp" id="mc-inp" placeholder="اسم التصنيف الجديد" style="flex:1">
+          <button class="btn-primary" onclick="addMCat()">+ إضافة</button>
+        </div>
+      </div>
+      <div class="tags-wrap" id="m-cats-wrap"></div>
+    </div>
+  </div>
+
+  <!-- INV CATS -->
+  <div id="p-invcat" class="page">
+    <div class="card">
+      <div class="card-head">تصنيفات المخزن</div>
+      <div class="card-body">
+        <div style="display:flex;gap:7px">
+          <input class="finp" id="ic-inp" placeholder="اسم التصنيف الجديد" style="flex:1">
+          <button class="btn-primary" onclick="addICat()">+ إضافة</button>
+        </div>
+      </div>
+      <div class="tags-wrap" id="i-cats-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Popup -->
+<div id="ovl" style="display:none" class="ovl" onclick="if(event.target===this)closeOvl()">
+  <div class="pop" id="pop"></div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth, logTransaction,
+  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, getDoc } from './firebase.js';
+
+const PAGES=['users','tables','menu','expcats','invcat'];
+const TYPE_LABELS={ps5:'PS5',ps4:'PS4',bil:'بلياردو',ping:'بينج بونج',cafe:'كافيه'};
+const TYPE_BADGES={ps5:'t-ps5',ps4:'t-ps4',bil:'t-bil',ping:'t-ping',cafe:'t-cafe'};
+const ROLE_BADGES={'كاشير':'r-cashier','موظف':'r-staff','مشرف':'r-admin'};
+const PERMS_LABELS={
+  view_tables:'عرض الطاولات',open_table:'فتح طاولة',add_item:'إضافة صنف',
+  del_item:'حذف صنف',transfer:'تحويل طاولة',close_table:'تقفيل طاولة',
+  print_client:'طباعة للعميل',print_bar:'طباعة للبار',
+  view_emp:'عرض الموظفين',add_emp:'إضافة موظف',del_emp:'حذف موظف',
+  add_draw:'إضافة سحب',del_draw:'حذف سحب',close_salary:'تقفيل مرتب',
+  view_exp:'عرض المصاريف',add_daily:'إضافة مصروف يومي',del_daily:'حذف مصروف يومي',
+  add_monthly:'إضافة مصروف شهري',del_monthly:'حذف مصروف شهري',
+  view_inv:'عرض المخزن',add_inv:'إضافة صنف مخزن',update_qty:'تحديث كمية',del_inv:'حذف صنف مخزن',
+  view_rep:'عرض التقارير',export_excel:'تصدير Excel',
+  view_close:'عرض التقفيل',mark_attend:'تسجيل حضور',save_close:'حفظ التقفيل',
+  view_settings:'عرض الإعدادات',manage_users:'إدارة المستخدمين',
+  manage_tables:'إدارة الطاولات',manage_menu:'إدارة المنيو'
+};
+const fmt=n=>parseFloat(n||0).toFixed(2)+' ج';
+
+let USERS=[], TABLES=[], MENU=[], DCATS=[], MCATS=[], ICATS=[];
+let selUser=null;
+
+function showPage(p){
+  document.querySelectorAll('.pnb').forEach((e,i)=>e.classList.toggle('act',PAGES[i]===p));
+  PAGES.forEach(id=>document.getElementById('p-'+id).classList.toggle('act',id===p));
+}
+window.showPage=showPage;
+
+// ===== USERS =====
+async function loadUsers(){
+  try{
+    const snap=await getDocs(collection(db,'users'));
+    USERS=[];
+    snap.forEach(d=>USERS.push({id:d.id,...d.data()}));
+  }catch(e){ USERS=[]; }
+}
+
+function renderUsers(){
+  const b=document.getElementById('u-body');
+  if(!USERS.length){
+    b.innerHTML='<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text3)">لا يوجد مستخدمين</td></tr>';
+    return;
+  }
+  b.innerHTML=USERS.map(u=>`
+    <tr>
+      <td style="font-weight:600">${u.name}</td>
+      <td><span class="type-badge ${ROLE_BADGES[u.role]||'r-staff'}">${u.role}</span></td>
+      <td>
+        <button class="edit-btn" onclick="openPerms('${u.id}')">تعديل الصلاحيات</button>
+      </td>
+      <td><div class="del-btn" onclick="delUser('${u.id}')">حذف</div></td>
+    </tr>`).join('');
+}
+
+window.addUser=async function(){
+  const name=document.getElementById('u-name').value.trim();
+  const pass=document.getElementById('u-pass').value;
+  const role=document.getElementById('u-role').value;
+  if(!name||!pass)return alert('اكتب اسم المستخدم وكلمة السر');
+  try{
+    // Create Firebase Auth user via Admin SDK not available client-side
+    // Instead store user data in Firestore with email pattern
+    const email=`${name}@campgamezone.com`;
+    // Use Firebase Auth REST API
+    const res=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBtdqDQMiEnElUykFb2Tmoe_xB43kgf9O4`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,returnSecureToken:true})
+    });
+    const data=await res.json();
+    if(data.error)return alert('خطأ: '+data.error.message);
+    const uid=data.localId;
+    const defaultPerms={};
+    Object.keys(PERMS_LABELS).forEach(k=>defaultPerms[k]=false);
+    // Default permissions by role
+    if(role==='كاشير'||role==='مشرف'){
+      ['view_tables','open_table','add_item','close_table','print_client','print_bar',
+       'view_exp','add_daily','view_close','mark_attend'].forEach(k=>defaultPerms[k]=true);
+    }
+    await setDoc(doc(db,'users',uid),{name,role,email,permissions:defaultPerms,timestamp:serverTimestamp()});
+    USERS.push({id:uid,name,role,email,permissions:defaultPerms});
+    logTransaction(`إضافة مستخدم: ${name}`,role,'set');
+    document.getElementById('u-name').value='';
+    document.getElementById('u-pass').value='';
+    renderUsers();
+  }catch(e){ alert('حصل خطأ: '+e.message); }
+};
+
+window.delUser=async function(id){
+  if(!confirm('هتحذف المستخدم ده؟'))return;
+  try{
+    await deleteDoc(doc(db,'users',id));
+    USERS=USERS.filter(u=>u.id!==id);
+    logTransaction('حذف مستخدم','','set');
+    renderUsers();
+    if(selUser===id){selUser=null;document.getElementById('perm-panel')&&document.getElementById('perm-panel').remove();}
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+window.openPerms=function(uid){
+  const u=USERS.find(x=>x.id===uid);
+  if(!u)return;
+  selUser=uid;
+  const ovl=document.getElementById('ovl'),pop=document.getElementById('pop');
+  const perms=u.permissions||{};
+  pop.innerHTML=`
+    <div class="pop-head">
+      <span>صلاحيات — ${u.name}</span>
+      <div style="display:flex;gap:5px">
+        <div class="all-btn all-on" onclick="setAllPerms('${uid}',true)">تفعيل الكل</div>
+        <div class="all-btn all-off" onclick="setAllPerms('${uid}',false)">إلغاء الكل</div>
+      </div>
+    </div>
+    <div class="pop-body" style="max-height:60vh;overflow-y:auto">
+      <div class="perm-grid">
+        ${Object.entries(PERMS_LABELS).map(([k,lbl])=>`
+        <div class="perm-row">
+          <span class="perm-name">${lbl}</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="tog-lbl ${perms[k]?'lbl-on':'lbl-off'}" id="pl-${k}">${perms[k]?'مفعّل':'مقفول'}</span>
+            <div class="tog ${perms[k]?'on':'off'}" id="tog-${k}" onclick="togglePerm('${uid}','${k}')">
+              <div class="tog-knob"></div>
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="pop-foot">
+      <div class="btn-cancel" onclick="closeOvl()">إغلاق</div>
+      <div class="btn-confirm" onclick="savePerms('${uid}')">حفظ الصلاحيات</div>
+    </div>`;
+  ovl.style.display='flex';
+};
+
+window.togglePerm=function(uid,key){
+  const u=USERS.find(x=>x.id===uid);
+  if(!u)return;
+  if(!u.permissions)u.permissions={};
+  u.permissions[key]=!u.permissions[key];
+  const tog=document.getElementById('tog-'+key);
+  const lbl=document.getElementById('pl-'+key);
+  if(tog){tog.className='tog '+(u.permissions[key]?'on':'off');}
+  if(lbl){lbl.className='tog-lbl '+(u.permissions[key]?'lbl-on':'lbl-off');lbl.textContent=u.permissions[key]?'مفعّل':'مقفول';}
+};
+
+window.setAllPerms=function(uid,val){
+  const u=USERS.find(x=>x.id===uid);
+  if(!u)return;
+  if(!u.permissions)u.permissions={};
+  Object.keys(PERMS_LABELS).forEach(k=>{
+    u.permissions[k]=val;
+    const tog=document.getElementById('tog-'+k);
+    const lbl=document.getElementById('pl-'+k);
+    if(tog)tog.className='tog '+(val?'on':'off');
+    if(lbl){lbl.className='tog-lbl '+(val?'lbl-on':'lbl-off');lbl.textContent=val?'مفعّل':'مقفول';}
+  });
+};
+
+window.savePerms=async function(uid){
+  const u=USERS.find(x=>x.id===uid);
+  if(!u)return;
+  try{
+    await updateDoc(doc(db,'users',uid),{permissions:u.permissions});
+    logTransaction(`تعديل صلاحيات ${u.name}`,'','set');
+    closeOvl();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+// ===== TABLES =====
+async function loadTables(){
+  try{
+    const snap=await getDocs(collection(db,'tables'));
+    TABLES=[];
+    snap.forEach(d=>TABLES.push({id:d.id,...d.data()}));
+  }catch(e){ TABLES=[]; }
+}
+
+function renderTables(){
+  document.getElementById('t-body').innerHTML=TABLES.length
+    ?TABLES.map(t=>`
+      <tr>
+        <td style="font-weight:600">${t.name}</td>
+        <td><span class="type-badge ${TYPE_BADGES[t.type]||'t-cafe'}">${TYPE_LABELS[t.type]||t.type}</span></td>
+        <td style="color:var(--text2)">${t.rate>0?t.rate+' ج/ساعة':'منيو فقط'}</td>
+        <td><div class="del-btn" onclick="delTable('${t.id}')">حذف</div></td>
+      </tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;padding:14px;color:var(--text3)">لا يوجد طاولات</td></tr>';
+}
+
+window.toggleRate=function(){
+  const t=document.getElementById('t-type').value;
+  document.getElementById('rate-wrap').style.opacity=t==='cafe'?'0.4':'1';
+};
+
+window.addTable=async function(){
+  const name=document.getElementById('t-name').value.trim();
+  const type=document.getElementById('t-type').value;
+  const rate=parseFloat(document.getElementById('t-rate').value||0);
+  if(!name)return alert('اكتب اسم الطاولة');
+  try{
+    const ref=await addDoc(collection(db,'tables'),{
+      name,type,rate,busy:false,openAt:null,order:[],sessions:[],timestamp:serverTimestamp()
+    });
+    TABLES.push({id:ref.id,name,type,rate,busy:false});
+    logTransaction(`إضافة طاولة: ${name}`,TYPE_LABELS[type]||type,'set');
+    document.getElementById('t-name').value='';
+    document.getElementById('t-rate').value='';
+    renderTables();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+window.delTable=async function(id){
+  if(!confirm('هتحذف الطاولة دي؟'))return;
+  try{
+    await deleteDoc(doc(db,'tables',id));
+    TABLES=TABLES.filter(t=>t.id!==id);
+    logTransaction('حذف طاولة','','set');
+    renderTables();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+// ===== MENU =====
+async function loadMenu(){
+  try{
+    const snap=await getDocs(collection(db,'menu'));
+    MENU=[];
+    snap.forEach(d=>MENU.push({id:d.id,...d.data()}));
+  }catch(e){ MENU=[]; }
+}
+
+function renderMenu(){
+  document.getElementById('mi-body').innerHTML=MENU.length
+    ?MENU.map(i=>`
+      <tr>
+        <td style="font-size:10px;color:var(--text3)">${i.id.substring(0,8)}</td>
+        <td style="font-weight:600">${i.name}</td>
+        <td><span class="type-badge t-ps4">${i.cat}</span></td>
+        <td style="font-weight:700;color:#6EE7B7">${fmt(i.price)}</td>
+        <td><div class="del-btn" onclick="delMenuItem('${i.id}')">حذف</div></td>
+      </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;padding:14px;color:var(--text3)">لا يوجد أصناف</td></tr>';
+}
+
+window.addMenuItem=async function(){
+  const name=document.getElementById('mi-name').value.trim();
+  const price=parseFloat(document.getElementById('mi-price').value||0);
+  const cat=document.getElementById('mi-cat').value;
+  if(!name)return alert('اكتب اسم الصنف');
+  if(!price||price<=0)return alert('اكتب سعر صح');
+  try{
+    const ref=await addDoc(collection(db,'menu'),{name,price,cat,timestamp:serverTimestamp()});
+    MENU.push({id:ref.id,name,price,cat});
+    logTransaction(`إضافة صنف منيو: ${name}`,`${fmt(price)} — ${cat}`,'set');
+    document.getElementById('mi-name').value='';
+    document.getElementById('mi-price').value='';
+    renderMenu();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+window.delMenuItem=async function(id){
+  try{
+    await deleteDoc(doc(db,'menu',id));
+    MENU=MENU.filter(i=>i.id!==id);
+    logTransaction('حذف صنف منيو','','set');
+    renderMenu();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+// ===== CATS =====
+async function loadCats(){
+  try{
+    const d=await getDoc(doc(db,'settings','categories'));
+    if(d.exists()){
+      const data=d.data();
+      DCATS=data.dailyExp||['نظافة','مستلزمات','طعام وشراب','صيانة','أخرى'];
+      MCATS=data.monthlyExp||['كهربا','إيجار','مياه','إنترنت','صيانة','أخرى'];
+      ICATS=data.inventory||['ساخن','بارد','فريش','أعشاب','ديزرت','مستلزمات'];
+    }else{
+      DCATS=['نظافة','مستلزمات','طعام وشراب','صيانة','أخرى'];
+      MCATS=['كهربا','إيجار','مياه','إنترنت','صيانة','أخرى'];
+      ICATS=['ساخن','بارد','فريش','أعشاب','ديزرت','مستلزمات'];
+    }
+  }catch(e){
+    DCATS=['نظافة','مستلزمات','أخرى'];
+    MCATS=['كهربا','إيجار','أخرى'];
+    ICATS=['ساخن','بارد','فريش'];
+  }
+}
+
+async function saveCats(){
+  try{
+    await setDoc(doc(db,'settings','categories'),{dailyExp:DCATS,monthlyExp:MCATS,inventory:ICATS});
+  }catch(e){}
+}
+
+function renderTags(arr,wrapId,delFn){
+  document.getElementById(wrapId).innerHTML=arr.map((c,i)=>
+    `<div class="tag"><span>${c}</span><span class="tag-x" onclick="${delFn}(${i})">×</span></div>`
+  ).join('')||'<span style="font-size:11px;color:var(--text3)">لا يوجد تصنيفات</span>';
+}
+
+window.addDCat=async function(){
+  const v=document.getElementById('dc-inp').value.trim();
+  if(!v)return;
+  DCATS.push(v);
+  document.getElementById('dc-inp').value='';
+  await saveCats();
+  renderTags(DCATS,'d-cats-wrap','delDCat');
+};
+window.delDCat=async function(i){DCATS.splice(i,1);await saveCats();renderTags(DCATS,'d-cats-wrap','delDCat');};
+
+window.addMCat=async function(){
+  const v=document.getElementById('mc-inp').value.trim();
+  if(!v)return;
+  MCATS.push(v);
+  document.getElementById('mc-inp').value='';
+  await saveCats();
+  renderTags(MCATS,'m-cats-wrap','delMCat');
+};
+window.delMCat=async function(i){MCATS.splice(i,1);await saveCats();renderTags(MCATS,'m-cats-wrap','delMCat');};
+
+window.addICat=async function(){
+  const v=document.getElementById('ic-inp').value.trim();
+  if(!v)return;
+  ICATS.push(v);
+  document.getElementById('ic-inp').value='';
+  await saveCats();
+  renderTags(ICATS,'i-cats-wrap','delICat');
+};
+window.delICat=async function(i){ICATS.splice(i,1);await saveCats();renderTags(ICATS,'i-cats-wrap','delICat');};
+
+window.closeOvl=function(){document.getElementById('ovl').style.display='none';};
+
+requireAuth(async(user,userData)=>{
+  if(user.uid!==ADMIN_UID){
+    alert('الإعدادات للأدمن فقط');
+    window.location.href='dashboard.html';
+    return;
+  }
+  document.getElementById('uname').textContent='Admin';
+  await Promise.all([loadUsers(),loadTables(),loadMenu(),loadCats()]);
+  renderUsers(); renderTables(); renderMenu();
+  renderTags(DCATS,'d-cats-wrap','delDCat');
+  renderTags(MCATS,'m-cats-wrap','delMCat');
+  renderTags(ICATS,'i-cats-wrap','delICat');
+});
+</script>
+</body>
+</html>

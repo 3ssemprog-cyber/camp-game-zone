@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — المعاملات</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.main{max-width:960px;margin:0 auto;padding:20px 16px}
+.tb-flex{display:flex;align-items:center;gap:8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.fsel-sm{padding:6px 10px;border:0.5px solid var(--border);border-radius:9px;font-size:11px;background:var(--bg2);color:var(--text1);font-family:'Cairo',sans-serif}
+.search-inp{padding:6px 12px;border:0.5px solid var(--border);border-radius:9px;font-size:11px;background:var(--bg2);color:var(--text1);min-width:180px;font-family:'Cairo',sans-serif}
+.search-inp:focus{outline:none;border-color:var(--accent)}
+.count-bar{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:var(--bg3);border-radius:9px;font-size:11px;margin-bottom:10px}
+.sec-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.s-pos{background:#1E3A8A;color:#93C5FD}
+.s-emp{background:#451A03;color:#FCD34D}
+.s-exp{background:#450A0A;color:#FCA5A5}
+.s-inv{background:#064E3B;color:#6EE7B7}
+.s-close{background:#2E1065;color:#C4B5FD}
+.s-set{background:var(--bg3);color:var(--text2)}
+.user-chip-sm{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;font-size:10px;color:var(--text1)}
+.dot-a{background:#EF4444}
+.dot-c{background:#3B82F6}
+.dot-s{background:#10B981}
+.udot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.time-cell{font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums}
+.empty-state{text-align:center;padding:40px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-flex">
+    <div class="logo">C</div>
+    <div class="app-name">المعاملات والسجل</div>
+  </div>
+  <div class="tb-flex">
+    <div class="clock" id="clock"></div>
+    <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="filters">
+    <select class="fsel-sm" id="f-sec" onchange="applyFilter()">
+      <option value="">كل السكشنز</option>
+      <option value="pos">نقطة البيع</option>
+      <option value="emp">الموظفين</option>
+      <option value="exp">المصاريف</option>
+      <option value="inv">المخزن</option>
+      <option value="close">التقفيل</option>
+      <option value="set">الإعدادات</option>
+    </select>
+    <select class="fsel-sm" id="f-date" onchange="applyFilter()">
+      <option value="">كل الأيام</option>
+      <option value="today">اليوم فقط</option>
+    </select>
+    <input class="search-inp" id="f-search" placeholder="🔍 ابحث..." oninput="applyFilter()">
+  </div>
+
+  <div class="count-bar">
+    <span style="color:var(--text2)">إجمالي المعاملات</span>
+    <span style="font-weight:700;color:var(--text1)" id="count-val">0 معاملة</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="dtbl" style="width:100%;border-collapse:collapse;table-layout:fixed">
+      <thead><tr>
+        <th style="width:80px">الوقت</th>
+        <th style="width:90px">المستخدم</th>
+        <th style="width:85px">السكشن</th>
+        <th>العملية</th>
+        <th style="width:120px">التفاصيل</th>
+      </tr></thead>
+      <tbody id="log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth, collection, getDocs, query, orderBy, limit, where } from './firebase.js';
+
+const SEC_CLASS={pos:'s-pos',emp:'s-emp',exp:'s-exp',inv:'s-inv',close:'s-close',set:'s-set'};
+const SEC_LABEL={pos:'نقطة البيع',emp:'الموظفين',exp:'المصاريف',inv:'المخزن',close:'التقفيل',set:'الإعدادات'};
+const ROLE_DOT={'أدمن':'dot-a','كاشير':'dot-c','موظف':'dot-s'};
+const todayStr=()=>new Date().toLocaleDateString('ar-EG');
+
+let ALL_LOGS=[];
+
+async function loadLogs(){
+  try{
+    const snap=await getDocs(collection(db,'transactions_log'));
+    ALL_LOGS=[];
+    snap.forEach(d=>ALL_LOGS.push({id:d.id,...d.data()}));
+    // Sort by timestamp descending
+    ALL_LOGS.sort((a,b)=>{
+      const at=a.timestamp?.seconds||a.timestamp?.toMillis?.()/1000||0;
+      const bt=b.timestamp?.seconds||b.timestamp?.toMillis?.()/1000||0;
+      return bt-at;
+    });
+    console.log('loaded logs:', ALL_LOGS.length);
+  }catch(e){
+    console.log('loadLogs error:', e);
+    ALL_LOGS=[];
+  }
+}
+
+function applyFilter(){
+  const fs=document.getElementById('f-sec').value;
+  const fd=document.getElementById('f-date').value;
+  const fq=document.getElementById('f-search').value.toLowerCase();
+  const today=todayStr();
+
+  let filtered=ALL_LOGS;
+  if(fs) filtered=filtered.filter(l=>l.section===fs);
+  if(fd==='today') filtered=filtered.filter(l=>l.date===today||l.time?.includes('اليوم'));
+  if(fq) filtered=filtered.filter(l=>
+    (l.action||'').toLowerCase().includes(fq)||
+    (l.detail||'').toLowerCase().includes(fq)||
+    (l.user||'').toLowerCase().includes(fq)
+  );
+
+  document.getElementById('count-val').textContent=`${filtered.length} معاملة`;
+  const b=document.getElementById('log-body');
+
+  if(!filtered.length){
+    b.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📋</div>لا يوجد معاملات</div></td></tr>`;
+    return;
+  }
+
+  b.innerHTML=filtered.map(l=>`
+    <tr>
+      <td class="time-cell">${l.time||'—'}</td>
+      <td>
+        <div class="user-chip-sm">
+          <div class="udot ${ROLE_DOT[l.role]||'dot-s'}"></div>
+          ${l.user||'—'}
+        </div>
+      </td>
+      <td><span class="sec-badge ${SEC_CLASS[l.section]||'s-set'}">${SEC_LABEL[l.section]||l.section||'—'}</span></td>
+      <td style="font-weight:500;font-size:11px">${l.action||'—'}</td>
+      <td style="font-size:10px;color:var(--text3)">${l.detail||'—'}</td>
+    </tr>`).join('');
+}
+
+window.applyFilter=applyFilter;
+
+setInterval(()=>{
+  const e=document.getElementById('clock');
+  if(e)e.textContent=new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+},1000);
+
+requireAuth(async(user,userData)=>{
+  document.getElementById('uname').textContent=user.uid===ADMIN_UID?'Admin':(userData?.name||user.email);
+  await loadLogs();
+  applyFilter();
+});
+</script>
+</body>
+</html>

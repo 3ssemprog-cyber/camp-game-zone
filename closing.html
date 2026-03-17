@@ -159,7 +159,8 @@ async function loadClosedShifts() {
     const today = todayKey();
     snap.forEach(d => {
       const s = d.data();
-      if (s.status==='closed' && s.dayKey===today)
+      // Only show closed shifts from today that haven't been day-closed yet
+      if (s.status==='closed' && s.dayKey===today && !s.dayClosedAt)
         CLOSED_SHIFTS.push({id:d.id,...s});
     });
     CLOSED_SHIFTS.sort((a,b) => a.type==='صبح' ? -1 : 1);
@@ -424,6 +425,20 @@ window.closeDayAndPrint = async function(cash, elec, exp, inc, net) {
     }
     await logTransaction('تقفيل اليوم', fmt(net)+' صافي', 'close');
   } catch(e) { console.log('closeDay err:',e); }
+
+  // Mark all closed shifts as day-closed + reset totals
+  try {
+    for (const sh of CLOSED_SHIFTS) {
+      await updateDoc(doc(db,'shifts',sh.id), {dayClosedAt: nowT()});
+      if (sh.shiftKey) {
+        await setDoc(doc(db,'shift_totals',sh.shiftKey), {
+          cash:0, elec:0, total:0, archived:true,
+          dayKey:sh.dayKey, shiftKey:sh.shiftKey
+        });
+      }
+    }
+  } catch(e) {}
+
   showDayReceipt(cash, elec, exp, inc, net);
 };
 
@@ -476,6 +491,9 @@ async function saveAttendance() {
 
 window.closeReceipt = async function() {
   document.getElementById('rcpt-view').style.display = 'none';
+  // Reload everything fresh
+  DATA = {cash:0, elec:0, exps:[]};
+  CLOSED_SHIFTS = [];
   await init();
 };
 

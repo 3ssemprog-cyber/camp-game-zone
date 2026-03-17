@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — تسجيل الدخول</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Cairo',sans-serif;background:#0F172A;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+  .bg{position:fixed;inset:0;background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#0F172A 100%);z-index:0}
+  .bg-glow{position:fixed;width:400px;height:400px;background:radial-gradient(circle,rgba(30,58,138,0.3) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);z-index:0;pointer-events:none}
+  .card{position:relative;z-index:1;background:rgba(30,41,59,0.8);border:0.5px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:380px;overflow:hidden;backdrop-filter:blur(20px)}
+  .card-head{padding:32px 28px 24px;text-align:center;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+  .logo{width:60px;height:60px;background:linear-gradient(135deg,#1E3A8A,#3B82F6);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;font-weight:700;color:#fff;box-shadow:0 8px 24px rgba(30,58,138,0.4)}
+  .app-name{font-size:20px;font-weight:700;color:#F1F5F9;letter-spacing:-0.5px}
+  .app-sub{font-size:12px;color:#64748B;margin-top:4px}
+  .card-body{padding:28px}
+  .field{margin-bottom:16px}
+  .fl{font-size:12px;color:#94A3B8;margin-bottom:6px;font-weight:500}
+  .finp{width:100%;padding:11px 14px;border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;font-size:13px;background:rgba(15,23,42,0.5);color:#F1F5F9;font-family:'Cairo',sans-serif;transition:border-color .15s}
+  .finp:focus{outline:none;border-color:#3B82F6;background:rgba(15,23,42,0.8)}
+  .finp::placeholder{color:#475569}
+  .login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1E3A8A,#2563EB);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif;transition:opacity .15s;margin-top:4px}
+  .login-btn:hover{opacity:.9}
+  .login-btn:active{opacity:.8}
+  .login-btn:disabled{opacity:.5;cursor:not-allowed}
+  .err-box{padding:10px 14px;background:rgba(220,38,38,0.15);border:0.5px solid rgba(220,38,38,0.4);border-radius:10px;font-size:12px;color:#FCA5A5;margin-bottom:14px;display:none}
+  .card-foot{padding:12px 28px;border-top:0.5px solid rgba(255,255,255,0.05);text-align:center;font-size:11px;color:#334155}
+  .loading{display:none;text-align:center;color:#64748B;font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-glow"></div>
+<div class="card">
+  <div class="card-head">
+    <div class="logo">C</div>
+    <div class="app-name">Camp Game Zone</div>
+    <div class="app-sub">نظام إدارة الكافيه والبلايستيشن</div>
+  </div>
+  <div class="card-body">
+    <div class="err-box" id="err-box">اسم المستخدم أو كلمة السر غلط</div>
+    <div class="field">
+      <div class="fl">البريد الإلكتروني</div>
+      <input class="finp" id="email" type="email" placeholder="example@camp.com" autocomplete="off">
+    </div>
+    <div class="field">
+      <div class="fl">كلمة السر</div>
+      <input class="finp" id="password" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">دخول</button>
+    <div class="loading" id="loading">جاري التحقق...</div>
+  </div>
+  <div class="card-foot">Camp Game Zone © 2026</div>
+</div>
+
+<script type="module">
+import { auth, db, ADMIN_UID, signInWithEmailAndPassword, onAuthStateChanged, doc, getDoc } from './firebase.js';
+
+// If already logged in, redirect
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    window.location.href = "dashboard.html";
+  }
+});
+
+window.doLogin = async function() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('err-box');
+  const btn = document.getElementById('login-btn');
+  const loading = document.getElementById('loading');
+
+  err.style.display = 'none';
+  if (!email || !password) {
+    err.textContent = 'اكتب الإيميل وكلمة السر';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "dashboard.html";
+  } catch (e) {
+    err.textContent = 'الإيميل أو كلمة السر غلط';
+    err.style.display = 'block';
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — التقفيل</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.main{max-width:700px;margin:0 auto;padding:20px 16px}
+.tb-flex{display:flex;align-items:center;gap:8px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:600;border:0.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg2);color:var(--text2);font-family:'Cairo',sans-serif}
+.tab.act{background:#1E3A8A;color:#fff;border-color:var(--accent)}
+.page{display:none;flex-direction:column;gap:10px}
+.page.act{display:flex}
+.shift-badge{padding:12px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+.sh-m{background:#1E3A8A;border:0.5px solid var(--accent)}
+.sh-e{background:#2E1065;border:0.5px solid var(--purple)}
+.sh-title{font-size:15px;font-weight:700;color:#fff}
+.sh-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px}
+.sh-clock{font-size:13px;font-weight:600;color:rgba(255,255,255,0.9)}
+.kards{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.kard{background:var(--bg3);border-radius:10px;padding:10px;text-align:center}
+.kl{font-size:10px;color:var(--text3);margin-bottom:3px}
+.kv{font-size:15px;font-weight:700;color:var(--text1)}
+.kv.g{color:#6EE7B7}.kv.r{color:#FCA5A5}.kv.b{color:#93C5FD}
+.exp-row{display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:9px;font-size:12px}
+.close-btn{width:100%;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;margin-top:4px}
+.btn-m{background:var(--accent);color:#fff}
+.btn-e{background:var(--purple);color:#fff}
+.day-shift{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px}
+.ds-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;padding-bottom:6px;border-bottom:0.5px solid var(--border)}
+.ds-name{font-size:13px;font-weight:700;color:var(--text1)}
+.ds-net{font-size:13px;font-weight:700;color:#6EE7B7}
+.ds-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);padding:2px 0}
+.total-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#1E3A8A;border:0.5px solid var(--accent);border-radius:12px}
+.emp-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:0.5px solid var(--border);border-radius:9px;background:var(--bg3)}
+.emp-row.P{background:#064E3B;border-color:var(--green)}
+.ab{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'Cairo',sans-serif}
+.ab.P{background:#064E3B;border-color:var(--green);color:#6EE7B7}
+.ab.A{background:var(--red-bg);border-color:var(--red);color:#FCA5A5}
+.rcpt-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:16px}
+.rcpt-box{background:#fff;width:260px;font-size:12px;color:#000;font-family:'Cairo',sans-serif}
+.rcpt-box *{color:#000;font-family:'Cairo',sans-serif}
+.rh{padding:14px 12px 10px;text-align:center;border-bottom:2px dashed #000}
+.rh-name{font-size:17px;font-weight:900}
+.rh-sub{font-size:9px;color:#555;margin-top:2px}
+.rh-type{font-size:11px;font-weight:700;margin-top:5px;border:1px solid #000;display:inline-block;padding:1px 12px;border-radius:20px}
+.rm{padding:8px 12px;border-bottom:1px dashed #999}
+.mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+.mr span:first-child{color:#555}
+.mr span:last-child{font-weight:700}
+.rsec{padding:8px 12px;border-bottom:1px dashed #999}
+.rsec-t{font-size:10px;font-weight:700;color:#555;letter-spacing:.5px;margin-bottom:5px;border-bottom:1px solid #eee;padding-bottom:3px}
+.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
+.rrow.bold{font-weight:700}
+.rtot{padding:10px 12px;border-bottom:2px dashed #000;display:flex;justify-content:space-between;font-size:14px;font-weight:900}
+.rf{padding:10px 12px;text-align:center;font-size:10px;color:#555;line-height:1.8}
+.rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:3px}
+.rcpt-btns{display:flex;gap:8px}
+@media print{
+  @page{
+    margin:0mm;
+    size:79mm auto;
+  }
+  html{width:79mm}
+  body{
+    width:79mm;
+    margin:0;
+    padding:0;
+    background:#fff;
+  }
+  body>*{display:none!important}
+  .rcpt-overlay{
+    display:block!important;
+    position:static!important;
+    width:79mm!important;
+    background:#fff!important;
+    padding:0!important;
+    margin:0!important;
+    box-shadow:none!important;
+  }
+  .rcpt-btns{display:none!important}
+  .rcpt-box{
+    width:79mm!important;
+    max-width:79mm!important;
+    font-size:11px!important;
+    margin:0!important;
+    padding:2mm!important;
+    background:#fff!important;
+    box-shadow:none!important;
+    direction:rtl!important;
+  }
+  .rcpt-box *{
+    direction:rtl!important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-flex"><div class="logo">C</div><div class="app-name">التقفيل</div></div>
+  <div class="tb-flex">
+    <div class="clock" id="clock"></div>
+    <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <div class="tab act" id="tab-shift" onclick="showTab('shift')">تقفيل الشيفت</div>
+    <div class="tab" id="tab-day" onclick="showTab('day')">تقفيل اليوم</div>
+  </div>
+  <div class="page act" id="p-shift"><div style="text-align:center;padding:30px;color:var(--text3)">جاري التحميل...</div></div>
+  <div class="page" id="p-day"></div>
+</div>
+
+<div id="rcpt-view" class="rcpt-overlay">
+  <div class="rcpt-box" id="rcpt-content"></div>
+  <div class="rcpt-btns">
+    <button onclick="closeReceipt()" style="padding:8px 20px;background:var(--bg3);color:var(--text2);border:0.5px solid var(--border);border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif">رجوع</button>
+    <button onclick="window.print()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700">طباعة</button>
+  </div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
+  collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, serverTimestamp } from './firebase.js';
+
+const nowT = () => new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+const dateStr = () => new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const todayKey = () => new Date().toISOString().split('T')[0];
+const monthKey = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
+
+let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[], currentUser='';
+
+// ===== TABS =====
+window.showTab = function(t) {
+  ['shift','day'].forEach(n => {
+    document.getElementById('tab-'+n).classList.toggle('act', n===t);
+    document.getElementById('p-'+n).classList.toggle('act', n===t);
+  });
+  if (t==='day') renderDay();
+};
+
+// ===== LOAD CURRENT SHIFT =====
+async function loadCurrentShift() {
+  SHIFT = null;
+  try {
+    const snap = await getDocs(collection(db,'shifts'));
+    const today = todayKey();
+    const all = [];
+    snap.forEach(d => all.push({id:d.id,...d.data()}));
+    // Find open shift from today
+    const todayOpen = all.find(s => s.status==='open' && s.dayKey===today);
+    const anyOpen = all.find(s => s.status==='open');
+    if (todayOpen) {
+      SHIFT = todayOpen;
+    } else if (anyOpen) {
+      await updateDoc(doc(db,'shifts',anyOpen.id), {dayKey:today, startDate:dateStr()});
+      SHIFT = {...anyOpen, dayKey:today};
+    }
+  } catch(e) { console.log('loadCurrentShift err:', e); }
+}
+
+// ===== LOAD SHIFT DATA =====
+async function loadShiftData() {
+  if (!SHIFT) return;
+  const sk = SHIFT.shiftKey;
+  try {
+    const snap = await getDoc(doc(db,'shift_totals',sk));
+    if (snap.exists()) {
+      DATA.cash = snap.data().cash || 0;
+      DATA.elec = snap.data().elec || 0;
+    } else {
+      DATA.cash = 0;
+      DATA.elec = 0;
+    }
+  } catch(e) { DATA.cash=0; DATA.elec=0; }
+  try {
+    const snap = await getDocs(collection(db,'daily_expenses'));
+    DATA.exps = [];
+    snap.forEach(d => {
+      if (d.data().shiftKey === sk) DATA.exps.push(d.data());
+    });
+  } catch(e) { DATA.exps=[]; }
+}
+
+// ===== LOAD CLOSED SHIFTS =====
+async function loadClosedShifts() {
+  try {
+    const snap = await getDocs(collection(db,'shifts'));
+    CLOSED_SHIFTS = [];
+    const today = todayKey();
+    snap.forEach(d => {
+      const s = d.data();
+      // Only show closed shifts from today that haven't been day-closed yet
+      if (s.status==='closed' && s.dayKey===today && !s.dayClosedAt)
+        CLOSED_SHIFTS.push({id:d.id,...s});
+    });
+    CLOSED_SHIFTS.sort((a,b) => a.type==='صبح' ? -1 : 1);
+  } catch(e) { CLOSED_SHIFTS=[]; }
+}
+
+// ===== LOAD EMPS =====
+async function loadEmps() {
+  try {
+    const snap = await getDocs(collection(db,'employees'));
+    EMPS = [];
+    snap.forEach(d => EMPS.push({id:d.id,...d.data(),present:false}));
+  } catch(e) { EMPS=[]; }
+}
+
+const totExp = () => DATA.exps.reduce((s,e) => s+(e.amt||0), 0);
+const totInc = () => DATA.cash + DATA.elec;
+const netShift = () => totInc() - totExp();
+
+// ===== RENDER SHIFT =====
+function renderShift() {
+  const p = document.getElementById('p-shift');
+  if (!SHIFT) {
+    p.innerHTML = `<div style="text-align:center;padding:30px">
+      <div style="font-size:36px;margin-bottom:12px">✓</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">مفيش شيفت مفتوح</div>
+      <div style="font-size:12px;color:var(--text3)">كل الشيفتات اتقفلت</div>
+    </div>`;
+    return;
+  }
+  const isMorn = SHIFT.type === 'صبح';
+  p.innerHTML = `
+    <div class="shift-badge ${isMorn?'sh-m':'sh-e'}">
+      <div>
+        <div class="sh-title">شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}</div>
+        <div class="sh-sub">بدأ ${SHIFT.startTime||''} — ${SHIFT.startDate||''}</div>
+      </div>
+      <div class="sh-clock" id="live-clk"></div>
+    </div>
+    <div class="kards">
+      <div class="kard"><div class="kl">نقدي</div><div class="kv b">${fmt(DATA.cash)}</div></div>
+      <div class="kard"><div class="kl">دفع إلكتروني</div><div class="kv b">${fmt(DATA.elec)}</div></div>
+      <div class="kard"><div class="kl">مصاريف الشيفت</div><div class="kv r">${fmt(totExp())}</div></div>
+      <div class="kard"><div class="kl">صافي الشيفت</div><div class="kv g">${fmt(netShift())}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">تفاصيل المصاريف</div>
+      <div class="card-body">
+        ${DATA.exps.length
+          ? DATA.exps.map(e=>`<div class="exp-row"><span style="color:var(--text2)">${e.cat}</span><span style="font-weight:700;color:#FCA5A5">${fmt(e.amt)}</span></div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد مصاريف</div>'}
+      </div>
+    </div>
+    <div style="padding:9px 12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
+      بعد التقفيل — شيفت ${isMorn?'المسا 🌙':'الصبح 🌅 للغد'} هيفتح تلقائي
+    </div>
+    <button class="close-btn ${isMorn?'btn-m':'btn-e'}" onclick="closeShift()">
+      تقفيل شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}
+    </button>`;
+}
+
+// ===== RENDER DAY =====
+function renderDay() {
+  const p = document.getElementById('p-day');
+  const totalCash = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.cash||0), 0);
+  const totalElec = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.elec||0), 0);
+  const totalExp  = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.totalExp||0), 0);
+  const totalInc  = totalCash + totalElec;
+  const netDay    = totalInc - totalExp;
+
+  p.innerHTML = `
+    <div class="card">
+      <div class="card-head">الشيفتات المقفلة اليوم (${CLOSED_SHIFTS.length})</div>
+      <div class="card-body">
+        ${CLOSED_SHIFTS.length
+          ? CLOSED_SHIFTS.map(sh=>`
+            <div class="day-shift">
+              <div class="ds-head">
+                <span class="ds-name">شيفت ${sh.type} ${sh.type==='صبح'?'🌅':'🌙'}</span>
+                <span class="ds-net">${fmt(sh.netShift||0)} صافي</span>
+              </div>
+              <div class="ds-row"><span>نقدي</span><span>${fmt(sh.cash||0)}</span></div>
+              <div class="ds-row"><span>دفع إلكتروني</span><span>${fmt(sh.elec||0)}</span></div>
+              <div class="ds-row"><span>مصاريف</span><span>${fmt(sh.totalExp||0)}</span></div>
+              <div class="ds-row"><span>قُفِّل بواسطة</span><span>${sh.closedBy||'—'}</span></div>
+              <div class="ds-row"><span>وقت التقفيل</span><span>${sh.endTime||'—'}</span></div>
+            </div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3);padding:10px">لا يوجد شيفتات مقفلة اليوم</div>'}
+      </div>
+    </div>
+    <div class="kards">
+      <div class="kard"><div class="kl">نقدي اليوم</div><div class="kv b">${fmt(totalCash)}</div></div>
+      <div class="kard"><div class="kl">إلكتروني اليوم</div><div class="kv b">${fmt(totalElec)}</div></div>
+      <div class="kard"><div class="kl">مصاريف اليوم</div><div class="kv r">${fmt(totalExp)}</div></div>
+      <div class="kard"><div class="kl">إجمالي الإيرادات</div><div class="kv">${fmt(totalInc)}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">حضور وغياب اليوم</div>
+      <div class="card-body">
+        ${EMPS.length
+          ? EMPS.map((e,i)=>`
+            <div class="emp-row ${e.present?'P':''}" id="er${i}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#1E3A8A;color:#93C5FD;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${e.name?.substring(0,2)}</div>
+                <div><div style="font-size:12px;font-weight:600;color:var(--text1)">${e.name}</div><div style="font-size:10px;color:var(--text3)">${e.role}</div></div>
+              </div>
+              <div style="display:flex;gap:4px">
+                <div class="ab ${e.present?'P':''}" onclick="setAtt(${i},true)">حاضر</div>
+                <div class="ab ${!e.present?'A':''}" onclick="setAtt(${i},false)">غائب</div>
+              </div>
+            </div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد موظفين</div>'}
+      </div>
+    </div>
+    <div class="total-bar">
+      <span style="font-size:13px;font-weight:700;color:#93C5FD">صافي اليوم</span>
+      <span style="font-size:20px;font-weight:700;color:#fff">${fmt(netDay)}</span>
+    </div>
+    ${CLOSED_SHIFTS.length > 0 ? `
+    <button class="close-btn btn-m" onclick="closeDayAndPrint(${totalCash},${totalElec},${totalExp},${totalInc},${netDay})">
+      تقفيل اليوم وطباعة الرسيت
+    </button>` : '<div style="text-align:center;padding:14px;color:var(--text3);font-size:12px">لا يوجد شيفتات مقفلة اليوم بعد</div>'}`;
+}
+
+window.setAtt = function(i, v) {
+  EMPS[i].present = v;
+  document.getElementById('er'+i).className = 'emp-row '+(v?'P':'');
+  document.querySelectorAll('#er'+i+' .ab').forEach((b,j) => {
+    b.className = 'ab '+(j===0&&v?'P':j===1&&!v?'A':'');
+  });
+};
+
+// ===== CLOSE SHIFT =====
+window.closeShift = async function() {
+  if (!SHIFT) return;
+  try {
+    const snap = await getDocs(collection(db,'tables'));
+    const open = [];
+    snap.forEach(d => { if(d.data().busy) open.push(d.data().name); });
+    if (open.length) { alert('⚠ في طاولات مفتوحة:\n'+open.join('\n')+'\n\nقفل الطاولات الأول'); return; }
+  } catch(e) {}
+
+  const isMorn = SHIFT.type === 'صبح';
+  try {
+    await updateDoc(doc(db,'shifts',SHIFT.id), {
+      status:'closed', endTime:nowT(), endDate:dateStr(),
+      cash:DATA.cash, elec:DATA.elec,
+      totalIncome:totInc(), totalExp:totExp(), netShift:netShift(),
+      closedBy:currentUser
+    });
+  } catch(e) {}
+
+  try {
+    const dk = SHIFT.dayKey || todayKey();
+    const ref = doc(db,'daily_closing',dk);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const prev = snap.data();
+      await updateDoc(ref, {
+        cash:(prev.cash||0)+DATA.cash, elec:(prev.elec||0)+DATA.elec,
+        totalIncome:(prev.totalIncome||0)+totInc(),
+        totalExp:(prev.totalExp||0)+totExp(),
+        netDay:(prev.netDay||0)+netShift(),
+        shifts:[...(prev.shifts||[]), {type:SHIFT.type,cash:DATA.cash,elec:DATA.elec,net:netShift(),closedBy:currentUser,time:nowT()}]
+      });
+    } else {
+      await setDoc(ref, {
+        date:SHIFT.startDate||dateStr(), dayKey:dk, monthKey:monthKey(),
+        cash:DATA.cash, elec:DATA.elec,
+        totalIncome:totInc(), totalExp:totExp(), netDay:netShift(),
+        shifts:[{type:SHIFT.type,cash:DATA.cash,elec:DATA.elec,net:netShift(),closedBy:currentUser,time:nowT()}],
+        timestamp:serverTimestamp()
+      });
+    }
+  } catch(e) {}
+
+  // Archive expenses of this shift
+  try {
+    const expSnap = await getDocs(collection(db,'daily_expenses'));
+    for (const d of expSnap.docs) {
+      if (d.data().shiftKey === SHIFT.shiftKey) {
+        await updateDoc(doc(db,'daily_expenses',d.id), {archived:true});
+      }
+    }
+  } catch(e) {}
+  await logTransaction('تقفيل شيفت '+SHIFT.type, fmt(netShift())+' صافي', 'close');
+  showShiftReceipt();
+
+  // Create next shift
+  const nextType = isMorn ? 'مسا' : 'صبح';
+  const nextDayKey = todayKey();
+  const nextShiftKey = nextDayKey+'_'+nextType;
+  try {
+    await addDoc(collection(db,'shifts'), {
+      type:nextType, status:'open',
+      dayKey:nextDayKey, shiftKey:nextShiftKey,
+      startTime:nowT(), startDate:dateStr(),
+      timestamp:serverTimestamp()
+    });
+    await setDoc(doc(db,'shift_totals',nextShiftKey), {
+      cash:0, elec:0, total:0, date:dateStr(), dayKey:nextDayKey, shiftKey:nextShiftKey
+    });
+  } catch(e) {}
+};
+
+// ===== SHIFT RECEIPT =====
+function showShiftReceipt() {
+  document.getElementById('rcpt-content').innerHTML = `
+    <div class="rh">
+      <div class="rh-name">Camp Game Zone</div>
+      <div class="rh-sub">كافيه وبلايستيشن</div>
+      <div class="rh-type">تقفيل شيفت ${SHIFT.type}</div>
+    </div>
+    <div class="rm">
+      <div class="mr"><span>الكاشير</span><span>${currentUser}</span></div>
+      <div class="mr"><span>التاريخ</span><span>${SHIFT.startDate||dateStr()}</span></div>
+      <div class="mr"><span>بداية الشيفت</span><span>${SHIFT.startTime||'—'}</span></div>
+      <div class="mr"><span>نهاية الشيفت</span><span>${nowT()}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">الإيرادات</div>
+      <div class="rrow"><span>نقدي</span><span>${fmt(DATA.cash)}</span></div>
+      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(DATA.elec)}</span></div>
+      <div class="rrow bold"><span>إجمالي</span><span>${fmt(totInc())}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">المصاريف</div>
+      ${DATA.exps.length
+        ? DATA.exps.map(e=>`<div class="rrow"><span>${e.cat}</span><span>${fmt(e.amt)}</span></div>`).join('')
+          + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(totExp())}</span></div>`
+        : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>'}
+    </div>
+    <div class="rtot"><span>صافي الشيفت</span><span>${fmt(netShift())}</span></div>
+    <div class="rf">
+      <div>- - - - - - - - - - - -</div>
+      شكراً لزيارتكم
+      <div class="rf-brand">Camp Game Zone</div>
+    </div>`;
+  document.getElementById('rcpt-view').style.display = 'flex';
+}
+
+// ===== DAY RECEIPT =====
+window.closeDayAndPrint = async function(cash, elec, exp, inc, net) {
+  const firstShift = [...CLOSED_SHIFTS].sort((a,b)=>a.type==='صبح'?-1:1)[0];
+  const dk = firstShift?.dayKey || todayKey();
+  try {
+    const ref = doc(db,'daily_closing',dk);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        date:firstShift?.startDate||dateStr(), dayKey:dk, monthKey:monthKey(),
+        cash, elec, totalIncome:inc, totalExp:exp, netDay:net,
+        shifts:CLOSED_SHIFTS.map(sh=>({type:sh.type,cash:sh.cash||0,elec:sh.elec||0,net:sh.netShift||0,closedBy:sh.closedBy||'',time:sh.endTime||''})),
+        closedBy:currentUser, closedAt:nowT(), timestamp:serverTimestamp()
+      });
+    } else {
+      await updateDoc(ref, {
+        cash, elec, totalIncome:inc, totalExp:exp, netDay:net,
+        shifts:CLOSED_SHIFTS.map(sh=>({type:sh.type,cash:sh.cash||0,elec:sh.elec||0,net:sh.netShift||0,closedBy:sh.closedBy||'',time:sh.endTime||''})),
+        closedBy:currentUser, closedAt:nowT()
+      });
+    }
+    await logTransaction('تقفيل اليوم', fmt(net)+' صافي', 'close');
+  } catch(e) { console.log('closeDay err:',e); }
+
+  // Mark all closed shifts as day-closed + reset totals
+  try {
+    for (const sh of CLOSED_SHIFTS) {
+      await updateDoc(doc(db,'shifts',sh.id), {dayClosedAt: nowT()});
+      if (sh.shiftKey) {
+        await setDoc(doc(db,'shift_totals',sh.shiftKey), {
+          cash:0, elec:0, total:0, archived:true,
+          dayKey:sh.dayKey, shiftKey:sh.shiftKey
+        });
+      }
+    }
+  } catch(e) {}
+
+  showDayReceipt(cash, elec, exp, inc, net);
+};
+
+function showDayReceipt(cash, elec, exp, inc, net) {
+  const present = EMPS.filter(e => e.present);
+  const absent  = EMPS.filter(e => !e.present);
+  const firstShift = [...CLOSED_SHIFTS].sort((a,b)=>a.type==='صبح'?-1:1)[0];
+  document.getElementById('rcpt-content').innerHTML = `
+    <div class="rh">
+      <div class="rh-name">Camp Game Zone</div>
+      <div class="rh-sub">كافيه وبلايستيشن</div>
+      <div class="rh-type">تقفيل اليوم</div>
+    </div>
+    <div class="rm">
+      <div class="mr"><span>التاريخ</span><span>${firstShift?.startDate||dateStr()}</span></div>
+      <div class="mr"><span>الوقت</span><span>${nowT()}</span></div>
+      <div class="mr"><span>بواسطة</span><span>${currentUser}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">الإيرادات</div>
+      <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
+      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
+      <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
+      <div class="rrow"><span>المصاريف</span><span>${fmt(exp)}</span></div>
+    </div>
+    <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
+    <div class="rsec">
+      <div class="rsec-t">الحاضرين</div>
+      ${present.map(e=>`<div class="rrow"><span>${e.name}</span><span>✓</span></div>`).join('')}
+      ${absent.map(e=>`<div class="rrow"><span style="color:#999">${e.name}</span><span style="color:#999">غ</span></div>`).join('')}
+    </div>
+    <div class="rf">
+      <div>- - - - - - - - - - -</div>
+      شكراً لزيارتكم
+      <div class="rf-brand">Camp Game Zone</div>
+    </div>`;
+  saveAttendance();
+  document.getElementById('rcpt-view').style.display = 'flex';
+}
+
+window.printDayReceipt = function(cash, elec, exp, inc, net) {
+  showDayReceipt(cash, elec, exp, inc, net);
+};
+
+async function saveAttendance() {
+  for (const emp of EMPS.filter(e => e.present)) {
+    try { await updateDoc(doc(db,'employees',emp.id), {days:(emp.days||0)+1}); } catch(e) {}
+  }
+}
+
+window.closeReceipt = async function() {
+  document.getElementById('rcpt-view').style.display = 'none';
+  window.location.reload();
+};
+
+// ===== INIT =====
+async function init() {
+  await loadCurrentShift();
+  if (!SHIFT) {
+    const ndk = todayKey();
+    const nsk = ndk+'_صبح';
+    try {
+      await addDoc(collection(db,'shifts'), {
+        type:'صبح', status:'open',
+        dayKey:ndk, shiftKey:nsk,
+        startTime:nowT(), startDate:dateStr(),
+        timestamp:serverTimestamp()
+      });
+      await setDoc(doc(db,'shift_totals',nsk), {
+        cash:0, elec:0, total:0, date:dateStr(), dayKey:ndk, shiftKey:nsk
+      });
+      await loadCurrentShift();
+    } catch(e) { console.log('create first shift err:',e); }
+  }
+  await loadShiftData();
+  await loadClosedShifts();
+  await loadEmps();
+  renderShift();
+  renderDay();
+}
+
+setInterval(() => {
+  const c = document.getElementById('clock');
+  if(c) c.textContent = new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+  const lc = document.getElementById('live-clk');
+  if(lc) lc.textContent = new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}, 1000);
+
+window.doPrint=function(){
+  const box=document.getElementById('rcpt-content');
+  if(!box)return;
+  const w=window.open('','_blank','width=320,height=500,scrollbars=yes');
+  w.document.write(`<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+@page{margin:0;size:80mm auto}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl}
+body{width:76mm;font-size:11px;background:#fff}
+.rh{padding:10px 8px 8px;text-align:center;border-bottom:2px dashed #000}
+.rh-name{font-size:15px;font-weight:900}
+.rh-sub{font-size:9px;color:#555;margin-top:2px}
+.rh-type{font-size:10px;font-weight:700;margin-top:4px;border:1px solid #000;display:inline-block;padding:1px 10px;border-radius:20px}
+.rm{padding:6px 8px;border-bottom:1px dashed #999}
+.mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+.mr span:first-child{color:#555}.mr span:last-child{font-weight:700}
+.ri{padding:6px 8px;border-bottom:2px dashed #000}
+.ri-head{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:9px;color:#555;padding-bottom:4px;border-bottom:1px solid #ddd;margin-bottom:3px;font-weight:700;text-align:center}
+.ri-head span:first-child{text-align:right}
+.ri-row{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;padding:2px 0;border-bottom:1px solid #f5f5f5;align-items:center;text-align:center}
+.ri-row span:first-child{text-align:right}
+.ri-row span:last-child{font-weight:700;direction:ltr}
+.ri-sess{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;padding:3px 0;font-weight:700;align-items:center;text-align:center;border-bottom:1px solid #f5f5f5}
+.ri-sess span:first-child{text-align:right}
+.ri-sess span:last-child{direction:ltr}
+.ri-cmt{font-size:9px;color:#555;font-style:italic;padding:2px 0}
+.rt{padding:7px 8px;display:flex;justify-content:space-between;font-size:13px;font-weight:900;border-bottom:1px dashed #999}
+.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:10px;border-bottom:1px dashed #999}
+.rsec{padding:6px 8px;border-bottom:1px dashed #999}
+.rsec-t{font-size:9px;font-weight:700;color:#555;letter-spacing:.3px;margin-bottom:4px;border-bottom:1px solid #eee;padding-bottom:2px}
+.rrow{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.rrow.bold{font-weight:700}
+.rtot{padding:8px;display:flex;justify-content:space-between;font-size:13px;font-weight:900;border-bottom:2px dashed #000}
+.rf{padding:8px;text-align:center;font-size:9px;color:#555;line-height:1.8}
+.rf-dots{letter-spacing:3px;margin-bottom:3px}
+.rf-brand{font-size:12px;font-weight:900;color:#000;margin-top:2px}
+</style></head>
+<body>`+box.innerHTML+`</body></html>`);
+  w.document.close();
+  w.onload=function(){w.focus();w.print();};
+};
+};
+
+requireAuth(async(user,userData) => {
+  const isAdm = user.uid === ADMIN_UID;
+  currentUser = isAdm ? 'Admin' : (userData?.name||user.email);
+  document.getElementById('uname').textContent = currentUser;
+  await init();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — الموظفين</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.main{max-width:900px;margin:0 auto;padding:20px 16px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.emp-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+.ec-head{padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.av-b{background:#1E3A8A;color:#93C5FD}
+.av-g{background:#064E3B;color:#6EE7B7}
+.av-a{background:#451A03;color:#FCD34D}
+.av-p{background:#2E1065;color:#C4B5FD}
+.en{font-size:13px;font-weight:700;color:var(--text1)}
+.er{font-size:11px;color:var(--text3);margin-top:1px}
+.ec-body{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.stat{background:var(--bg3);border-radius:9px;padding:8px;text-align:center}
+.sl{font-size:10px;color:var(--text3);margin-bottom:3px}
+.sv{font-size:14px;font-weight:700;color:var(--text1)}
+.sv.g{color:#6EE7B7}
+.sv.r{color:#FCA5A5}
+.ec-foot{padding:8px 14px;border-top:0.5px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn-det{padding:6px;border:0.5px solid var(--border);border-radius:9px;font-size:11px;cursor:pointer;text-align:center;background:var(--bg3);color:var(--text2);font-family:'Cairo',sans-serif}
+.btn-sal{padding:6px;border:0.5px solid var(--accent);border-radius:9px;font-size:11px;cursor:pointer;text-align:center;background:#1E3A8A;color:#93C5FD;font-weight:600;font-family:'Cairo',sans-serif}
+.tb-flex{display:flex;align-items:center;gap:8px}
+.draws-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto}
+.draw-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-radius:9px;font-size:12px}
+.draw-date{color:var(--text3)}
+.draw-amt{font-weight:700;color:#FCA5A5}
+.sal-box{padding:10px 12px;background:var(--green-bg);border:0.5px solid var(--green);border-radius:9px}
+.sal-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.sal-row:last-child{margin-bottom:0;font-size:14px;font-weight:700;padding-top:6px;border-top:0.5px solid var(--border);margin-top:4px}
+.deficit-box{padding:9px 12px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:9px;font-size:12px;color:#FCA5A5}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-flex">
+    <div class="logo">C</div>
+    <div class="app-name">الموظفين</div>
+  </div>
+  <div class="tb-flex">
+    <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
+    <button class="btn-primary" id="add-btn" onclick="openAddEmp()" style="display:none">+ إضافة موظف</button>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="main">
+  <div style="font-size:12px;color:var(--text3);margin-bottom:12px" id="emp-count">جاري التحميل...</div>
+  <div class="grid" id="emp-grid"></div>
+</div>
+
+<!-- Popup -->
+<div id="ovl" style="display:none" class="ovl" onclick="if(event.target===this)closeOvl()">
+  <div class="pop" id="pop"></div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth, hasPermission, logTransaction, fmt,
+  collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp } from './firebase.js';
+
+const AV_CLASSES = ['av-b','av-g','av-a','av-p'];
+const now = () => new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+const dateStr = () => new Date().toLocaleDateString('ar-EG');
+
+let EMPS = [], isAdm = false;
+
+async function loadEmps(){
+  try{
+    const snap = await getDocs(collection(db,'employees'));
+    EMPS = [];
+    snap.forEach(d => EMPS.push({id:d.id,...d.data()}));
+  }catch(e){ EMPS=[]; }
+}
+
+async function saveEmp(emp){
+  try{
+    if(emp.id && emp.id !== 'new'){
+      await updateDoc(doc(db,'employees',emp.id),{
+        name:emp.name, role:emp.role, phone:emp.phone,
+        daily:emp.daily, days:emp.days, draws:emp.draws
+      });
+    }
+  }catch(e){}
+}
+
+function totalDraws(emp){ return (emp.draws||[]).reduce((s,d)=>s+d.amt,0); }
+function calcSalary(emp){ return emp.daily*(emp.days||0); }
+function netSalary(emp){ return calcSalary(emp)-totalDraws(emp); }
+
+function renderGrid(){
+  document.getElementById('emp-count').textContent = `${EMPS.length} موظف — الشهر الحالي`;
+  const g = document.getElementById('emp-grid');
+  g.innerHTML = EMPS.length ? EMPS.map((e,i) => `
+    <div class="emp-card">
+      <div class="ec-head">
+        <div class="av ${AV_CLASSES[i%4]}">${e.name?.substring(0,2)||'م'}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="en">${e.name}</div>
+            <span class="badge badge-blue">${e.role}</span>
+          </div>
+          <div class="er">${e.phone||''}</div>
+        </div>
+      </div>
+      <div class="ec-body">
+        <div class="stat"><div class="sl">اليومية</div><div class="sv">${e.daily} ج</div></div>
+        <div class="stat"><div class="sl">أيام الشغل</div><div class="sv g">${e.days||0} يوم</div></div>
+        <div class="stat"><div class="sl">السحوبات</div><div class="sv r">${totalDraws(e)} ج</div></div>
+      </div>
+      <div class="ec-foot">
+        <div class="btn-det" onclick="openDetails('${e.id}')">تفاصيل السحوبات</div>
+        ${isAdm?`<div class="btn-sal" onclick="openCloseSalary('${e.id}')">تقفيل مرتب</div>`:'<div class="btn-sal" style="opacity:.4;cursor:not-allowed">تقفيل مرتب</div>'}
+        ${isAdm?`<div class="btn-det" style="background:var(--red-bg);border-color:var(--red);color:#FCA5A5;grid-column:1/-1" onclick="delEmp('${e.id}','${e.name}')">حذف الموظف</div>`:''}
+      </div>
+    </div>`).join('')
+  : '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3)">لا يوجد موظفين — اضغط إضافة موظف</div>';
+}
+
+window.openDetails = function(id){
+  const e = EMPS.find(x=>x.id===id);
+  if(!e) return;
+  const ovl=document.getElementById('ovl'), pop=document.getElementById('pop');
+  const renderDraws = () => {
+    const dl = document.getElementById('draws-list');
+    if(!dl) return;
+    dl.innerHTML = (e.draws||[]).length
+      ? (e.draws||[]).map((d,i)=>`
+          <div class="draw-row">
+            <span class="draw-date">${d.date}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="draw-amt">${d.amt} ج</span>
+              ${isAdm?`<span style="font-size:10px;color:var(--red);cursor:pointer" onclick="delDraw('${id}',${i})">حذف</span>`:''}
+            </div>
+          </div>`)
+          .join('')
+      : '<div style="text-align:center;font-size:11px;color:var(--text3);padding:10px">لا يوجد سحوبات</div>';
+    const tot = document.getElementById('draws-tot');
+    if(tot) tot.textContent = fmt(totalDraws(e));
+  };
+
+  pop.innerHTML=`
+    <div class="pop-head"><span>سحوبات — ${e.name}</span></div>
+    <div class="pop-body">
+      <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:9px;font-size:12px">
+        <span style="color:var(--text2)">المرتب المستحق</span>
+        <span style="font-size:14px;font-weight:700;color:#6EE7B7">${fmt(calcSalary(e))}</span>
+      </div>
+      <div>
+        <div class="fl">السحوبات هذا الشهر</div>
+        <div class="draws-list" id="draws-list"></div>
+      </div>
+      ${isAdm?`
+      <div>
+        <div class="fl">إضافة سحب جديد</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px">
+          <input class="finp" id="draw-date" placeholder="التاريخ" value="${dateStr()}">
+          <input class="finp" id="draw-amt" type="text" inputmode="decimal" placeholder="المبلغ">
+          <button class="btn-primary" onclick="addDraw('${id}')">+ إضافة</button>
+        </div>
+      </div>`:''}
+      <div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:9px;font-size:12px">
+        <span style="color:#FCA5A5">إجمالي السحوبات</span>
+        <span style="font-size:14px;font-weight:700;color:#FCA5A5" id="draws-tot">${fmt(totalDraws(e))}</span>
+      </div>
+    </div>
+    <div class="pop-foot">
+      <div class="btn-cancel" onclick="closeOvl()">رجوع</div>
+      ${isAdm?`<div class="btn-confirm" onclick="openCloseSalary('${id}')">تقفيل مرتب</div>`:'<div class="btn-confirm" style="opacity:.4;cursor:not-allowed">تقفيل مرتب</div>'}
+    </div>`;
+  ovl.style.display='flex';
+  renderDraws();
+
+  window.addDraw = async function(eid){
+    const amt = parseFloat(document.getElementById('draw-amt')?.value?.replace(',','.')||0);
+    const date = document.getElementById('draw-date')?.value||dateStr();
+    if(!amt||amt<=0) return alert('اكتب مبلغ صح');
+    const emp = EMPS.find(x=>x.id===eid);
+    if(!emp.draws) emp.draws=[];
+    emp.draws.push({date,amt});
+    await saveEmp(emp);
+    // Also log as daily expense
+    try{
+      await addDoc(collection(db,'daily_expenses'),{
+        name:`سحب ${emp.name}`, amt, cat:`سحب ${emp.name}`,
+        time:now(), date:dateStr(), timestamp:serverTimestamp()
+      });
+    }catch(er){}
+    logTransaction(`إضافة سحب ${emp.name}`,`${amt} ج`,'emp');
+    renderDraws(); renderGrid();
+    document.getElementById('draw-amt').value='';
+  };
+
+  window.delDraw = async function(eid,idx){
+    const emp = EMPS.find(x=>x.id===eid);
+    emp.draws.splice(idx,1);
+    await saveEmp(emp);
+    logTransaction(`حذف سحب ${emp.name}`,'','emp');
+    renderDraws(); renderGrid();
+  };
+};
+
+window.openCloseSalary = function(id){
+  const e = EMPS.find(x=>x.id===id);
+  if(!e) return;
+  const salary=calcSalary(e), draws=totalDraws(e), net=netSalary(e);
+  const isDeficit = net < 0;
+  const ovl=document.getElementById('ovl'), pop=document.getElementById('pop');
+  pop.innerHTML=`
+    <div class="pop-head"><span>تقفيل مرتب — ${e.name}</span></div>
+    <div class="pop-body">
+      <div class="sal-box">
+        <div class="sal-row"><span style="color:#6EE7B7">اليومية × أيام الشغل</span><span style="color:#6EE7B7">${e.daily} × ${e.days||0} = ${fmt(salary)}</span></div>
+        <div class="sal-row"><span style="color:#FCA5A5">إجمالي السحوبات</span><span style="color:#FCA5A5">− ${fmt(draws)}</span></div>
+        <div class="sal-row"><span style="color:${isDeficit?'#FCA5A5':'#6EE7B7'}">الصافي المستحق</span><span style="color:${isDeficit?'#FCA5A5':'#6EE7B7'}">${fmt(Math.abs(net))} ${isDeficit?'(عجز)':''}</span></div>
+      </div>
+      ${isDeficit?`<div class="deficit-box">تنبيه: السحوبات أكبر من المرتب — العجز ${fmt(Math.abs(net))} هيتسجل على ${e.name} للشهر الجاي</div>`:''}
+      <div>
+        <div class="fl">ملاحظة (اختياري)</div>
+        <input class="finp" id="sal-note" placeholder="مثلاً: تم الصرف نقدي...">
+      </div>
+      <div style="padding:8px 10px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
+        بعد التقفيل — أيام الشغل والسحوبات هترجع صفر للشهر الجديد
+      </div>
+    </div>
+    <div class="pop-foot">
+      <div class="btn-cancel" onclick="closeOvl()">إلغاء</div>
+      <div class="btn-confirm" onclick="confirmCloseSalary('${id}',${net})">تأكيد التقفيل</div>
+    </div>`;
+  ovl.style.display='flex';
+};
+
+window.confirmCloseSalary = async function(id, net){
+  const e = EMPS.find(x=>x.id===id);
+  const note = document.getElementById('sal-note')?.value||'';
+  // If deficit, carry forward
+  const carryDraws = net < 0 ? [{date:dateStr(), amt:Math.abs(net), note:'عجز محمول'}] : [];
+  e.days=0; e.draws=carryDraws;
+  await saveEmp(e);
+  logTransaction(`تقفيل مرتب ${e.name}`, `${fmt(Math.abs(net))} ${net<0?'عجز':'صافي'}`, 'emp');
+  closeOvl(); renderGrid();
+};
+
+window.openAddEmp = function(){
+  const ovl=document.getElementById('ovl'), pop=document.getElementById('pop');
+  pop.innerHTML=`
+    <div class="pop-head"><span>إضافة موظف جديد</span></div>
+    <div class="pop-body">
+      <div><div class="fl">الاسم</div><input class="finp" id="en" placeholder="اسم الموظف" style="width:100%"></div>
+      <div><div class="fl">الوظيفة</div>
+        <select class="fsel" id="er" style="width:100%">
+          <option>كاشير</option><option>موظف</option><option>مشرف</option>
+        </select>
+      </div>
+      <div><div class="fl">رقم التليفون</div><input class="finp" id="ep" placeholder="01xxxxxxxxx" style="width:100%;direction:ltr;text-align:right"></div>
+      <div><div class="fl">اليومية (جنيه)</div><input class="finp" id="ed" type="text" inputmode="decimal" placeholder="مثلاً: 250" style="width:100%"></div>
+      <div style="padding:8px 10px;background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;font-size:11px;color:var(--text3)">
+        أيام الشغل بتتحسب تلقائي من التقفيل اليومي
+      </div>
+    </div>
+    <div class="pop-foot">
+      <div class="btn-cancel" onclick="closeOvl()">إلغاء</div>
+      <div class="btn-confirm" onclick="addEmp()">إضافة</div>
+    </div>`;
+  ovl.style.display='flex';
+};
+
+window.addEmp = async function(){
+  const name  = document.getElementById('en').value.trim();
+  const role  = document.getElementById('er').value;
+  const phone = document.getElementById('ep').value.trim();
+  const daily = parseFloat(document.getElementById('ed').value.replace(',','.')||0);
+  if(!name) return alert('اكتب اسم الموظف');
+  if(!daily||daily<=0) return alert('اكتب اليومية');
+  try{
+    const ref = await addDoc(collection(db,'employees'),{
+      name, role, phone, daily, days:0, draws:[], timestamp:serverTimestamp()
+    });
+    // Add expense category for this employee
+    EMPS.push({id:ref.id,name,role,phone,daily,days:0,draws:[]});
+    logTransaction(`إضافة موظف ${name}`,role,'emp');
+    closeOvl(); renderGrid();
+  }catch(e){ alert('حصل خطأ — حاول تاني'); }
+};
+
+window.delEmp = async function(id, name){
+  if(!confirm(`هتحذف موظف "${name}" نهائياً؟`)) return;
+  try{
+    await deleteDoc(doc(db,'employees',id));
+    EMPS = EMPS.filter(e=>e.id!==id);
+    logTransaction(`حذف موظف: ${name}`,'','emp');
+    renderGrid();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
+window.closeOvl = function(){ document.getElementById('ovl').style.display='none'; };
+
+requireAuth(async(user,userData)=>{
+  isAdm = user.uid===ADMIN_UID;
+  const p = userData?.permissions||{};
+  const hasPerm = (k) => isAdm || p[k]===true;
+  document.getElementById('uname').textContent = isAdm?'Admin':(userData?.name||user.email);
+  if(!hasPerm('emp.view')){ document.getElementById('emp-grid').innerHTML='<div style="padding:20px;color:var(--text3);text-align:center;grid-column:1/-1">ليس لديك صلاحية عرض الموظفين</div>'; return; }
+  if(hasPerm('emp.add')) document.getElementById('add-btn').style.display='block';
+  await loadEmps();
+  renderGrid();
+});
+</script>
+</body>
+</html>

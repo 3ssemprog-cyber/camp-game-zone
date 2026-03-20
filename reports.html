@@ -211,7 +211,6 @@ window.changeMonth=function(d){
 
 window.exportDay=async function(dayKey,dateLabel){
   try{
-    // Load day data
     const snap=await getDocs(query(collection(db,'pos_sessions'),where('date','==',dateLabel)));
     const sessions=[];
     snap.forEach(d=>sessions.push(d.data()));
@@ -220,16 +219,46 @@ window.exportDay=async function(dayKey,dateLabel){
     const exps=[];
     expSnap.forEach(d=>exps.push(d.data()));
 
-    // Build Excel-like CSV
-    let csv=`تقرير يوم ${dateLabel}\n\n`;
-    csv+=`الطاولة,الإجمالي,طريقة الدفع,الوقت\n`;
-    sessions.forEach(s=>{csv+=`${s.table||''},${s.total||0},${s.payMethod||''},${s.time||''}\n`;});
-    csv+=`\nالمصاريف اليومية\n`;
-    csv+=`التصنيف,المبلغ\n`;
-    exps.forEach(e=>{csv+=`${e.cat||''},${e.amt||0}\n`;});
+    // حساب التوتالات
+    let totalCash=0, totalElec=0, totalSales=0, totalExps=0;
+    sessions.forEach(s=>{
+      totalCash+=parseFloat(s.cashAmt||0);
+      totalElec+=parseFloat(s.elecAmt||0);
+      totalSales+=parseFloat(s.total||0);
+    });
+    exps.forEach(e=>{ totalExps+=parseFloat(e.amt||0); });
 
-    // Download
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+    // بناء CSV بشكل منظم
+    const r=(v)=>parseFloat(v||0).toFixed(2);
+    let csv = '\uFEFF';
+
+    // عنوان
+    csv += `تقرير يوم ${dateLabel}\n`;
+    csv += `\n`;
+
+    // سكشن المبيعات
+    csv += `المبيعات\n`;
+    csv += `الطاولة,الأصناف,نقدي,إلكتروني,الإجمالي,الوقت\n`;
+    sessions.forEach(s=>{
+      const items=(s.items||[]).map(i=>`${i.n||''} x${i.q||1}`).join(' | ');
+      const sessItems=(s.sessions||[]).map(ss=>`${ss.cat||''} ${ss.dur?Math.round(ss.dur/60000)+'د':''}`).join(' | ');
+      const allItems=[sessItems,items].filter(Boolean).join(' | ');
+      csv += `${s.table||''},${allItems},"${r(s.cashAmt)}","${r(s.elecAmt)}","${r(s.total)}",${s.time||''}\n`;
+    });
+    csv += `إجمالي المبيعات,,${r(totalCash)},${r(totalElec)},${r(totalSales)},\n`;
+    csv += `\n`;
+
+    // سكشن المصاريف
+    csv += `المصاريف اليومية\n`;
+    csv += `التصنيف,المبلغ,الوقت,ملاحظة\n`;
+    exps.forEach(e=>{ csv += `${e.cat||''},${r(e.amt)},${e.time||''},${e.note||''}\n`; });
+    csv += `إجمالي المصاريف,${r(totalExps)},,,\n`;
+    csv += `\n`;
+
+    // صافي اليوم
+    csv += `صافي اليوم,${r(totalSales-totalExps)}\n`;
+
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;

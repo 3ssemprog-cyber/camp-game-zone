@@ -281,6 +281,7 @@
         <span id="rb-notif" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;align-items:center;justify-content:center;font-weight:700">!</span>
       </div>
       <div class="rb" style="background:#064E3B;color:#6EE7B7;border-color:#10B981" onclick="openReprint()">إعادة طباعة</div>
+      <div class="rb" style="background:#064E3B;color:#6EE7B7;border-color:#10B981" onclick="openReprintBar()">إعادة طباعة بار</div>
       <div class="rb del" onclick="openDel()">حذف صنف</div>
     </div>
   </div>
@@ -832,6 +833,95 @@ window.openDel=function(){
 
 window.closeOvl=function(){document.getElementById('ovl').style.display='none';renderAll();};
 
+// ===== REPRINT BAR =====
+window.openReprintBar=async function(){
+  const ovl=document.getElementById('ovl'),pop=document.getElementById('pop');
+  pop.innerHTML=`<div class="pop-head"><span style="color:#6EE7B7">إعادة طباعة بار</span></div>
+    <div class="pop-body" style="max-height:60vh;overflow-y:auto">
+      <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">جاري التحميل...</div>
+    </div>`;
+  ovl.style.display='flex';
+
+  try{
+    const today=dateStr();
+    const snap=await getDocs(collection(db,'pos_sessions'));
+    let sessions=[];
+    snap.forEach(d=>sessions.push({id:d.id,...d.data()}));
+    sessions=sessions
+      .filter(s=>s.date===today)
+      .sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0))
+      .slice(0,30);
+
+    const body=pop.querySelector('.pop-body');
+    if(!sessions.length){
+      body.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">لا يوجد طلبات اليوم</div>';
+      return;
+    }
+
+    body.innerHTML=sessions.map(s=>{
+      const items=(s.items||[]).filter(i=>!i.cm);
+      if(!items.length) return '';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:9px;margin-bottom:6px;cursor:pointer;border:0.5px solid var(--border)"
+           onclick="reprintBarSession('${s.id}')"
+           onmouseover="this.style.borderColor='var(--green)'"
+           onmouseout="this.style.borderColor='var(--border)'">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text1)">${s.table||'—'}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${s.time||''}</div>
+          <div style="font-size:10px;color:var(--text3)">${items.map(i=>i.n||'').slice(0,3).join('، ')}${items.length>3?'...':''}</div>
+        </div>
+        <div style="text-align:left">
+          <div style="font-size:11px;font-weight:700;color:#6EE7B7">${items.length} صنف</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">طباعة</div>
+        </div>
+      </div>`;
+    }).filter(Boolean).join('') || '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">لا يوجد طلبات بار اليوم</div>';
+  }catch(e){
+    const body=pop.querySelector('.pop-body');
+    body.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">حصل خطأ في التحميل</div>';
+  }
+};
+
+window.reprintBarSession=async function(id){
+  try{
+    const snap=await getDocs(collection(db,'pos_sessions'));
+    let s=null;
+    snap.forEach(d=>{ if(d.id===id) s={id:d.id,...d.data()}; });
+    if(!s) return alert('مش لاقي الطلب');
+    const items=(s.items||[]).filter(i=>!i.cm);
+    if(!items.length) return alert('مفيش أصناف');
+
+    let rows='';
+    items.forEach(i=>{
+      rows+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;border-bottom:1px solid #aaa;font-size:11px;font-weight:700">
+        <div>
+          <div style="font-weight:900">${i.n||i.name||'—'}</div>
+          ${i.note?`<div style="font-size:9px;color:#333;font-style:italic;font-weight:700;margin-top:1px">${i.note}</div>`:''}
+        </div>
+        <div style="font-weight:900">×${i.q||1}</div>
+      </div>`;
+    });
+
+    const rcptHTML=`
+      <div style="padding:5px 8px;background:#f0f0f0;border-bottom:1px dashed #000;text-align:center;font-size:10px;color:#000;font-weight:900">إعادة طباعة بار</div>
+      <div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-badge">طلب بار</div></div>
+      <div class="rm">
+        <div class="mr"><span>الطاولة</span><span>${s.table||'—'}</span></div>
+        <div class="mr"><span>التاريخ</span><span>${s.date||'—'}</span></div>
+        <div class="mr"><span>الوقت</span><span>${s.time||'—'}</span></div>
+        <div class="mr"><span>الكاشير</span><span>${s.cashier||'—'}</span></div>
+      </div>
+      <div style="padding:6px 8px;border-bottom:2px dashed #000">
+        <div style="font-size:10px;font-weight:900;color:#000;letter-spacing:.4px;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #000">الطلبات</div>
+        ${rows}
+      </div>
+      <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div><span class="rf-brand">Camp Game Zone</span></div>`;
+
+    closeOvl();
+    showReceipt(rcptHTML);
+  }catch(e){ alert('حصل خطأ'); }
+};
+
 // ===== REPRINT =====
 window.openReprint=async function(){
   const ovl=document.getElementById('ovl'),pop=document.getElementById('pop');
@@ -1116,38 +1206,91 @@ window.doPrint=function(){
 <html dir="rtl" lang="ar"><head><meta charset="UTF-8">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-@page{margin:0;size:80mm auto}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;font-weight:700}
-body{width:76mm;font-size:12px;background:#fff}
+@page{margin:2mm;size:80mm auto}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000!important;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{width:76mm;font-size:12px;background:#fff;font-weight:700}
+
+/* ===== HEADER ===== */
 .rh{padding:10px 8px 8px;text-align:center;border-bottom:2px dashed #000}
-.rh-name{font-size:16px;font-weight:900}
-.rh-sub{font-size:10px;color:#333;margin-top:2px;font-weight:700}
-.rh-type{font-size:11px;font-weight:900;margin-top:4px;border:1.5px solid #000;display:inline-block;padding:1px 10px;border-radius:20px}
-.rm{padding:6px 8px;border-bottom:1px dashed #777}
-.mr{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
-.mr span:first-child{color:#333;font-weight:700}.mr span:last-child{font-weight:900}
-.ri{padding:6px 8px;border-bottom:2px dashed #000}
-.ri-head{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;color:#333;padding-bottom:4px;border-bottom:1px solid #aaa;margin-bottom:3px;font-weight:900;text-align:center}
-.ri-head span:first-child{text-align:right}
-.ri-row{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:11px;padding:3px 0;border-bottom:1px solid #ddd;align-items:center;text-align:center;font-weight:700}
-.ri-row span:first-child{text-align:right}
-.ri-row span:last-child{font-weight:900;direction:ltr}
-.ri-sess{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:11px;padding:3px 0;font-weight:900;align-items:center;text-align:center;border-bottom:1px solid #ddd}
-.ri-sess span:first-child{text-align:right}
-.ri-sess span:last-child{direction:ltr}
-.ri-cmt{font-size:10px;color:#333;font-style:italic;padding:2px 0;font-weight:700}
-.rt{padding:7px 8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-bottom:1px dashed #777}
-.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:11px;border-bottom:1px dashed #777;font-weight:700}
-.rsec{padding:6px 8px;border-bottom:1px dashed #777}
-.rsec-t{font-size:10px;font-weight:900;color:#333;letter-spacing:.3px;margin-bottom:4px;border-bottom:1px solid #ccc;padding-bottom:2px}
-.rsec-game{background:#eee;border-bottom:2px dashed #aaa;padding:6px 8px}
-.rsec-game-title{font-size:10px;font-weight:900;color:#222;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #bbb}
-.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
+.rh-name{font-size:17px;font-weight:900;display:block}
+.rh-sub{font-size:10px;color:#000;margin-top:3px;display:block;font-weight:700}
+.rh-type{font-size:11px;font-weight:900;margin-top:5px;border:2px solid #000;display:inline-block;padding:2px 12px;border-radius:20px}
+
+/* ===== META ===== */
+.rm{padding:7px 8px;border-bottom:1px dashed #000}
+.mr{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
+.mr span{color:#000!important;font-weight:700}
+.mr span:last-child{font-weight:900}
+
+/* ===== GAMING SECTION ===== */
+.rsec-game{background:#e8e8e8!important;-webkit-print-color-adjust:exact;border-bottom:2px dashed #000;padding:7px 8px}
+.rsec-game-title{font-size:10px;font-weight:900;color:#000;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #000}
+.rsec-game div{color:#000!important}
+
+/* ===== DRINKS SECTION ===== */
+.rsec-drinks{padding:6px 8px;border-bottom:2px dashed #000}
+div[style*="grid-template-columns:1fr 28px 46px"]{
+  display:grid!important;
+  grid-template-columns:1fr 28px 46px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  padding:3px 0!important;
+  border-bottom:1px solid #aaa!important;
+  color:#000!important;
+}
+div[style*="grid-template-columns:1fr 28px 46px"] span{
+  color:#000!important;
+  font-weight:700!important;
+}
+div[style*="grid-template-columns:1fr 28px 46px"] span:last-child{
+  font-weight:900!important;
+  text-align:center!important;
+}
+/* هيدر الجدول */
+div[style*="grid-template-columns:1fr 28px 46px"][style*="color:#888"]{
+  font-weight:900!important;
+  border-bottom:1.5px solid #000!important;
+  font-size:10px!important;
+}
+
+/* ===== DISCOUNT ===== */
+div[style*="padding:3px 8px"]{color:#000!important;font-weight:700!important;}
+
+/* ===== TOTAL ===== */
+.rtot{padding:9px 8px!important;display:flex!important;justify-content:space-between!important;font-size:16px!important;font-weight:900!important;border-top:3px solid #000!important;border-bottom:3px solid #000!important;margin:3px 0!important;color:#000!important}
+.rtot span{color:#000!important;font-weight:900!important}
+
+/* ===== PAYMENT ===== */
+.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:11px;border-bottom:1px dashed #000;font-weight:700;color:#000!important}
+.rp span{color:#000!important;font-weight:700!important}
+
+/* ===== SECTIONS ===== */
+.rsec{padding:6px 8px;border-bottom:1px dashed #000}
+.rsec-t{font-size:10px;font-weight:900;color:#000;margin-bottom:4px;border-bottom:1.5px solid #000;padding-bottom:2px}
+.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700;color:#000!important}
+.rrow span{color:#000!important}
 .rrow.bold{font-weight:900}
-.rtot{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;margin:2px 0}
-.rf{padding:8px;text-align:center;font-size:10px;color:#333;line-height:1.8;font-weight:700}
-.rf-dots{letter-spacing:3px;margin-bottom:3px}
-.rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:2px}
+
+/* ===== FOOTER ===== */
+.rf{padding:8px;text-align:center;font-size:10px;color:#000;line-height:2;font-weight:700}
+.rf-brand{font-size:14px;font-weight:900;color:#000;display:block;margin-top:3px}
+.rf-dots{letter-spacing:3px;margin-bottom:3px;display:block}
+
+/* ===== BAR ITEMS ===== */
+div[style*="طلبات"]{color:#000!important}
+.ri-head{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;color:#000;padding-bottom:4px;border-bottom:1.5px solid #000;margin-bottom:3px;font-weight:900;text-align:center}
+.ri-row{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:11px;padding:3px 0;border-bottom:1px solid #aaa;color:#000;font-weight:700;text-align:center}
+.ri-row span{color:#000!important;font-weight:700!important}
+.ri-row span:last-child{font-weight:900!important}
+
+/* ===== NOTES ===== */
+div[style*="b45309"],div[style*="font-style:italic"]{color:#333!important;font-weight:700!important;font-style:italic}
+
+/* ===== REPRINT BANNER ===== */
+div[style*="FFF3CD"]{background:#f0f0f0!important;color:#000!important;font-weight:900!important;-webkit-print-color-adjust:exact}
+
+/* ===== إخفاء أي عناصر بيكسر الطباعة ===== */
+.rcpt-btns{display:none!important}
 </style></head>
 <body>`+box.innerHTML+`</body></html>`);
   w.document.close();

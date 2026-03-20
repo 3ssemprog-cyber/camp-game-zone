@@ -74,6 +74,11 @@
   <div class="sec-lbl">المصاريف الشهرية</div>
   <div id="mexp-list" style="margin-bottom:4px"></div>
 
+  <div id="sal-details" style="display:none;margin-bottom:8px">
+    <div class="sec-lbl">تفاصيل المرتبات</div>
+    <div id="sal-details-list"></div>
+  </div>
+
   <div class="net-bar">
     <span class="net-lbl">صافي الشهر (دخل − مصاريف يومية − مصاريف شهرية − مرتبات)</span>
     <span class="net-val" id="net-month">0.00 ج</span>
@@ -108,22 +113,32 @@ async function loadMonth(m,y){
     snap.forEach(d=>mExps.push(d.data()));
   }catch(e){}
 
-  // Load salaries closed this month
+  // Load salaries closed this month from salary_closing collection
   try{
-    const snap=await getDocs(collection(db,'employees'));
-    // Salaries are calculated from employees — we use a simple sum from pos_sessions
-    // For now show 0 until salary closing is implemented
-    salaries=0;
+    const snap=await getDocs(query(collection(db,'salary_closing'),where('monthKey','==',mk)));
+    snap.forEach(d=>{
+      const data=d.data();
+      // لو مش عجز — المرتب الصافي بيتحسب كمصروف
+      if(!data.isDeficit) salaries+=parseFloat(data.net||0);
+      else salaries+=parseFloat(data.salary||0); // المرتب كامل كمصروف حتى لو في عجز
+    });
   }catch(e){}
 
-  return {days, mExps, salaries};
+  // Load salary details for display
+  let salaryDetails=[];
+  try{
+    const snap=await getDocs(query(collection(db,'salary_closing'),where('monthKey','==',mk)));
+    snap.forEach(d=>salaryDetails.push(d.data()));
+  }catch(e){}
+
+  return {days, mExps, salaries, salaryDetails};
 }
 
 function fmt2(n){ return parseFloat(n||0).toFixed(2)+' ج'; }
 
 async function render(){
   document.getElementById('month-title').textContent=`${MONTHS[curMonth]} ${curYear}`;
-  const {days,mExps,salaries}=await loadMonth(curMonth,curYear);
+  const {days,mExps,salaries,salaryDetails}=await loadMonth(curMonth,curYear);
 
   const todayKey=new Date().toISOString().split('T')[0];
   const totCash=days.reduce((s,d)=>s+(d.cash||0),0);
@@ -140,7 +155,7 @@ async function render(){
     <div class="kard k-elec"><div class="kl">دفع إلكتروني</div><div class="kv">${fmt2(totElec)}</div></div>
     <div class="kard k-dexp"><div class="kl">مصاريف يومية</div><div class="kv">${fmt2(totDexp)}</div></div>
     <div class="kard k-mexp"><div class="kl">مصاريف شهرية</div><div class="kv">${fmt2(totMexp)}</div></div>
-    <div class="kard k-sal"><div class="kl">مرتبات</div><div class="kv">${fmt2(salaries)}</div></div>`;
+    <div class="kard k-sal" style="cursor:${salaryDetails.length?'pointer':'default'}" onclick="toggleSalDetails()"><div class="kl">مرتبات (${salaryDetails.length} موظف)</div><div class="kv">${fmt2(salaries)}</div></div>`;
 
   // Days table
   document.getElementById('days-body').innerHTML=days.length
@@ -160,11 +175,32 @@ async function render(){
     ?mExps.map(e=>`<div class="mexp-row"><span style="color:var(--text2)">${e.cat}</span><span style="font-weight:700;color:#FCD34D">${fmt2(e.amt)}</span></div>`).join('')
     :'<div style="font-size:12px;color:var(--text3);padding:8px">لا يوجد مصاريف شهرية</div>';
 
+  // Salary details list
+  const salList=document.getElementById('sal-details-list');
+  if(salList){
+    salList.innerHTML=salaryDetails.length
+      ?salaryDetails.map(s=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg3);border-radius:9px;font-size:12px;margin-bottom:5px">
+          <div>
+            <span style="font-weight:600;color:var(--text1)">${s.empName}</span>
+            <span style="font-size:10px;color:var(--text3);margin-right:6px">${s.date||''}</span>
+            ${s.isDeficit?`<span style="font-size:10px;color:#FCA5A5">(عجز)</span>`:''}
+          </div>
+          <span style="font-weight:700;color:#FCD34D">${fmt2(s.isDeficit?s.salary:s.net)}</span>
+        </div>`).join('')
+      :'<div style="font-size:12px;color:var(--text3);padding:8px">لا يوجد مرتبات مقفلة هذا الشهر</div>';
+  }
+
   // Net
   const netEl=document.getElementById('net-month');
   netEl.textContent=fmt2(netMonth);
   netEl.style.color=netMonth>=0?'#6EE7B7':'#FCA5A5';
 }
+
+window.toggleSalDetails=function(){
+  const el=document.getElementById('sal-details');
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+};
 
 window.changeMonth=function(d){
   curMonth+=d;

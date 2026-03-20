@@ -485,7 +485,13 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
 
   if(isBar){
     let itemsHTML='';
-    orderItems.filter(i=>!i.cm).forEach(i=>{itemsHTML+=`<div class="ri-row"><span>${i.n}</span><span>×${i.q}</span><span>${fmt(i.q*i.p)}</span></div>`;});
+    orderItems.filter(i=>!i.cm).forEach(i=>{
+      itemsHTML+=`<div class="ri-row">
+        <span style="text-align:right">${i.n}${i.note?`<div style="font-size:9px;color:#b45309;font-style:italic;font-weight:400">${i.note}</div>`:''}</span>
+        <span>×${i.q}</span>
+        <span style="font-weight:700;direction:ltr">${isBar?'':fmt(i.q*i.p)}</span>
+      </div>`;
+    });
     orderItems.filter(i=>i.cm).forEach(i=>{itemsHTML+=`<div class="ri-cmt">* ${i.n}</div>`;});
     return `<div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-type">طلب بار</div></div>
       <div class="rm"><div class="mr"><span>الطاولة</span><span>${tname}</span></div><div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div><div class="mr"><span>الوقت</span><span>${nowT()}</span></div><div class="mr"><span>الكاشير</span><span>${cashier}</span></div></div>

@@ -148,14 +148,31 @@
     width:79mm!important;
     max-width:79mm!important;
     min-width:79mm!important;
-    font-size:11px!important;
+    font-size:12px!important;
+    font-weight:700!important;
     margin:0!important;
     padding:0!important;
     background:#fff!important;
     box-shadow:none!important;
     direction:rtl!important;
     overflow:hidden!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
   }
+  .rcpt-box *{
+    font-weight:700!important;
+    color:#000!important;
+    -webkit-font-smoothing:antialiased!important;
+  }
+  .rcpt-box .rh-name{ font-size:16px!important; font-weight:900!important; }
+  .rcpt-box .rf-brand{ font-size:14px!important; font-weight:900!important; }
+  .rcpt-box .rtot{ font-size:15px!important; font-weight:900!important; border-top:2px solid #000!important; border-bottom:2px solid #000!important; }
+  .rcpt-box .rh-type{ border:1.5px solid #000!important; }
+  .rcpt-box .mr span:first-child{ font-weight:700!important; color:#333!important; }
+  .rcpt-box .rsec-t,
+  .rcpt-box .rsec-game-title{ font-size:10px!important; font-weight:900!important; }
+  .rcpt-box .ri-note,
+  .rcpt-box .game-note{ color:#555!important; font-weight:700!important; }
   .rcpt-box .rh,
   .rcpt-box .rm,
   .rcpt-box .ri,
@@ -1100,35 +1117,37 @@ window.doPrint=function(){
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 @page{margin:0;size:80mm auto}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl}
-body{width:76mm;font-size:11px;background:#fff}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;font-weight:700}
+body{width:76mm;font-size:12px;background:#fff}
 .rh{padding:10px 8px 8px;text-align:center;border-bottom:2px dashed #000}
-.rh-name{font-size:15px;font-weight:900}
-.rh-sub{font-size:9px;color:#555;margin-top:2px}
-.rh-type{font-size:10px;font-weight:700;margin-top:4px;border:1px solid #000;display:inline-block;padding:1px 10px;border-radius:20px}
-.rm{padding:6px 8px;border-bottom:1px dashed #999}
-.mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
-.mr span:first-child{color:#555}.mr span:last-child{font-weight:700}
+.rh-name{font-size:16px;font-weight:900}
+.rh-sub{font-size:10px;color:#333;margin-top:2px;font-weight:700}
+.rh-type{font-size:11px;font-weight:900;margin-top:4px;border:1.5px solid #000;display:inline-block;padding:1px 10px;border-radius:20px}
+.rm{padding:6px 8px;border-bottom:1px dashed #777}
+.mr{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
+.mr span:first-child{color:#333;font-weight:700}.mr span:last-child{font-weight:900}
 .ri{padding:6px 8px;border-bottom:2px dashed #000}
-.ri-head{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:9px;color:#555;padding-bottom:4px;border-bottom:1px solid #ddd;margin-bottom:3px;font-weight:700;text-align:center}
+.ri-head{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;color:#333;padding-bottom:4px;border-bottom:1px solid #aaa;margin-bottom:3px;font-weight:900;text-align:center}
 .ri-head span:first-child{text-align:right}
-.ri-row{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;padding:2px 0;border-bottom:1px solid #f5f5f5;align-items:center;text-align:center}
+.ri-row{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:11px;padding:3px 0;border-bottom:1px solid #ddd;align-items:center;text-align:center;font-weight:700}
 .ri-row span:first-child{text-align:right}
-.ri-row span:last-child{font-weight:700;direction:ltr}
-.ri-sess{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:10px;padding:3px 0;font-weight:700;align-items:center;text-align:center;border-bottom:1px solid #f5f5f5}
+.ri-row span:last-child{font-weight:900;direction:ltr}
+.ri-sess{display:grid;grid-template-columns:1fr 36px 50px;gap:2px;font-size:11px;padding:3px 0;font-weight:900;align-items:center;text-align:center;border-bottom:1px solid #ddd}
 .ri-sess span:first-child{text-align:right}
 .ri-sess span:last-child{direction:ltr}
-.ri-cmt{font-size:9px;color:#555;font-style:italic;padding:2px 0}
-.rt{padding:7px 8px;display:flex;justify-content:space-between;font-size:13px;font-weight:900;border-bottom:1px dashed #999}
-.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:10px;border-bottom:1px dashed #999}
-.rsec{padding:6px 8px;border-bottom:1px dashed #999}
-.rsec-t{font-size:9px;font-weight:700;color:#555;letter-spacing:.3px;margin-bottom:4px;border-bottom:1px solid #eee;padding-bottom:2px}
-.rrow{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
-.rrow.bold{font-weight:700}
-.rtot{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;margin:2px 0}
-.rf{padding:8px;text-align:center;font-size:9px;color:#555;line-height:1.8}
+.ri-cmt{font-size:10px;color:#333;font-style:italic;padding:2px 0;font-weight:700}
+.rt{padding:7px 8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-bottom:1px dashed #777}
+.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:11px;border-bottom:1px dashed #777;font-weight:700}
+.rsec{padding:6px 8px;border-bottom:1px dashed #777}
+.rsec-t{font-size:10px;font-weight:900;color:#333;letter-spacing:.3px;margin-bottom:4px;border-bottom:1px solid #ccc;padding-bottom:2px}
+.rsec-game{background:#eee;border-bottom:2px dashed #aaa;padding:6px 8px}
+.rsec-game-title{font-size:10px;font-weight:900;color:#222;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #bbb}
+.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
+.rrow.bold{font-weight:900}
+.rtot{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;margin:2px 0}
+.rf{padding:8px;text-align:center;font-size:10px;color:#333;line-height:1.8;font-weight:700}
 .rf-dots{letter-spacing:3px;margin-bottom:3px}
-.rf-brand{font-size:12px;font-weight:900;color:#000;margin-top:2px}
+.rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:2px}
 </style></head>
 <body>`+box.innerHTML+`</body></html>`);
   w.document.close();

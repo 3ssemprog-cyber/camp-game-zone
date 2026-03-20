@@ -425,7 +425,7 @@ function renderItems(){
     const d=document.createElement('div');
     d.className='ibt'+(picked&&picked.c===it.c?' picked':'');
     d.dataset.code=it.c;
-    d.innerHTML=`<div class="ic">${it.c}</div><div class="in">${it.n}</div><div class="ip">${it.p} ج</div>`;
+    d.innerHTML=`<div class="in">${it.n}</div><div class="ip">${it.p} ج</div>`;
     d.onclick=()=>pickItem(it);
     g.appendChild(d);
   });

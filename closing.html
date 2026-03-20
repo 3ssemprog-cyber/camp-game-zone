@@ -434,7 +434,7 @@ function showShiftReceipt() {
     <div class="rsec">
       <div class="rsec-t">المصاريف</div>
       ${DATA.exps.length
-        ? DATA.exps.map(e=>`<div class="rrow"><span>${e.cat}</span><span>${fmt(e.amt)}</span></div>`).join('')
+        ? DATA.exps.map(e=>`<div class="rrow"><span>${e.cat||e.name||'—'}</span><span>${fmt(e.amt)}</span></div>`).join('')
           + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(totExp())}</span></div>`
         : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>'}
     </div>
@@ -484,13 +484,30 @@ window.closeDayAndPrint = async function(cash, elec, exp, inc, net) {
     }
   } catch(e) {}
 
-  showDayReceipt(cash, elec, exp, inc, net);
+  await showDayReceipt(cash, elec, exp, inc, net);
 };
 
-function showDayReceipt(cash, elec, exp, inc, net) {
+async function showDayReceipt(cash, elec, exp, inc, net) {
   const present = EMPS.filter(e => e.present);
   const absent  = EMPS.filter(e => !e.present);
   const firstShift = [...CLOSED_SHIFTS].sort((a,b)=>a.type==='صبح'?-1:1)[0];
+  const dk = firstShift?.dayKey || todayKey();
+
+  // جيب بنود المصاريف اليومية من Firebase
+  let allExps = [];
+  try {
+    const snap = await getDocs(collection(db,'daily_expenses'));
+    snap.forEach(d => {
+      const data = d.data();
+      if(data.dayKey === dk) allExps.push(data);
+    });
+  } catch(e) {}
+
+  const expsHTML = allExps.length
+    ? allExps.map(e => `<div class="rrow"><span>${e.cat||e.name||'—'}</span><span>${fmt(e.amt)}</span></div>`).join('')
+      + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(exp)}</span></div>`
+    : `<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>`;
+
   document.getElementById('rcpt-content').innerHTML = `
     <div class="rh">
       <div class="rh-name">Camp Game Zone</div>
@@ -507,7 +524,10 @@ function showDayReceipt(cash, elec, exp, inc, net) {
       <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
       <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
       <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
-      <div class="rrow"><span>المصاريف</span><span>${fmt(exp)}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">المصاريف</div>
+      ${expsHTML}
     </div>
     <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
     <div class="rsec">
@@ -524,8 +544,8 @@ function showDayReceipt(cash, elec, exp, inc, net) {
   document.getElementById('rcpt-view').style.display = 'flex';
 }
 
-window.printDayReceipt = function(cash, elec, exp, inc, net) {
-  showDayReceipt(cash, elec, exp, inc, net);
+window.printDayReceipt = async function(cash, elec, exp, inc, net) {
+  await showDayReceipt(cash, elec, exp, inc, net);
 };
 
 async function saveAttendance() {

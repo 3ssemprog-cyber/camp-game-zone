@@ -38,15 +38,8 @@
     <div class="card-body">
       <div class="form-grid">
         <div>
-          <div class="fl">التصنيف</div>
-          <select class="fsel" id="m-cat">
-            <option value="كهربا">كهربا</option>
-            <option value="إيجار">إيجار</option>
-            <option value="مياه">مياه</option>
-            <option value="إنترنت">إنترنت</option>
-            <option value="صيانة">صيانة</option>
-            <option value="أخرى">أخرى</option>
-          </select>
+          <div class="fl">البند</div>
+          <input class="finp" id="m-cat" placeholder="مثلاً: إيجار، كهربا، مياه...">
         </div>
         <div>
           <div class="fl">المبلغ (ج)</div>
@@ -66,7 +59,7 @@
   <div class="tbl-wrap">
     <table class="dtbl">
       <thead><tr>
-        <th style="width:120px">التصنيف</th>
+        <th style="width:120px">البند</th>
         <th style="width:80px">المبلغ</th>
         <th style="width:110px">الشهر</th>
         <th>ملاحظة</th>
@@ -120,9 +113,10 @@ function renderTable(){
 
 window.addMonthly=async function(){
   if(!canAdd) return alert('ليس لديك صلاحية');
-  const cat=document.getElementById('m-cat').value;
+  const cat=document.getElementById('m-cat').value.trim();
   const amt=parseFloat(document.getElementById('m-amt').value.replace(',','.')||0);
   const note=document.getElementById('m-note').value.trim();
+  if(!cat) return alert('اكتب اسم البند');
   if(!amt||amt<=0) return alert('اكتب مبلغ صح');
   try{
     const ref=await addDoc(collection(db,'monthly_expenses'),{
@@ -151,7 +145,6 @@ requireAuth(async(user,userData)=>{
   const p=userData?.permissions||{};
   canAdd=isAdm||p['exp.add_monthly']===true;
   canDel=isAdm||p['exp.del_monthly']===true;
-  if(!isAdm&&!p['exp.view_monthly']&&!p['exp.add_monthly']){window.location.href='dashboard.html';return;}
   document.getElementById('uname').textContent=isAdm?'Admin':(userData?.name||user.email);
   await loadItems();
   renderTable();

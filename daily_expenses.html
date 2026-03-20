@@ -37,20 +37,40 @@
     <div class="card-head">إضافة مصروف — اليوم</div>
     <div class="card-body">
       <div class="form-grid">
-        <div>
+        <!-- نوع المصروف dropdown -->
+        <div style="grid-column:1/-1">
+          <div class="fl">نوع المصروف</div>
+          <select class="fsel" id="d-type" onchange="switchType()">
+            <option value="normal">بند حر</option>
+            <option value="draw">سحب موظف</option>
+          </select>
+        </div>
+
+        <!-- بند حر -->
+        <div id="wrap-cat">
           <div class="fl">البند</div>
           <input class="finp" id="d-cat" placeholder="مثلاً: نظافة، مستلزمات...">
         </div>
+
+        <!-- سحب موظف -->
+        <div id="wrap-emp" style="display:none;grid-column:1/-1">
+          <div class="fl">اختار الموظف</div>
+          <div id="emp-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;min-height:32px">
+            <div style="font-size:11px;color:var(--text3)">جاري التحميل...</div>
+          </div>
+          <input class="finp" id="d-emp-name" placeholder="اسم الموظف..." readonly style="background:var(--bg3);cursor:default">
+        </div>
+
         <div>
           <div class="fl">المبلغ (ج)</div>
           <input class="finp" id="d-amt" type="text" inputmode="decimal" placeholder="0">
         </div>
-        <div style="grid-column:1/-1">
+        <div>
           <div class="fl">ملاحظة (اختياري)</div>
           <input class="finp" id="d-note" placeholder="أي تفاصيل...">
         </div>
         <div style="grid-column:1/-1">
-          <button class="btn-primary-full" onclick="addExpense()">+ إضافة</button>
+          <button class="btn-primary-full" id="add-btn-exp" onclick="addExpense()">+ إضافة مصروف</button>
         </div>
       </div>
     </div>
@@ -122,6 +142,8 @@ function renderTable(){
 
 window.addExpense=async function(){
   if(!canAdd) return alert('ليس لديك صلاحية');
+  const isDraw=document.getElementById('d-type').value==='draw';
+  if(isDraw){ return addDraw(); }
   const cat=document.getElementById('d-cat').value.trim();
   const amt=parseFloat(document.getElementById('d-amt').value.replace(',','.')||0);
   const note=document.getElementById('d-note').value.trim();
@@ -181,13 +203,82 @@ async function getCurrentShiftKey(){
   }catch(e){return new Date().toISOString().split('T')[0];}
 }
 
+window.switchType=function(){
+  const isDraw=document.getElementById('d-type').value==='draw';
+  document.getElementById('wrap-cat').style.display=isDraw?'none':'block';
+  document.getElementById('wrap-emp').style.display=isDraw?'block':'none';
+  const btn=document.getElementById('add-btn-exp');
+  if(btn){
+    btn.textContent=isDraw?'+ إضافة سحب':'+ إضافة مصروف';
+    btn.style.background=isDraw?'#451A03':'var(--accent)';
+    btn.style.border=isDraw?'0.5px solid var(--amber)':'none';
+    btn.style.color=isDraw?'#FCD34D':'#fff';
+  }
+};
+
+window.addDraw=async function(){
+  if(!canAdd) return alert('ليس لديك صلاحية');
+  const empName=document.getElementById('d-emp-name').value.trim();
+  const amt=parseFloat(document.getElementById('d-amt').value.replace(',','.')||0);
+  const note=document.getElementById('d-note').value.trim();
+  if(!empName) return alert('اختار اسم الموظف');
+  if(!amt||amt<=0) return alert('اكتب مبلغ صح');
+  const cat=`سحب ${empName}`;
+  const sk=await getCurrentShiftKey();
+  try{
+    const ref=await addDoc(collection(db,'daily_expenses'),{
+      cat,amt,note,time:nowT(),dayKey:todayKey(),date:dateStr(),
+      timestamp:serverTimestamp(),shiftKey:sk
+    });
+    EXPS.unshift({id:ref.id,cat,amt,note,time:nowT()});
+    logTransaction(`سحب ${empName}`,`${fmt(amt)}`,'exp');
+    // سجّل في سحوبات الموظف
+    try{
+      const empSnap=await getDocs(collection(db,'employees'));
+      for(const d of empSnap.docs){
+        if(d.data().name===empName){
+          const draws=d.data().draws||[];
+          draws.push({date:dateStr(),amt,note:note||'سحب من المصاريف'});
+          await updateDoc(doc(db,'employees',d.id),{draws});
+          break;
+        }
+      }
+    }catch(er){}
+    document.getElementById('d-amt').value='';
+    document.getElementById('d-note').value='';
+    document.querySelectorAll('#emp-btns div').forEach(b=>{b.style.background='var(--bg3)';b.style.color='var(--text2)';b.style.borderColor='var(--border)';});
+    document.getElementById('d-emp-name').value='';
+    renderTable();
+  }catch(e){ alert('حصل خطأ'); }
+};
+
 requireAuth(async(user,userData)=>{
   const isAdm=user.uid===ADMIN_UID;
   const p=userData?.permissions||{};
   canAdd=isAdm||p['exp.add_daily']===true;
   canDel=isAdm||p['exp.del_daily']===true;
   document.getElementById('uname').textContent=isAdm?'Admin':(userData?.name||user.email);
-  // مش محتاجين نحمل موظفين للـ input دلوقتي
+  // حمّل أسماء الموظفين لزرارين السحب
+  try{
+    const empSnap=await getDocs(collection(db,'employees'));
+    const btns=document.getElementById('emp-btns');
+    if(btns){
+      btns.innerHTML='';
+      empSnap.forEach(d=>{
+        const name=d.data().name;
+        const btn=document.createElement('div');
+        btn.textContent=name;
+        btn.style.cssText='padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:var(--bg3);border:0.5px solid var(--border);color:var(--text2);transition:all .12s';
+        btn.onclick=()=>{
+          document.querySelectorAll('#emp-btns div').forEach(b=>{b.style.background='var(--bg3)';b.style.color='var(--text2)';b.style.borderColor='var(--border)';});
+          btn.style.background='#451A03';btn.style.color='#FCD34D';btn.style.borderColor='var(--amber)';
+          document.getElementById('d-emp-name').value=name;
+        };
+        btns.appendChild(btn);
+      });
+      if(!empSnap.size) btns.innerHTML='<div style="font-size:11px;color:var(--text3)">لا يوجد موظفين</div>';
+    }
+  }catch(e){}
   await loadExpenses();
   renderTable();
 });

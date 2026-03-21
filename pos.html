@@ -150,19 +150,39 @@
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
   }
-  .rcpt-box *{font-weight:700!important;color:#000!important}
-  .rcpt-box .rh-name{font-size:16px!important;font-weight:900!important}
-  .rcpt-box .rtot{font-size:15px!important;font-weight:900!important;border-top:2px solid #000!important;border-bottom:2px solid #000!important}
-  .rcpt-box .rh-type,.rcpt-box .rh-badge{border:1.5px solid #000!important}
-  .rcpt-box .mr span:first-child{color:#333!important}
+  /* reset كل الـ inline font sizes */
+  .rcpt-box *{
+    font-size:13px!important;
+    font-weight:700!important;
+    color:#000!important;
+    line-height:1.5!important;
+  }
+  /* عناوين أكبر */
+  .rcpt-box .rh-name{font-size:17px!important;font-weight:900!important}
+  .rcpt-box .rh-type,.rcpt-box .rh-badge{font-size:11px!important;font-weight:900!important;border:1.5px solid #000!important}
+  /* الإجمالي */
+  .rcpt-box .rtot{font-size:16px!important;font-weight:900!important;border-top:2px solid #000!important;border-bottom:2px solid #000!important}
+  .rcpt-box .rtot span{font-size:16px!important;font-weight:900!important}
+  /* سكشن الألعاب */
   .rcpt-box .rsec-game{background:#e8e8e8!important;-webkit-print-color-adjust:exact!important}
-  .rcpt-box .rsec-game-title{font-size:10px!important;font-weight:900!important}
-  div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 0!important;border-bottom:1px solid #ddd!important}
-  div[style*="grid-template-columns"] span:first-child{flex:1!important;text-align:right!important}
-  div[style*="grid-template-columns"] span:nth-child(2){width:28px!important;text-align:center!important}
-  div[style*="grid-template-columns"] span:last-child{width:58px!important;text-align:left!important;font-weight:900!important}
-  div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-weight:700!important}
+  .rcpt-box .rsec-game-title{font-size:11px!important;font-weight:900!important}
+  /* جدول الأصناف */
+  div[style*="grid-template-columns"]{
+    display:flex!important;
+    justify-content:space-between!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    padding:3px 0!important;
+    border-bottom:1px solid #ccc!important;
+  }
+  div[style*="grid-template-columns"] span:first-child{flex:1!important;text-align:right!important;font-size:13px!important}
+  div[style*="grid-template-columns"] span:nth-child(2){width:32px!important;text-align:center!important;font-size:13px!important}
+  div[style*="grid-template-columns"] span:last-child{width:65px!important;text-align:left!important;font-weight:900!important;font-size:13px!important}
+  /* الملاحظات */
+  div[style*="b45309"],div[style*="font-style:italic"]{font-size:11px!important;color:#444!important;font-weight:700!important}
+  /* شيل direction ltr */
   span[style*="direction:ltr"]{direction:rtl!important;text-align:center!important}
+  /* شيل الزرارين من الطباعة */
   .rcpt-btns{display:none!important}
 }
   .rcpt-box *{

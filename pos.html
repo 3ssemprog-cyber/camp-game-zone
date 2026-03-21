@@ -622,9 +622,10 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
 
 function showReceipt(html){
   const CSS=`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
-@page{size:80mm auto;margin:0}
+@page{size:302px auto;margin:0;padding:0}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html,body{width:302px;margin:0;padding:0;background:#fff;font-size:12px;font-weight:700}
+html{width:302px;margin:0;padding:0;background:#fff;overflow:visible}
+body{width:302px;margin:0;padding:0;background:#fff;font-size:12px;font-weight:700;overflow:visible}
 .rh{text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000;margin-bottom:3px}
 .rh-name{font-size:16px;font-weight:900;display:block}
 .rh-sub{font-size:10px;color:#333;display:block;margin-top:2px;font-weight:700}
@@ -654,7 +655,7 @@ div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-s
 div[style*="padding:3px 8px"]{display:flex!important;justify-content:space-between!important;font-size:11px!important;padding:2px 6px!important;font-weight:700!important}
 *{color:#000!important}`;
 
-  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no,left=0,top=0');
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${CSS}</style></head><body>${html}</body></html>`);
   w.document.close();
   w.onload=function(){w.focus();w.print();};

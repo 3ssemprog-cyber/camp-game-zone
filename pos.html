@@ -362,6 +362,13 @@ import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
   collection, getDocs, getDoc, doc, setDoc, updateDoc, addDoc, serverTimestamp } from './firebase.js';
 
 let TC = {};  // loaded from Firebase timer_cats
+let RCPT_CFG = {
+  name:'Camp Game Zone', sub:'كافيه وبلايستيشن', footer:'شكراً لزيارتكم',
+  client:{date:true,time:true,cashier:true,table:true,games:true,drinks:true,unitprice:true,discount:true,paymethod:true,fontsize:12},
+  bar:{time:true,cashier:true,table:true,notes:true,qty:true,fontsize:13},
+  shift:{cash:true,elec:true,exps:true,actual:true,diff:true,net:true,fontsize:12},
+  salary:{draws:true,days:true,fontsize:12}
+};
 let TABLES=[], CATS=[], ITEMS={}, sel=null, cat='', picked=null, canDiscount=false, canDelItem=false, canReturn=false;
 
 const msStr    = ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`};
@@ -397,6 +404,20 @@ async function loadTimerCats(){
       TC[data.name]={label:data.name,id:d.id,items};
     }
   }catch(e){ TC={}; }
+}
+
+async function loadRcptConfig(){
+  try{
+    const snap=await getDoc(doc(db,'settings','receipts'));
+    if(snap.exists()){
+      const d=snap.data();
+      RCPT_CFG={...RCPT_CFG,...d};
+      if(d.client) RCPT_CFG.client={...RCPT_CFG.client,...d.client};
+      if(d.bar) RCPT_CFG.bar={...RCPT_CFG.bar,...d.bar};
+      if(d.shift) RCPT_CFG.shift={...RCPT_CFG.shift,...d.shift};
+      if(d.salary) RCPT_CFG.salary={...RCPT_CFG.salary,...d.salary};
+    }
+  }catch(e){}
 }
 
 async function loadMenu(){
@@ -609,18 +630,31 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
       </div>`;
     });
     orderItems.filter(i=>i.cm).forEach(i=>{itemsHTML+=`<div class="ri-cmt">* ${i.n}</div>`;});
-    return `<div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-type">طلب بار</div></div>
-      <div class="rm"><div class="mr"><span>الطاولة</span><span>${tname}</span></div><div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div><div class="mr"><span>الوقت</span><span>${nowT()}</span></div><div class="mr"><span>الكاشير</span><span>${cashier}</span></div></div>
-      <div class="ri"><div class="ri-head"><span>الصنف</span><span>كمية</span><span>إجمالي</span></div>${itemsHTML}</div>
-      <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>شكراً لزيارتكم<div class="rf-brand">Camp Game Zone</div></div>`;
+    const BC=RCPT_CFG.bar||{};
+    return `<div class="rh">
+      <div class="rh-name">${RCPT_CFG.name||'Camp Game Zone'}</div>
+      <div class="rh-type">طلب بار</div>
+    </div>
+    <div class="rm">
+      ${BC.table!==false?`<div class="mr"><span>الطاولة</span><span>${tname}</span></div>`:''}
+      <div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div>
+      ${BC.time!==false?`<div class="mr"><span>الوقت</span><span>${nowT()}</span></div>`:''}
+      ${BC.cashier!==false?`<div class="mr"><span>الكاشير</span><span>${cashier}</span></div>`:''}
+    </div>
+    <div class="ri">
+      <div class="ri-head"><span>الصنف</span>${BC.qty!==false?'<span>كمية</span>':''}</div>
+      ${itemsHTML}
+    </div>
+    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>${RCPT_CFG.footer||'شكراً لزيارتكم'}<div class="rf-brand">${RCPT_CFG.name||'Camp Game Zone'}</div></div>`;
   }
 
   // Client receipt
+  const CC=RCPT_CFG.client||{};
   const endedSessions=sessions.filter(s=>s.end);
   const drinks=orderItems.filter(i=>!i.cm);
   const comments=orderItems.filter(i=>i.cm);
-  const hasSessions=endedSessions.length>0;
-  const hasDrinks=drinks.length>0;
+  const hasSessions=endedSessions.length>0&&CC.games!==false;
+  const hasDrinks=drinks.length>0&&CC.drinks!==false;
 
   // Gaming section — grey bg card
   let gamingHTML='';
@@ -643,7 +677,7 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
   let drinksHTML='';
   if(hasDrinks){
     let rows='';
-    drinks.forEach(i=>{rows+=`<div style="display:grid;grid-template-columns:1fr 40px 24px 48px;gap:0;font-size:12px;padding:3px 0;border-bottom:1px solid #ddd;text-align:center;align-items:start"><span style="text-align:right">${i.n}${i.note?`<div style="font-size:9px;color:#b45309;font-style:italic;font-weight:400">${i.note}</div>`:''}</span><span style="font-size:9px;color:#555">${fmt(i.p)}</span><span>×${i.q}</span><span style="font-weight:700">${fmt(i.q*i.p)}</span></div>`;});
+    drinks.forEach(i=>{rows+=`<div style="display:grid;grid-template-columns:1fr ${CC.unitprice!==false?'40px ':''}24px 48px;gap:0;font-size:12px;padding:3px 0;border-bottom:1px solid #ddd;text-align:center;align-items:start"><span style="text-align:right">${i.n}${i.note?`<div style="font-size:9px;color:#b45309;font-style:italic;font-weight:400">${i.note}</div>`:''}</span>${CC.unitprice!==false?`<span style="font-size:9px;color:#555">${fmt(i.p)}</span>`:''}<span>×${i.q}</span><span style="font-weight:700">${fmt(i.q*i.p)}</span></div>`;});
     comments.forEach(i=>{rows+=`<div style="font-size:9px;color:#666;font-style:italic;padding:2px 0">* ${i.n}</div>`;});
     drinksHTML=`<div style="padding:5px 8px;border-bottom:2px dashed #ccc"><div style="display:grid;grid-template-columns:1fr 40px 24px 48px;gap:0;font-size:11px;font-weight:900;color:#555;padding-bottom:3px;border-bottom:1.5px solid #000;margin-bottom:2px;text-align:center"><span style="text-align:right">الصنف</span><span>سعر</span><span>ك</span><span>إجمالي</span></div>${rows}</div>`;
   }
@@ -658,14 +692,23 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
   }
 
   return `
-    <div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-sub">كافيه وبلايستيشن</div><div class="rh-type">وصل دفع</div></div>
-    <div class="rm"><div class="mr"><span>الطاولة</span><span>${tname}</span></div><div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div><div class="mr"><span>الوقت</span><span>${nowT()}</span></div><div class="mr"><span>الكاشير</span><span>${cashier}</span></div></div>
+    <div class="rh">
+      <div class="rh-name">${RCPT_CFG.name||'Camp Game Zone'}</div>
+      ${RCPT_CFG.sub?`<div class="rh-sub">${RCPT_CFG.sub}</div>`:''}
+      <div class="rh-type">وصل دفع</div>
+    </div>
+    <div class="rm">
+      ${CC.table!==false?`<div class="mr"><span>الطاولة</span><span>${tname}</span></div>`:''}
+      ${CC.date!==false?`<div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div>`:''}
+      ${CC.time!==false?`<div class="mr"><span>الوقت</span><span>${nowT()}</span></div>`:''}
+      ${CC.cashier!==false?`<div class="mr"><span>الكاشير</span><span>${cashier}</span></div>`:''}
+    </div>
     ${gamingHTML}
     ${drinksHTML}
     ${discRow}
     <div class="rtot"><span>الإجمالي</span><span>${fmt(total)}</span></div>
     ${payRows}
-    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>شكراً لزيارتكم<div class="rf-brand">Camp Game Zone</div></div>`;
+    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>${RCPT_CFG.footer||'شكراً لزيارتكم'}<div class="rf-brand">${RCPT_CFG.name||'Camp Game Zone'}</div></div>`;
 }
 
 function showReceipt(html){
@@ -1178,7 +1221,7 @@ function buildReprintReceipt(s, sessions, items){
     ${gamingHTML}${drinksHTML}${discRow}
     <div class="rtot"><span>الإجمالي</span><span>${parseFloat(total).toFixed(2)} ج</span></div>
     ${payRows}
-    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>شكراً لزيارتكم<div class="rf-brand">Camp Game Zone</div></div>`;
+    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>${RCPT_CFG.footer||'شكراً لزيارتكم'}<div class="rf-brand">${RCPT_CFG.name||'Camp Game Zone'}</div></div>`;
 }
 
 window.doTrf=function(type){
@@ -1390,6 +1433,7 @@ requireAuth(async(user,userData)=>{
   await loadTables();
   await loadTimerCats();
   await loadMenu();
+  await loadRcptConfig();
   if(CATS.length)cat=CATS[0];
   renderAll();
 });

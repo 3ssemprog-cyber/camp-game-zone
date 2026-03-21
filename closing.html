@@ -118,8 +118,8 @@
 
 <div class="main">
   <div class="tabs">
-    <div class="tab act" id="tab-shift" onclick="showTab('shift')">تقفيل الشيفت</div>
-    <div class="tab" id="tab-day" onclick="showTab('day')">تقفيل اليوم</div>
+    <div class="tab act" id="tab-shift" onclick="if(window.showTab)window.showTab('shift')">تقفيل الشيفت</div>
+    <div class="tab" id="tab-day" onclick="if(window.showTab)window.showTab('day')">تقفيل اليوم</div>
   </div>
   <div class="page act" id="p-shift"><div style="text-align:center;padding:30px;color:var(--text3)">جاري التحميل...</div></div>
   <div class="page" id="p-day"></div>
@@ -133,6 +133,19 @@
   </div>
 </div>
 
+<script>
+// exposed early so onclick attributes work before the module loads
+window.showTab = function(t) {
+  ['shift','day'].forEach(function(n) {
+    var tab = document.getElementById('tab-'+n);
+    var page = document.getElementById('p-'+n);
+    if(tab)  tab.classList.toggle('act', n===t);
+    if(page) page.classList.toggle('act', n===t);
+  });
+  // renderDay will be called by the module version once loaded
+  if (typeof window._renderDay === 'function' && t === 'day') window._renderDay();
+};
+</script>
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
   collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, serverTimestamp } from './firebase.js';
@@ -144,14 +157,8 @@ const monthKey = () => { const d=new Date(); return `${d.getFullYear()}-${String
 
 let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[], currentUser='';
 
-// ===== TABS =====
-window.showTab = function(t) {
-  ['shift','day'].forEach(n => {
-    document.getElementById('tab-'+n).classList.toggle('act', n===t);
-    document.getElementById('p-'+n).classList.toggle('act', n===t);
-  });
-  if (t==='day' && typeof renderDay === 'function') renderDay();
-};
+// expose renderDay for the early showTab script
+window._renderDay = function() { renderDay(); };
 
 // ===== LOAD CURRENT SHIFT =====
 async function loadCurrentShift() {
@@ -511,42 +518,47 @@ async function showDayReceipt(cash, elec, exp, inc, net) {
   } catch(e) {}
 
   const expsHTML = allExps.length
-    ? allExps.map(e => `<div class="rrow"><span>${e.cat||e.name||'&#8212;'}</span><span>${fmt(e.amt)}</span></div>`).join("")
-      + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(exp)}</span></div>`
-    : `<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>`;
+    ? allExps.map(function(e){ return '<div class="rrow"><span>' + (e.cat||e.name||'—') + '</span><span>' + fmt(e.amt) + '</span></div>'; }).join('')
+      + '<div class="rrow bold"><span>إجمالي المصاريف</span><span>' + fmt(exp) + '</span></div>'
+    : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>';
 
-  thermalPrint(`
-    <div class="rh">
-      <div class="rh-name">Camp Game Zone</div>
-      <div class="rh-sub">كافيه وبلايستيشن</div>
-      <div class="rh-type">تقفيل اليوم</div>
-    </div>
-    <div class="rm">
-      <div class="mr"><span>التاريخ</span><span>${firstShift?.startDate||dateStr()}</span></div>
-      <div class="mr"><span>الوقت</span><span>${nowT()}</span></div>
-      <div class="mr"><span>بواسطة</span><span>${currentUser}</span></div>
-    </div>
-    <div class="rsec">
-      <div class="rsec-t">الإيرادات</div>
-      <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
-      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
-      <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
-    </div>
-    <div class="rsec">
-      <div class="rsec-t">المصاريف</div>
-      ${expsHTML}
-    </div>
-    <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
-    <div class="rsec">
-      <div class="rsec-t">الحاضرين</div>
-      ${present.map(e=>"<div class=\"rrow\"><span>" + e.name + "</span><span>&#10003;</span></div>").join("")}
-      ${absent.map(e=>"<div class=\"rrow\"><span style=\"color:#999\">" + e.name + "</span><span style=\"color:#999\">\u063A</span></div>").join("")}
-    </div>
-    <div class="rf">
-      <div>- - - - - - - - - - -</div>
-      شكراً لزيارتكم
-      <div class="rf-brand">Camp Game Zone</div>
-    </div>`;
+  const presentHTML = present.map(function(e){ return '<div class="rrow"><span>' + e.name + '</span><span>✓</span></div>'; }).join('');
+  const absentHTML  = absent.map(function(e){ return '<div class="rrow"><span style="color:#999">' + e.name + '</span><span style="color:#999">غ</span></div>'; }).join('');
+
+  const dayHTML =
+    '<div class="rh">' +
+      '<div class="rh-name">Camp Game Zone</div>' +
+      '<div class="rh-sub">كافيه وبلايستيشن</div>' +
+      '<div class="rh-type">تقفيل اليوم</div>' +
+    '</div>' +
+    '<div class="rm">' +
+      '<div class="mr"><span>التاريخ</span><span>' + (firstShift ? firstShift.startDate : dateStr()) + '</span></div>' +
+      '<div class="mr"><span>الوقت</span><span>' + nowT() + '</span></div>' +
+      '<div class="mr"><span>بواسطة</span><span>' + currentUser + '</span></div>' +
+    '</div>' +
+    '<div class="rsec">' +
+      '<div class="rsec-t">الإيرادات</div>' +
+      '<div class="rrow"><span>نقدي</span><span>' + fmt(cash) + '</span></div>' +
+      '<div class="rrow"><span>دفع إلكتروني</span><span>' + fmt(elec) + '</span></div>' +
+      '<div class="rrow bold"><span>إجمالي</span><span>' + fmt(inc) + '</span></div>' +
+    '</div>' +
+    '<div class="rsec">' +
+      '<div class="rsec-t">المصاريف</div>' +
+      expsHTML +
+    '</div>' +
+    '<div class="rtot"><span>صافي اليوم</span><span>' + fmt(net) + '</span></div>' +
+    '<div class="rsec">' +
+      '<div class="rsec-t">الحاضرين</div>' +
+      presentHTML +
+      absentHTML +
+    '</div>' +
+    '<div class="rf">' +
+      '<div>- - - - - - - - - - -</div>' +
+      'شكراً لزيارتكم' +
+      '<div class="rf-brand">Camp Game Zone</div>' +
+    '</div>';
+
+  thermalPrint(dayHTML);
   saveAttendance();
 }
 

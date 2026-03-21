@@ -1275,23 +1275,7 @@ window.openReturn=async function(){
       }catch(e){}
     }
 
-    // 2. اخصم من توتال الشيفت
-    try{
-      let shiftKey=tKey;
-      const shiftsSnap=await getDocs(collection(db,'shifts'));
-      shiftsSnap.forEach(d=>{const s=d.data();if(s.status==='open'&&s.dayKey===tKey)shiftKey=s.shiftKey||tKey;});
-      const shiftRef=doc(db,'shift_totals',shiftKey);
-      const shiftSnap=await getDoc(shiftRef);
-      if(shiftSnap.exists()){
-        const d=shiftSnap.data();
-        await updateDoc(shiftRef,{
-          cash:Math.max(0,(d.cash||0)-total),
-          total:Math.max(0,(d.total||0)-total)
-        });
-      }
-    }catch(e){}
-
-    // 3. سجّل في returns collection
+    // 2. سجّل في returns collection (بدون خصم من توتال الشيفت)
     try{
       await addDoc(collection(db,'returns'),{
         items:items.map(i=>({name:i.n,qty:i.q,price:i.p,total:i.q*i.p})),

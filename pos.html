@@ -918,11 +918,15 @@ window.openReprintBar=async function(){
       return;
     }
 
-    body.innerHTML=rows.map(r=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${r.isLive?'#064E3B':'var(--bg3)'};border-radius:9px;margin-bottom:6px;cursor:pointer;border:0.5px solid ${r.isLive?'var(--green)':'var(--border)'}"
-           onclick="reprintBarRow('${r.id}')"
-           onmouseover="this.style.borderColor='var(--green)'"
-           onmouseout="this.style.borderColor='${r.isLive?'var(--green)':'var(--border)'}'">
+    // حفظ الـ rows في window عشان reprintBarRow يوصلها
+    window._barRows = rows;
+
+    // ارسم بـ createElement عشان onclick يشتغل في module
+    body.innerHTML='';
+    rows.forEach((r,idx)=>{
+      const div=document.createElement('div');
+      div.style.cssText=`display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${r.isLive?'#064E3B':'var(--bg3)'};border-radius:9px;margin-bottom:6px;cursor:pointer;border:0.5px solid ${r.isLive?'var(--green)':'var(--border)'}`;
+      div.innerHTML=`
         <div>
           <div style="font-size:12px;font-weight:700;color:${r.isLive?'#6EE7B7':'var(--text1)'}">
             ${r.table||'—'} ${r.isLive?'<span style="font-size:9px;background:#10B981;color:#fff;padding:1px 6px;border-radius:20px;margin-right:4px">شغالة</span>':''}
@@ -933,11 +937,10 @@ window.openReprintBar=async function(){
         <div style="text-align:left">
           <div style="font-size:11px;font-weight:700;color:#6EE7B7">${r.items.length} صنف</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px">طباعة</div>
-        </div>
-      </div>`).join('');
-
-    // حفظ الـ rows في window عشان reprintBarRow يوصلها
-    window._barRows = rows;
+        </div>`;
+      div.onclick=()=>reprintBarRow(r.id);
+      body.appendChild(div);
+    });
   }catch(e){
     const body=pop.querySelector('.pop-body');
     body.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">حصل خطأ في التحميل</div>';

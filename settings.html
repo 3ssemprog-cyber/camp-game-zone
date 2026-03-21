@@ -60,6 +60,7 @@
     <div class="pnb" onclick="showPage('tables')">الطاولات</div>
     <div class="pnb" onclick="showPage('timer')">تصنيفات التايمر</div>
     <div class="pnb" onclick="showPage('expcats')">تصنيفات المصاريف</div>
+    <div class="pnb" onclick="showPage('receipts')">إعدادات الرسيتات</div>
   </div>
 
   <!-- USERS -->
@@ -140,6 +141,71 @@
     <div id="timer-cats-list" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 
+  <!-- RECEIPTS -->
+  <div id="p-receipts" class="page">
+    <div class="card">
+      <div class="card-head">إعدادات عامة للرسيتات</div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div class="fl">اسم المحل</div><input class="finp" id="r-name" placeholder="Camp Game Zone"></div>
+          <div><div class="fl">العنوان الفرعي</div><input class="finp" id="r-sub" placeholder="كافيه وبلايستيشن"></div>
+          <div style="grid-column:1/-1"><div class="fl">رسالة الختام</div><input class="finp" id="r-footer" placeholder="شكراً لزيارتكم"></div>
+        </div>
+      </div>
+    </div>
+    <!-- تبويبات الرسيتات -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="rcpt-tabs">
+      <div class="pnb act" onclick="showRcptTab('client')" id="rt-client">رسيت العميل</div>
+      <div class="pnb" onclick="showRcptTab('bar')" id="rt-bar">رسيت البار</div>
+      <div class="pnb" onclick="showRcptTab('shift')" id="rt-shift">رسيت الشيفت</div>
+      <div class="pnb" onclick="showRcptTab('salary')" id="rt-salary">رسيت المرتب</div>
+    </div>
+    <!-- رسيت العميل -->
+    <div id="rp-client" class="card">
+      <div class="card-head">رسيت العميل</div>
+      <div class="card-body" style="gap:8px">
+        <div class="perm-row"><span class="perm-name">إظهار التاريخ</span><div class="tog on" id="rc-date" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الوقت</span><div class="tog on" id="rc-time" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الكاشير</span><div class="tog on" id="rc-cashier" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار سعر الوحدة</span><div class="tog on" id="rc-unitprice" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار سكشن الألعاب</span><div class="tog on" id="rc-games" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار سكشن المشاريب</span><div class="tog on" id="rc-drinks" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rc-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
+      </div>
+    </div>
+    <!-- رسيت البار -->
+    <div id="rp-bar" class="card" style="display:none">
+      <div class="card-head">رسيت البار</div>
+      <div class="card-body" style="gap:8px">
+        <div class="perm-row"><span class="perm-name">إظهار الوقت</span><div class="tog on" id="rb-time" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الكاشير</span><div class="tog on" id="rb-cashier" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الملاحظات</span><div class="tog on" id="rb-notes" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rb-fontsize" type="number" value="13" min="10" max="16" style="width:80px"></div>
+      </div>
+    </div>
+    <!-- رسيت الشيفت -->
+    <div id="rp-shift" class="card" style="display:none">
+      <div class="card-head">رسيت الشيفت</div>
+      <div class="card-body" style="gap:8px">
+        <div class="perm-row"><span class="perm-name">إظهار المبيعات (نقدي/إلكتروني)</span><div class="tog on" id="rs-sales" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار المصاريف</span><div class="tog on" id="rs-exps" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الخزينة الفعلية</span><div class="tog on" id="rs-actual" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار الفرق</span><div class="tog on" id="rs-diff" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rs-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
+      </div>
+    </div>
+    <!-- رسيت المرتب -->
+    <div id="rp-salary" class="card" style="display:none">
+      <div class="card-head">رسيت المرتب</div>
+      <div class="card-body" style="gap:8px">
+        <div class="perm-row"><span class="perm-name">إظهار السحوبات</span><div class="tog on" id="rsal-draws" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div class="perm-row"><span class="perm-name">إظهار عدد الأيام</span><div class="tog on" id="rsal-days" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
+        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rsal-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
+      </div>
+    </div>
+    <button class="btn-primary-full" onclick="saveRcptSettings()">حفظ إعدادات الرسيتات</button>
+  </div>
+
   <!-- EXP CATS -->
   <div id="p-expcats" class="page">
     <div class="card">
@@ -174,7 +240,7 @@
 import { db, auth, ADMIN_UID, requireAuth, logTransaction,
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, getDoc } from './firebase.js';
 
-const PAGES=['users','tables','timer','expcats'];
+const PAGES=['users','tables','timer','expcats','receipts'];
 const ROLE_BADGES={'كاشير':'r-cashier','موظف':'r-staff','مشرف':'r-admin'};
 const PERMS_LABELS={
   // نقطة البيع
@@ -345,6 +411,93 @@ window.savePerms=async function(uid){
   const u=USERS.find(x=>x.id===uid);if(!u)return;
   try{await updateDoc(doc(db,'users',uid),{permissions:u.permissions});closeOvl();}
   catch(e){alert('حصل خطأ');}
+};
+
+// ===== RECEIPT SETTINGS =====
+const RCPT_DEFAULTS = {
+  name:'Camp Game Zone', sub:'كافيه وبلايستيشن', footer:'شكراً لزيارتكم',
+  client:{date:true,time:true,cashier:true,unitprice:true,games:true,drinks:true,fontsize:12},
+  bar:{time:true,cashier:true,notes:true,fontsize:13},
+  shift:{sales:true,exps:true,actual:true,diff:true,fontsize:12},
+  salary:{draws:true,days:true,fontsize:12}
+};
+
+async function loadRcptSettings(){
+  try{
+    const snap=await getDoc(doc(db,'settings','receipts'));
+    const d=snap.exists()?{...RCPT_DEFAULTS,...snap.data()}:RCPT_DEFAULTS;
+    document.getElementById('r-name').value=d.name||'';
+    document.getElementById('r-sub').value=d.sub||'';
+    document.getElementById('r-footer').value=d.footer||'';
+    // client
+    const rc=d.client||{};
+    setTog('rc-date',rc.date!==false);setTog('rc-time',rc.time!==false);
+    setTog('rc-cashier',rc.cashier!==false);setTog('rc-unitprice',rc.unitprice!==false);
+    setTog('rc-games',rc.games!==false);setTog('rc-drinks',rc.drinks!==false);
+    document.getElementById('rc-fontsize').value=rc.fontsize||12;
+    // bar
+    const rb=d.bar||{};
+    setTog('rb-time',rb.time!==false);setTog('rb-cashier',rb.cashier!==false);
+    setTog('rb-notes',rb.notes!==false);
+    document.getElementById('rb-fontsize').value=rb.fontsize||13;
+    // shift
+    const rs=d.shift||{};
+    setTog('rs-sales',rs.sales!==false);setTog('rs-exps',rs.exps!==false);
+    setTog('rs-actual',rs.actual!==false);setTog('rs-diff',rs.diff!==false);
+    document.getElementById('rs-fontsize').value=rs.fontsize||12;
+    // salary
+    const rsal=d.salary||{};
+    setTog('rsal-draws',rsal.draws!==false);setTog('rsal-days',rsal.days!==false);
+    document.getElementById('rsal-fontsize').value=rsal.fontsize||12;
+  }catch(e){}
+}
+
+function setTog(id,val){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.toggle('on',val);el.classList.toggle('off',!val);
+}
+function getTog(id){return document.getElementById(id)?.classList.contains('on');}
+
+window.togRcpt=function(el){
+  const isOn=el.classList.contains('on');
+  el.classList.toggle('on',!isOn);el.classList.toggle('off',isOn);
+};
+
+window.showRcptTab=function(tab){
+  ['client','bar','shift','salary'].forEach(t=>{
+    document.getElementById('rp-'+t).style.display=t===tab?'flex':'none';
+    document.getElementById('rt-'+t)?.classList.toggle('act',t===tab);
+  });
+};
+
+window.saveRcptSettings=async function(){
+  const settings={
+    name:document.getElementById('r-name').value.trim()||'Camp Game Zone',
+    sub:document.getElementById('r-sub').value.trim()||'كافيه وبلايستيشن',
+    footer:document.getElementById('r-footer').value.trim()||'شكراً لزيارتكم',
+    client:{
+      date:getTog('rc-date'),time:getTog('rc-time'),cashier:getTog('rc-cashier'),
+      unitprice:getTog('rc-unitprice'),games:getTog('rc-games'),drinks:getTog('rc-drinks'),
+      fontsize:parseInt(document.getElementById('rc-fontsize').value)||12
+    },
+    bar:{
+      time:getTog('rb-time'),cashier:getTog('rb-cashier'),notes:getTog('rb-notes'),
+      fontsize:parseInt(document.getElementById('rb-fontsize').value)||13
+    },
+    shift:{
+      sales:getTog('rs-sales'),exps:getTog('rs-exps'),
+      actual:getTog('rs-actual'),diff:getTog('rs-diff'),
+      fontsize:parseInt(document.getElementById('rs-fontsize').value)||12
+    },
+    salary:{
+      draws:getTog('rsal-draws'),days:getTog('rsal-days'),
+      fontsize:parseInt(document.getElementById('rsal-fontsize').value)||12
+    }
+  };
+  try{
+    await setDoc(doc(db,'settings','receipts'),settings);
+    alert('✅ تم حفظ إعدادات الرسيتات');
+  }catch(e){alert('حصل خطأ');}
 };
 
 // ===== TABLES =====

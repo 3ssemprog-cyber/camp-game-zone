@@ -396,7 +396,14 @@ function renderTables(){
     groups[groupName].push(t);
   });
 
-  groupOrder.forEach(groupName=>{
+  // رتّب: الألعاب الأول وبعدين العادية في الآخر
+  const sortedGroups=[...groupOrder].sort((a,b)=>{
+    if(a==='عادية') return 1;
+    if(b==='عادية') return -1;
+    return 0;
+  });
+
+  sortedGroups.forEach(groupName=>{
     // عنوان المجموعة
     const lbl=document.createElement('div');
     lbl.style.cssText='grid-column:1/-1;font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:5px 2px 2px;margin-top:4px;border-top:0.5px solid var(--border)';
@@ -411,14 +418,9 @@ function renderTables(){
       d.innerHTML=`<div class="tn">${t.n}</div>`;
       d.onclick=()=>{
         sel=t;
-        // اختار التصنيف المناسب تلقائي
         const tcEntry=Object.values(TC).find(v=>v.id===t.catType);
-        if(tcEntry){
-          cat=tcEntry.label;
-        } else {
-          const firstNonGame=CATS.find(c=>!TC[c]);
-          cat=firstNonGame||CATS[0];
-        }
+        if(tcEntry){ cat=tcEntry.label; }
+        else { const firstNonGame=CATS.find(c=>!TC[c]); cat=firstNonGame||CATS[0]; }
         picked=null;resetPick();renderAll();
       };
       g.appendChild(d);

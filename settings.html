@@ -143,67 +143,73 @@
 
   <!-- RECEIPTS -->
   <div id="p-receipts" class="page">
-    <div class="card">
-      <div class="card-head">إعدادات عامة للرسيتات</div>
-      <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><div class="fl">اسم المحل</div><input class="finp" id="r-name" placeholder="Camp Game Zone"></div>
-          <div><div class="fl">العنوان الفرعي</div><input class="finp" id="r-sub" placeholder="كافيه وبلايستيشن"></div>
-          <div style="grid-column:1/-1"><div class="fl">رسالة الختام</div><input class="finp" id="r-footer" placeholder="شكراً لزيارتكم"></div>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
+
+      <!-- الكنترول -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <!-- تبويبات -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <div class="pnb act" onclick="showRcptTab('client')" id="rt-client">رسيت العميل</div>
+          <div class="pnb" onclick="showRcptTab('bar')" id="rt-bar">رسيت البار</div>
+          <div class="pnb" onclick="showRcptTab('shift')" id="rt-shift">رسيت الشيفت</div>
+          <div class="pnb" onclick="showRcptTab('salary')" id="rt-salary">رسيت المرتب</div>
+        </div>
+
+        <!-- نص المحل -->
+        <div class="card">
+          <div class="card-head">اسم المحل والنص</div>
+          <div class="card-body">
+            <div><div class="fl">اسم المحل</div><input class="finp" id="r-name" value="Camp Game Zone" oninput="renderRcpt()"></div>
+            <div><div class="fl">العنوان الفرعي</div><input class="finp" id="r-sub" value="كافيه وبلايستيشن" oninput="renderRcpt()"></div>
+            <div><div class="fl">رسالة الختام</div><input class="finp" id="r-footer" value="شكراً لزيارتكم" oninput="renderRcpt()"></div>
+          </div>
+        </div>
+
+        <!-- حقول الإظهار -->
+        <div class="card">
+          <div class="card-head">حقول الإظهار</div>
+          <div class="card-body" id="rcpt-fields" style="gap:6px"></div>
+        </div>
+
+        <!-- حجم الخط -->
+        <div class="card">
+          <div class="card-head">حجم الخط</div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:var(--text3)">صغير</span>
+              <input type="range" min="10" max="16" value="12" id="r-font" step="1"
+                oninput="document.getElementById('r-font-v').textContent=this.value+'px';checkClip();renderRcpt()"
+                style="flex:1">
+              <span style="font-size:11px;color:var(--text3)">كبير</span>
+              <span id="r-font-v" style="font-size:13px;font-weight:700;min-width:34px;color:var(--text1)">12px</span>
+            </div>
+            <div id="r-font-warn" style="display:none;padding:7px 10px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:9px;font-size:11px;color:#FCA5A5">
+              تحذير — الخط كبير، محتوى هيتقطع في الطباعة على 80mm
+            </div>
+          </div>
+        </div>
+
+        <!-- حفظ -->
+        <div id="rcpt-status" style="padding:8px 12px;background:var(--green-bg);border:0.5px solid var(--green);border-radius:9px;font-size:11px;color:#6EE7B7">
+          الرسيت يتناسب مع ورق 80mm
+        </div>
+        <button class="btn-primary-full" onclick="saveRcptSettings()">حفظ إعدادات الرسيتات</button>
+      </div>
+
+      <!-- معاينة الرسيت -->
+      <div style="position:sticky;top:16px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-align:center">معاينة مباشرة</div>
+        <div style="position:relative">
+          <div id="rcpt-paper" style="background:#fff;border:0.5px solid #ccc;border-radius:6px;font-family:'Cairo',sans-serif;color:#000;direction:rtl;width:100%;font-size:12px;overflow:hidden">
+            <div id="rcpt-inner"></div>
+          </div>
+          <div id="rcpt-clip" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(239,68,68,0.15);border:1.5px dashed #EF4444;border-radius:0 0 6px 6px;padding:5px 8px;font-size:10px;color:#EF4444;font-weight:700;text-align:center">
+            محتوى هيتقطع في الطباعة
+          </div>
         </div>
       </div>
+
     </div>
-    <!-- تبويبات الرسيتات -->
-    <div style="display:flex;gap:6px;flex-wrap:wrap" id="rcpt-tabs">
-      <div class="pnb act" onclick="showRcptTab('client')" id="rt-client">رسيت العميل</div>
-      <div class="pnb" onclick="showRcptTab('bar')" id="rt-bar">رسيت البار</div>
-      <div class="pnb" onclick="showRcptTab('shift')" id="rt-shift">رسيت الشيفت</div>
-      <div class="pnb" onclick="showRcptTab('salary')" id="rt-salary">رسيت المرتب</div>
-    </div>
-    <!-- رسيت العميل -->
-    <div id="rp-client" class="card">
-      <div class="card-head">رسيت العميل</div>
-      <div class="card-body" style="gap:8px">
-        <div class="perm-row"><span class="perm-name">إظهار التاريخ</span><div class="tog on" id="rc-date" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الوقت</span><div class="tog on" id="rc-time" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الكاشير</span><div class="tog on" id="rc-cashier" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار سعر الوحدة</span><div class="tog on" id="rc-unitprice" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار سكشن الألعاب</span><div class="tog on" id="rc-games" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار سكشن المشاريب</span><div class="tog on" id="rc-drinks" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rc-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
-      </div>
-    </div>
-    <!-- رسيت البار -->
-    <div id="rp-bar" class="card" style="display:none">
-      <div class="card-head">رسيت البار</div>
-      <div class="card-body" style="gap:8px">
-        <div class="perm-row"><span class="perm-name">إظهار الوقت</span><div class="tog on" id="rb-time" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الكاشير</span><div class="tog on" id="rb-cashier" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الملاحظات</span><div class="tog on" id="rb-notes" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rb-fontsize" type="number" value="13" min="10" max="16" style="width:80px"></div>
-      </div>
-    </div>
-    <!-- رسيت الشيفت -->
-    <div id="rp-shift" class="card" style="display:none">
-      <div class="card-head">رسيت الشيفت</div>
-      <div class="card-body" style="gap:8px">
-        <div class="perm-row"><span class="perm-name">إظهار المبيعات (نقدي/إلكتروني)</span><div class="tog on" id="rs-sales" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار المصاريف</span><div class="tog on" id="rs-exps" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الخزينة الفعلية</span><div class="tog on" id="rs-actual" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار الفرق</span><div class="tog on" id="rs-diff" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rs-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
-      </div>
-    </div>
-    <!-- رسيت المرتب -->
-    <div id="rp-salary" class="card" style="display:none">
-      <div class="card-head">رسيت المرتب</div>
-      <div class="card-body" style="gap:8px">
-        <div class="perm-row"><span class="perm-name">إظهار السحوبات</span><div class="tog on" id="rsal-draws" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div class="perm-row"><span class="perm-name">إظهار عدد الأيام</span><div class="tog on" id="rsal-days" onclick="togRcpt(this)"><div class="tog-knob"></div></div></div>
-        <div><div class="fl">حجم الخط (px)</div><input class="finp" id="rsal-fontsize" type="number" value="12" min="10" max="16" style="width:80px"></div>
-      </div>
-    </div>
-    <button class="btn-primary-full" onclick="saveRcptSettings()">حفظ إعدادات الرسيتات</button>
   </div>
 
   <!-- EXP CATS -->
@@ -449,6 +455,7 @@ async function loadRcptSettings(){
     const rsal=d.salary||{};
     setTog('rsal-draws',rsal.draws!==false);setTog('rsal-days',rsal.days!==false);
     document.getElementById('rsal-fontsize').value=rsal.fontsize||12;
+  buildRcptFields();
   }catch(e){}
 }
 
@@ -463,11 +470,219 @@ window.togRcpt=function(el){
   el.classList.toggle('on',!isOn);el.classList.toggle('off',isOn);
 };
 
+// ===== RECEIPT PREVIEW =====
+const RCPT_TABS_DEF={
+  client:[
+    {id:'rc-date',label:'التاريخ',on:true},{id:'rc-time',label:'الوقت',on:true},
+    {id:'rc-cashier',label:'الكاشير',on:true},{id:'rc-table',label:'اسم الطاولة',on:true},
+    {id:'rc-games',label:'سكشن الألعاب',on:true},{id:'rc-drinks',label:'سكشن المشاريب',on:true},
+    {id:'rc-unitprice',label:'سعر الوحدة',on:true},{id:'rc-discount',label:'الخصم',on:false},
+    {id:'rc-paymethod',label:'طريقة الدفع',on:true},
+  ],
+  bar:[
+    {id:'rb-time',label:'الوقت',on:true},{id:'rb-cashier',label:'الكاشير',on:true},
+    {id:'rb-table',label:'اسم الطاولة',on:true},{id:'rb-notes',label:'الملاحظات',on:true},
+    {id:'rb-qty',label:'الكمية',on:true},
+  ],
+  shift:[
+    {id:'rs-cash',label:'نقدي',on:true},{id:'rs-elec',label:'إلكتروني',on:true},
+    {id:'rs-exps',label:'المصاريف',on:true},{id:'rs-actual',label:'الخزينة الفعلية',on:true},
+    {id:'rs-diff',label:'فرق الخزينة',on:true},{id:'rs-net',label:'الصافي',on:true},
+  ],
+  salary:[
+    {id:'rsal-draws',label:'السحوبات',on:true},{id:'rsal-days',label:'عدد الأيام',on:true},
+  ]
+};
+
+let curRcptTab='client';
+
+function buildRcptFields(){
+  const body=document.getElementById('rcpt-fields');
+  if(!body)return;
+  body.innerHTML='';
+  (RCPT_TABS_DEF[curRcptTab]||[]).forEach(f=>{
+    const d=document.createElement('div');
+    d.className='perm-row';
+    d.innerHTML=`<span class="perm-name">${f.label}</span>
+      <div class="tog ${f.on?'on':'off'}" id="${f.id}" onclick="togRcptField(this)">
+        <div class="tog-knob"></div>
+      </div>`;
+    body.appendChild(d);
+  });
+  renderRcpt();
+}
+
+window.togRcptField=function(el){
+  el.classList.toggle('on');el.classList.toggle('off');renderRcpt();
+};
+
+function isRcptOn(id){const el=document.getElementById(id);return el?el.classList.contains('on'):true;}
+
+function checkClip(){
+  const fs=parseInt(document.getElementById('r-font')?.value||12);
+  const warn=document.getElementById('r-font-warn');
+  const status=document.getElementById('rcpt-status');
+  const clip=document.getElementById('rcpt-clip');
+  const isBig=fs>=15;
+  if(warn){warn.style.display=isBig?'block':'none';}
+  if(clip){clip.style.display=isBig?'block':'none';}
+  if(status){
+    status.style.background=isBig?'var(--red-bg)':'var(--green-bg)';
+    status.style.borderColor=isBig?'var(--red)':'var(--green)';
+    status.style.color=isBig?'#FCA5A5':'#6EE7B7';
+    status.textContent=isBig?'تحذير — الخط كبير، محتوى هيتقطع في الطباعة':'الرسيت يتناسب مع ورق 80mm';
+  }
+}
+
+window.renderRcpt=function(){
+  const paper=document.getElementById('rcpt-paper');
+  const inner=document.getElementById('rcpt-inner');
+  if(!inner)return;
+  const name=document.getElementById('r-name')?.value||'Camp Game Zone';
+  const sub=document.getElementById('r-sub')?.value||'';
+  const footer=document.getElementById('r-footer')?.value||'شكراً لزيارتكم';
+  const fs=parseInt(document.getElementById('r-font')?.value||12);
+  if(paper) paper.style.fontSize=fs+'px';
+
+  let html='';
+  if(curRcptTab==='client'){
+    const date=isRcptOn('rc-date'),time=isRcptOn('rc-time'),cashier=isRcptOn('rc-cashier'),table=isRcptOn('rc-table');
+    const games=isRcptOn('rc-games'),drinks=isRcptOn('rc-drinks'),unit=isRcptOn('rc-unitprice'),disc=isRcptOn('rc-discount'),pay=isRcptOn('rc-paymethod');
+    html=`<div style="text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000">
+      <span style="font-size:${fs+4}px;font-weight:900;display:block">${name}</span>
+      ${sub?`<span style="font-size:${fs-2}px;color:#444;display:block;margin-top:1px">${sub}</span>`:''}
+      <span style="font-size:${fs-1}px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px">وصل دفع</span>
+    </div>
+    <div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      ${table?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الطاولة</span><span>غرفة 1</span></div>`:''}
+      ${date?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">التاريخ</span><span>21/3/2026</span></div>`:''}
+      ${time?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الوقت</span><span>9:45 م</span></div>`:''}
+      ${cashier?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الكاشير</span><span>أحمد</span></div>`:''}
+    </div>
+    ${games?`<div style="background:#e8e8e8;padding:5px 6px;border-bottom:2px dashed #999">
+      <div style="font-size:${fs-3}px;font-weight:900;border-bottom:1px solid #bbb;padding-bottom:2px;margin-bottom:3px">الألعاب</div>
+      <div style="display:flex;justify-content:space-between;font-weight:900;font-size:${fs}px">
+        <div><div>PS5 سنجل</div><div style="font-size:${fs-2}px;color:#666;font-weight:700">1 ساعة 30 دقيقة</div></div>
+        <div>45.00 ج</div>
+      </div>
+    </div>`:''}
+    ${drinks?`<div style="padding:4px 6px;border-bottom:2px dashed #999">
+      <div style="display:grid;grid-template-columns:1fr ${unit?'36px ':''} 22px 42px;font-size:${fs-2}px;color:#666;font-weight:900;padding-bottom:2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center">
+        <span style="text-align:right">الصنف</span>${unit?'<span>سعر</span>':''}<span>ك</span><span>إجمالي</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr ${unit?'36px ':''} 22px 42px;padding:2px 0;border-bottom:1px solid #eee;font-weight:700;font-size:${fs}px;text-align:center">
+        <span style="text-align:right">قهوة</span>${unit?`<span style="font-size:${fs-2}px;color:#555">25</span>`:''}<span>×1</span><span style="font-weight:900">25.00</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr ${unit?'36px ':''} 22px 42px;padding:2px 0;font-weight:700;font-size:${fs}px;text-align:center">
+        <span style="text-align:right">بيبسي</span>${unit?`<span style="font-size:${fs-2}px;color:#555">7</span>`:''}<span>×2</span><span style="font-weight:900">14.00</span>
+      </div>
+    </div>`:''}
+    ${disc?`<div style="display:flex;justify-content:space-between;padding:2px 6px;font-size:${fs-1}px;border-bottom:1px dashed #999;color:#666;font-weight:700"><span>خصم</span><span>−5.00 ج</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:5px 6px;font-size:${fs+2}px"><span>الإجمالي</span><span>79.00 ج</span></div>
+    ${pay?`<div style="display:flex;justify-content:space-between;padding:3px 6px;border-bottom:1px dashed #999;font-weight:700;font-size:${fs-1}px"><span>طريقة الدفع</span><span>نقدي</span></div>`:''}
+    <div style="text-align:center;padding:6px 4px;color:#444;line-height:1.8;font-weight:700;font-size:${fs-1}px">
+      <span style="letter-spacing:3px;display:block">. . . . . . . . .</span>${footer}
+      <span style="font-size:${fs+1}px;font-weight:900;color:#000;display:block">${name}</span>
+    </div>`;
+
+  } else if(curRcptTab==='bar'){
+    const time=isRcptOn('rb-time'),cashier=isRcptOn('rb-cashier'),table=isRcptOn('rb-table');
+    const notes=isRcptOn('rb-notes'),qty=isRcptOn('rb-qty');
+    html=`<div style="text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000">
+      <span style="font-size:${fs+4}px;font-weight:900;display:block">${name}</span>
+      <span style="font-size:${fs-1}px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px">طلب بار</span>
+    </div>
+    <div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      ${table?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الطاولة</span><span>غرفة 1</span></div>`:''}
+      ${time?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الوقت</span><span>9:30 م</span></div>`:''}
+      ${cashier?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الكاشير</span><span>أحمد</span></div>`:''}
+    </div>
+    <div style="padding:5px 6px;border-bottom:2px dashed #999;font-size:${fs}px">
+      <div style="font-size:${fs-2}px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:4px">الطلبات الجديدة</div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #eee">
+        <div><div style="font-weight:900">قهوة</div>${notes?`<div style="font-size:${fs-3}px;color:#b45309;font-style:italic">سكر زيادة</div>`:''}</div>
+        ${qty?`<div style="font-weight:900">×1</div>`:''}
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:3px 0">
+        <div><div style="font-weight:900">بيبسي</div>${notes?`<div style="font-size:${fs-3}px;color:#b45309;font-style:italic">بدون ثلج</div>`:''}</div>
+        ${qty?`<div style="font-weight:900">×2</div>`:''}
+      </div>
+    </div>
+    <div style="text-align:center;padding:6px 4px;font-weight:700;font-size:${fs-1}px">
+      <span style="letter-spacing:3px;display:block">. . . . . . . . .</span>
+      <span style="font-size:${fs+1}px;font-weight:900;color:#000;display:block">${name}</span>
+    </div>`;
+
+  } else if(curRcptTab==='shift'){
+    const cash=isRcptOn('rs-cash'),elec=isRcptOn('rs-elec'),exps=isRcptOn('rs-exps');
+    const actual=isRcptOn('rs-actual'),diff=isRcptOn('rs-diff'),net=isRcptOn('rs-net');
+    html=`<div style="text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000">
+      <span style="font-size:${fs+4}px;font-weight:900;display:block">${name}</span>
+      <span style="font-size:${fs-1}px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px">تقفيل شيفت</span>
+    </div>
+    <div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الكاشير</span><span>أحمد</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">التاريخ</span><span>21/3/2026</span></div>
+    </div>
+    ${cash||elec?`<div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="font-size:${fs-2}px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px">المبيعات</div>
+      ${cash?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>نقدي</span><span>915.00 ج</span></div>`:''}
+      ${elec?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>إلكتروني</span><span>85.00 ج</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-weight:900;padding:1px 0"><span>الإجمالي</span><span>1000.00 ج</span></div>
+    </div>`:''}
+    ${exps?`<div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="font-size:${fs-2}px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px">المصاريف</div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>سحب أحمد</span><span>50.00 ج</span></div>
+    </div>`:''}
+    ${actual||diff?`<div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="font-size:${fs-2}px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px">الخزينة</div>
+      ${actual?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>المفروض</span><span>950.00 ج</span></div>`:''} 
+      ${actual?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>الفعلي</span><span>948.00 ج</span></div>`:''}
+      ${diff?`<div style="display:flex;justify-content:space-between;font-weight:900;padding:1px 0;color:#c00"><span>عجز</span><span>−2.00 ج</span></div>`:''}
+    </div>`:''}
+    ${net?`<div style="display:flex;justify-content:space-between;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:5px 6px;font-size:${fs+2}px"><span>صافي الشيفت</span><span>950.00 ج</span></div>`:''}
+    <div style="text-align:center;padding:6px 4px;font-weight:700;font-size:${fs-1}px">
+      <span style="letter-spacing:3px;display:block">. . . . . . . . .</span>${footer}
+      <span style="font-size:${fs+1}px;font-weight:900;color:#000;display:block">${name}</span>
+    </div>`;
+
+  } else {
+    const draws=isRcptOn('rsal-draws'),days=isRcptOn('rsal-days');
+    html=`<div style="text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000">
+      <span style="font-size:${fs+4}px;font-weight:900;display:block">${name}</span>
+      <span style="font-size:${fs-1}px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px">كشف مرتب</span>
+    </div>
+    <div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الموظف</span><span>أحمد محمد</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span style="color:#555">الشهر</span><span>مارس 2026</span></div>
+    </div>
+    <div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      ${days?`<div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>أيام العمل</span><span>26 يوم</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>المرتب الأساسي</span><span>3000.00 ج</span></div>
+    </div>
+    ${draws?`<div style="padding:4px 6px;border-bottom:1px dashed #999;font-size:${fs-1}px">
+      <div style="font-size:${fs-2}px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px">السحوبات</div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>سحب 15/3</span><span>200.00 ج</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;padding:1px 0"><span>سحب 22/3</span><span>150.00 ج</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:900;padding:1px 0"><span>إجمالي السحوبات</span><span>350.00 ج</span></div>
+    </div>`:''}
+    <div style="display:flex;justify-content:space-between;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:5px 6px;font-size:${fs+2}px"><span>الصافي</span><span>2650.00 ج</span></div>
+    <div style="text-align:center;padding:6px 4px;font-weight:700;font-size:${fs-1}px">
+      <span style="letter-spacing:3px;display:block">. . . . . . . . .</span>${footer}
+      <span style="font-size:${fs+1}px;font-weight:900;color:#000;display:block">${name}</span>
+    </div>`;
+  }
+
+  inner.innerHTML=html;
+  setTimeout(checkClip,50);
+};
+
 window.showRcptTab=function(tab){
+  curRcptTab=tab;
   ['client','bar','shift','salary'].forEach(t=>{
-    document.getElementById('rp-'+t).style.display=t===tab?'flex':'none';
     document.getElementById('rt-'+t)?.classList.toggle('act',t===tab);
   });
+  buildRcptFields();
 };
 
 window.saveRcptSettings=async function(){

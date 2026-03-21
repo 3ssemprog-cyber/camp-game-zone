@@ -188,7 +188,11 @@ function renderShift() {
   }
 
   const isOldShift = SHIFT.dayKey !== todayKey();
-  const canCloseShift = isAdm || (currentUserPerms?.['close.save']===true);
+  const canCloseShift   = isAdm || (currentUserPerms?.['close.save']===true);
+  const canSeeSales     = isAdm || (currentUserPerms?.['close.see_sales']===true);
+  const canActualCash   = isAdm || (currentUserPerms?.['close.actual_cash']===true);
+  const canAttend       = isAdm || (currentUserPerms?.['close.attend']===true);
+  const canSeeSales = isAdm || (currentUserPerms?.['close.see_sales']===true);
   const expAmt = totExp();
   const expRows = DATA.exps.length
     ? DATA.exps.map(e=>`<div class="exp-row"><span style="color:var(--text2)">${e.cat||e.name||'—'}</span><span style="font-weight:700;color:#FCA5A5">${fmt(e.amt)}</span></div>`).join('')
@@ -219,10 +223,11 @@ function renderShift() {
     <div class="card">
       <div class="card-body" style="gap:6px">${expRows}</div>
     </div>
+    ${canActualCash ? `
     <div class="sec-lbl">الخزينة الفعلية في الإيد</div>
     <input class="actual-inp" id="actual-inp" type="text" inputmode="decimal" placeholder="0.00"
       oninput="calcDiff(this.value)" onchange="calcDiff(this.value)">
-    <div id="diff-box"></div>
+    <div id="diff-box"></div>` : ''}
     ${isAdm?'':``}
     <div style="padding:8px 10px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
       بعد التقفيل — شيفت جديد هيفتح تلقائي
@@ -394,6 +399,7 @@ function renderDay() {
   const totalInc = totalCash+totalElec;
   const netDay = totalInc-totalExp;
 
+  const canAttend = isAdm || (currentUserPerms?.['close.attend']===true);
   const shiftsHTML = CLOSED_SHIFTS.length
     ? CLOSED_SHIFTS.map(sh=>`
       <div class="shift-sum">
@@ -418,7 +424,7 @@ function renderDay() {
       <div class="kard"><div class="kl">مصاريف اليوم</div><div class="kv r">${fmt(totalExp)}</div></div>
       <div class="kard"><div class="kl">صافي اليوم</div><div class="kv g">${fmt(netDay)}</div></div>
     </div>
-    <div class="sec-lbl">حضور الموظفين</div>
+    ${canAttend ? `<div class="sec-lbl">حضور الموظفين</div>
     <div style="display:flex;flex-direction:column;gap:6px" id="emps-list">
       ${EMPS.map((e,i)=>`
         <div class="emp-row" id="er${i}">
@@ -431,7 +437,7 @@ function renderDay() {
             <div class="ab ${!e.present?'A':''}" onclick="setAtt(${i},false)">غائب</div>
           </div>
         </div>`).join('')}
-    </div>
+    </div>` : ''}
     <div class="total-bar">
       <span style="font-size:13px;color:#93C5FD;font-weight:700">صافي اليوم</span>
       <span style="font-size:20px;font-weight:900;color:#fff">${fmt(netDay)}</span>
@@ -618,6 +624,13 @@ requireAuth(async(user,userData)=>{
   isAdm = user.uid===ADMIN_UID;
   currentUser = isAdm?'Admin':(userData?.name||user.email);
   currentUserPerms = userData?.permissions||{};
+  const canViewShift = isAdm || currentUserPerms['close.view_shift']===true;
+  const canViewDay   = isAdm || currentUserPerms['close.view_day']===true;
+  // أخفي التاب اللي مش مسموح بيه
+  if(!canViewShift) document.getElementById('tab-shift').style.display='none';
+  if(!canViewDay)   document.getElementById('tab-day').style.display='none';
+  // روّح للتاب المسموح بيه
+  if(!canViewShift && canViewDay) showTab('day');
   document.getElementById('uname').textContent=currentUser;
 
   const p = userData?.permissions||{};

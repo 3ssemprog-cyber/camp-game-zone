@@ -193,6 +193,7 @@ function renderShift() {
   const canCloseShift   = isAdm || (currentUserPerms?.['close.save']===true);
   const canSeeSales     = isAdm || (currentUserPerms?.['close.see_sales']===true);
   const canActualCash   = isAdm || (currentUserPerms?.['close.actual_cash']===true);
+  const canSeeDiff      = isAdm || (currentUserPerms?.['close.see_diff']===true);
   const canAttend       = isAdm || (currentUserPerms?.['close.attend']===true);
   const expAmt = totExp();
   const expRows = DATA.exps.length
@@ -241,10 +242,14 @@ function renderShift() {
 window.calcDiff = function(v){
   const val = parseFloat(v.replace(',','.')||0);
   actualCash = val;
+  const box = document.getElementById('diff-box');
+  if(!box) return;
+  // بس الأدمن أو من عنده صلاحية يشوف الفرق
+  const canDiff = isAdm || (currentUserPerms?.['close.see_diff']===true);
+  if(!canDiff){ box.innerHTML=''; return; }
   const exp = expected();
   const diff = val - exp;
-  const box = document.getElementById('diff-box');
-  if(!v||!box) return;
+  if(!v){ box.innerHTML=''; return; }
   if(Math.abs(diff)<0.01){
     box.innerHTML=`<div class="diff-ok"><span style="color:#6EE7B7">✓ تمام — الخزينة صح</span><span style="color:#6EE7B7;font-weight:900">${fmt(val)}</span></div>`;
   } else if(diff>0){
@@ -257,7 +262,8 @@ window.calcDiff = function(v){
 // ===== CLOSE SHIFT =====
 window.closeShift = async function() {
   if(!SHIFT) return;
-  if(!(window._perms?.canSave)) return alert('ليس لديك صلاحية تقفيل الشيفت');
+  const canClose = isAdm || (currentUserPerms?.['close.save']===true);
+  if(!canClose) return alert('ليس لديك صلاحية تقفيل الشيفت');
   const actual = parseFloat(document.getElementById('actual-inp')?.value?.replace(',','.')||0);
   if(!actual && actual!==0) return alert('اكتب الخزينة الفعلية في الإيد');
 

@@ -1269,14 +1269,16 @@ setInterval(()=>{
 window.doPrint=function(){
   const box=document.getElementById('rcpt-content');
   if(!box)return;
-  const w=window.open('','_blank','width=320,height=500,scrollbars=yes');
+  const w=window.open('','_blank','width=302,height=600,scrollbars=yes');
   w.document.write(`<!DOCTYPE html>
 <html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-@page{margin:2mm;size:80mm auto}
+@page{margin:0;size:80mm auto;padding:0}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000!important;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{width:76mm;font-size:12px;background:#fff;font-weight:700}
+html{width:80mm;margin:0;padding:0}
+body{width:80mm;max-width:80mm;font-size:12px;background:#fff;font-weight:700;margin:0;padding:0;overflow:hidden}
 
 /* ===== HEADER ===== */
 .rh{padding:10px 8px 8px;text-align:center;border-bottom:2px dashed #000}
@@ -1368,7 +1370,7 @@ div[style*="direction:ltr"]{direction:rtl!important}
 .ri-row span:last-child,
 .ri-sess span:last-child{direction:rtl!important;text-align:center!important;font-weight:900!important}
 </style></head>
-<body>`+box.innerHTML+`</body></html>`);
+<body><div style="width:80mm;margin:0;padding:0;direction:rtl;font-family:'Cairo',sans-serif">`+box.innerHTML+`</div></body></html>`);
   w.document.close();
   w.onload=function(){w.focus();w.print();};
 };

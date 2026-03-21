@@ -260,10 +260,16 @@ window.calcDiff = function(v){
 };
 
 // ===== CLOSE SHIFT =====
+let _closingShift=false;
 window.closeShift = async function() {
   if(!SHIFT) return;
+  if(_closingShift) return;
   const canClose = isAdm || (currentUserPerms?.['close.save']===true);
   if(!canClose) return alert('ليس لديك صلاحية تقفيل الشيفت');
+  _closingShift=true;
+  const btn=document.querySelector('.close-btn.btn-blue');
+  if(btn){btn.textContent='جاري التقفيل...';btn.style.opacity='0.6';btn.disabled=true;}
+  try{
   const actual = parseFloat(document.getElementById('actual-inp')?.value?.replace(',','.')||0);
   if(!actual && actual!==0) return alert('اكتب الخزينة الفعلية في الإيد');
 
@@ -332,6 +338,14 @@ window.closeShift = async function() {
 
   // رسيت الشيفت
   showShiftReceipt(cash, elec, exps, net, actual, diff, DATA.exps);
+  }catch(err){
+    alert('حصل خطأ أثناء التقفيل — حاول تاني');
+    console.error(err);
+    const btn=document.querySelector('.close-btn.btn-blue');
+    if(btn){btn.textContent='تقفيل الشيفت';btn.style.opacity='1';btn.disabled=false;}
+  }finally{
+    _closingShift=false;
+  }
 
   // فتح شيفت جديد
   const nextDayKey = todayKey();

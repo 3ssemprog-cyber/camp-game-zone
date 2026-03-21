@@ -370,6 +370,7 @@ let RCPT_CFG = {
   salary:{draws:true,days:true,fontsize:12}
 };
 let TABLES=[], CATS=[], ITEMS={}, sel=null, cat='', picked=null, canDiscount=false, canDelItem=false, canReturn=false;
+let _finishing=false; // lock عشان ميتقفلش أكتر من مرة
 
 const msStr    = ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`};
 const msPretty = ms=>{const m=Math.floor(ms/60000),h=Math.floor(m/60),rm=m%60;return h>0?`${h}س ${rm}د`:`${m}د`};
@@ -877,6 +878,12 @@ window.openClose=function(){
   };
 
   window.finishTable=async function(){
+    // منع التقفيل المتكرر لو النت معلق
+    if(_finishing) return;
+    _finishing=true;
+    const confirmBtn=document.querySelector('.btn-confirm');
+    if(confirmBtn){confirmBtn.textContent='جاري التقفيل...';confirmBtn.style.opacity='0.6';confirmBtn.style.pointerEvents='none';}
+    try{
     const sessions=[...(sel.sessions||[])];
     const order=[...(sel.order||[])];
     const cashier=document.getElementById('uname').textContent;
@@ -936,6 +943,12 @@ window.openClose=function(){
     closeOvl();
     showReceipt(rcptHTML);
     renderAll();
+    }catch(err){
+      alert('حصل خطأ أثناء التقفيل — حاول تاني');
+      console.error(err);
+    }finally{
+      _finishing=false;
+    }
   };
 };
 

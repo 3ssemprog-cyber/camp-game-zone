@@ -411,6 +411,21 @@ async function loadTimerCats(){
   }catch(e){TIMER_CATS=[];}
 }
 
+function fillTableTypeDropdown(){
+  const tsel=document.getElementById('t-type');
+  if(!tsel) return;
+  // شيل الخيارات القديمة وسيب "عادية" بس
+  tsel.innerHTML='<option value="">عادية (مشاريب بس)</option>';
+  TIMER_CATS.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id;
+    o.textContent=c.name;
+    tsel.appendChild(o);
+  });
+  // كمان حدّث renderTables عشان يظهر الأسماء صح
+  renderTables();
+}
+
 function renderTimerCats(){
   const list=document.getElementById('timer-cats-list');
   if(!TIMER_CATS.length){
@@ -519,15 +534,7 @@ requireAuth(async(user,userData)=>{
   document.getElementById('uname').textContent='Admin';
   await Promise.all([loadUsers(),loadTables(),loadTimerCats(),loadCats()]);
   renderUsers();renderTables();renderTimerCats();
-  // املأ dropdown نوع الطاولة بالتصنيفات
-  const tsel=document.getElementById('t-type');
-  if(tsel){
-    TIMER_CATS.forEach(c=>{
-      const o=document.createElement('option');
-      o.value=c.id; o.textContent=c.name;
-      tsel.appendChild(o);
-    });
-  }
+  fillTableTypeDropdown();
   renderTags(DCATS,'d-cats-wrap','delDCat');
   renderTags(MCATS,'m-cats-wrap','delMCat');
 });

@@ -511,14 +511,21 @@ function renderOrder(){
 }
 
 function renderHead(){
-  if(!sel){document.getElementById('mht').textContent='اختار طاولة';document.getElementById('mhs').textContent='اضغط على طاولة من اليسار';return;}
+  if(!sel){
+    document.getElementById('mht').textContent='اختار طاولة';
+    document.getElementById('mhs').textContent='اضغط على طاولة من اليسار';
+    // إخفاء زرار المرتجعات لو مش مختار طاولة
+    const retBtn=document.getElementById('return-btn');
+    if(retBtn) retBtn.style.display='none';
+    return;
+  }
   document.getElementById('mht').innerHTML=`${sel.n} <span class="badge ${sel.busy?'badge-red':'badge-green'}">${sel.busy?'شغالة':'فارية'}</span>`;
   document.getElementById('mhs').textContent=sel.busy?`إجمالي: ${fmt(grand(sel))}`:'فارية';
-  // إظهار/إخفاء زرار المرتجعات
+  // إظهار زرار المرتجعات بس لو عنده صلاحية
   const retBtn=document.getElementById('return-btn');
   const closeBtn=document.querySelector('.rb.close');
-  if(retBtn){retBtn.style.display=canReturn?'block':'none';}
-  if(closeBtn){closeBtn.style.display='block';}
+  if(retBtn) retBtn.style.display=canReturn?'block':'none';
+  if(closeBtn) closeBtn.style.display='block';
 }
 
 function renderAll(){renderTables();renderCats();renderTZ();renderItems();renderOrder();renderHead();updateBarNotif();}
@@ -877,84 +884,100 @@ window.openReprintBar=async function(){
   ovl.style.display='flex';
 
   try{
+    const body=pop.querySelector('.pop-body');
+    let rows=[];
+
+    // 1. الطاولات الشغالة دلوقتي — أهم حاجة
+    TABLES.filter(t=>t.busy&&(t.order||[]).filter(i=>!i.cm).length).forEach(t=>{
+      const items=(t.order||[]).filter(i=>!i.cm);
+      rows.push({
+        id:'live_'+t.id,
+        table:t.n,
+        time:'شغالة الآن',
+        items,
+        isLive:true
+      });
+    });
+
+    // 2. الطاولات المقفلة اليوم من pos_sessions
     const today=dateStr();
     const snap=await getDocs(collection(db,'pos_sessions'));
     let sessions=[];
     snap.forEach(d=>sessions.push({id:d.id,...d.data()}));
-    sessions=sessions
+    sessions
       .filter(s=>s.date===today)
       .sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0))
-      .slice(0,30);
+      .slice(0,20)
+      .forEach(s=>{
+        const items=(s.items||[]).filter(i=>!i.cm);
+        if(items.length) rows.push({id:s.id,table:s.table,time:s.time,items,isLive:false});
+      });
 
-    const body=pop.querySelector('.pop-body');
-    if(!sessions.length){
+    if(!rows.length){
       body.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">لا يوجد طلبات اليوم</div>';
       return;
     }
 
-    body.innerHTML=sessions.map(s=>{
-      const items=(s.items||[]).filter(i=>!i.cm);
-      if(!items.length) return '';
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:9px;margin-bottom:6px;cursor:pointer;border:0.5px solid var(--border)"
-           onclick="reprintBarSession('${s.id}')"
+    body.innerHTML=rows.map(r=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:${r.isLive?'#064E3B':'var(--bg3)'};border-radius:9px;margin-bottom:6px;cursor:pointer;border:0.5px solid ${r.isLive?'var(--green)':'var(--border)'}"
+           onclick="reprintBarRow('${r.id}')"
            onmouseover="this.style.borderColor='var(--green)'"
-           onmouseout="this.style.borderColor='var(--border)'">
+           onmouseout="this.style.borderColor='${r.isLive?'var(--green)':'var(--border)'}'">
         <div>
-          <div style="font-size:12px;font-weight:700;color:var(--text1)">${s.table||'—'}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${s.time||''}</div>
-          <div style="font-size:10px;color:var(--text3)">${items.map(i=>i.n||'').slice(0,3).join('، ')}${items.length>3?'...':''}</div>
+          <div style="font-size:12px;font-weight:700;color:${r.isLive?'#6EE7B7':'var(--text1)'}">
+            ${r.table||'—'} ${r.isLive?'<span style="font-size:9px;background:#10B981;color:#fff;padding:1px 6px;border-radius:20px;margin-right:4px">شغالة</span>':''}
+          </div>
+          <div style="font-size:10px;color:${r.isLive?'#6EE7B7':'var(--text3)'};margin-top:2px">${r.time||''}</div>
+          <div style="font-size:10px;color:var(--text3)">${r.items.map(i=>i.n||'').slice(0,3).join('، ')}${r.items.length>3?'...':''}</div>
         </div>
         <div style="text-align:left">
-          <div style="font-size:11px;font-weight:700;color:#6EE7B7">${items.length} صنف</div>
+          <div style="font-size:11px;font-weight:700;color:#6EE7B7">${r.items.length} صنف</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px">طباعة</div>
         </div>
-      </div>`;
-    }).filter(Boolean).join('') || '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">لا يوجد طلبات بار اليوم</div>';
+      </div>`).join('');
+
+    // حفظ الـ rows في window عشان reprintBarRow يوصلها
+    window._barRows = rows;
   }catch(e){
     const body=pop.querySelector('.pop-body');
     body.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">حصل خطأ في التحميل</div>';
   }
 };
 
-window.reprintBarSession=async function(id){
-  try{
-    const snap=await getDocs(collection(db,'pos_sessions'));
-    let s=null;
-    snap.forEach(d=>{ if(d.id===id) s={id:d.id,...d.data()}; });
-    if(!s) return alert('مش لاقي الطلب');
-    const items=(s.items||[]).filter(i=>!i.cm);
-    if(!items.length) return alert('مفيش أصناف');
+window.reprintBarRow=function(id){
+  const rows=window._barRows||[];
+  const r=rows.find(x=>x.id===id);
+  if(!r||!r.items.length) return alert('مش لاقي الطلب');
 
-    let rows='';
-    items.forEach(i=>{
-      rows+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;border-bottom:1px solid #aaa;font-size:11px;font-weight:700">
-        <div>
-          <div style="font-weight:900">${i.n||i.name||'—'}</div>
-          ${i.note?`<div style="font-size:9px;color:#333;font-style:italic;font-weight:700;margin-top:1px">${i.note}</div>`:''}
-        </div>
-        <div style="font-weight:900">×${i.q||1}</div>
-      </div>`;
-    });
-
-    const rcptHTML=`
-      <div style="padding:5px 8px;background:#f0f0f0;border-bottom:1px dashed #000;text-align:center;font-size:10px;color:#000;font-weight:900">إعادة طباعة بار</div>
-      <div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-badge">طلب بار</div></div>
-      <div class="rm">
-        <div class="mr"><span>الطاولة</span><span>${s.table||'—'}</span></div>
-        <div class="mr"><span>التاريخ</span><span>${s.date||'—'}</span></div>
-        <div class="mr"><span>الوقت</span><span>${s.time||'—'}</span></div>
-        <div class="mr"><span>الكاشير</span><span>${s.cashier||'—'}</span></div>
+  let itemRows='';
+  r.items.forEach(i=>{
+    itemRows+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;border-bottom:1px solid #aaa;font-size:11px;font-weight:700">
+      <div>
+        <div style="font-weight:900">${i.n||i.name||'—'}</div>
+        ${i.note?`<div style="font-size:9px;color:#333;font-style:italic;font-weight:700;margin-top:1px">${i.note}</div>`:''}
       </div>
-      <div style="padding:6px 8px;border-bottom:2px dashed #000">
-        <div style="font-size:10px;font-weight:900;color:#000;letter-spacing:.4px;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #000">الطلبات</div>
-        ${rows}
-      </div>
-      <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div><span class="rf-brand">Camp Game Zone</span></div>`;
+      <div style="font-weight:900">×${i.q||1}</div>
+    </div>`;
+  });
 
-    closeOvl();
-    showReceipt(rcptHTML);
-  }catch(e){ alert('حصل خطأ'); }
+  const rcptHTML=`
+    <div style="padding:5px 8px;background:#f0f0f0;border-bottom:1px dashed #000;text-align:center;font-size:10px;color:#000;font-weight:900">إعادة طباعة بار</div>
+    <div class="rh"><div class="rh-name">Camp Game Zone</div><div class="rh-badge">طلب بار</div></div>
+    <div class="rm">
+      <div class="mr"><span>الطاولة</span><span>${r.table||'—'}</span></div>
+      <div class="mr"><span>الوقت</span><span>${r.time||'—'}</span></div>
+    </div>
+    <div style="padding:6px 8px;border-bottom:2px dashed #000">
+      <div style="font-size:10px;font-weight:900;color:#000;letter-spacing:.4px;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #000">الطلبات</div>
+      ${itemRows}
+    </div>
+    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div><span class="rf-brand">Camp Game Zone</span></div>`;
+
+  closeOvl();
+  showReceipt(rcptHTML);
 };
+
+
 
 // ===== REPRINT =====
 window.openReprint=async function(){

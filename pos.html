@@ -1274,181 +1274,63 @@ setInterval(()=>{
   renderTables();
 },1000);
 
-window.thermalPrint=function(){
-  const box=document.getElementById('rcpt-content');
-  if(!box)return;
-  const html=`<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-<meta charset="UTF-8">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl}
-html,body{width:72mm;margin:0;padding:0;background:#fff}
-@page{size:72mm auto;margin:0}
-body{font-size:13px;font-weight:700;padding:0 2mm}
-/* Header */
-.rh{text-align:center;padding:6px 0;border-bottom:2px dashed #000;margin-bottom:4px}
-.rh-name{font-size:17px;font-weight:900;display:block}
-.rh-sub{font-size:10px;color:#333;display:block;margin-top:2px}
+
+function doThermalPrint(htmlContent){
+  const old=document.getElementById('thermal-iframe');
+  if(old)old.remove();
+  const iframe=document.createElement('iframe');
+  iframe.id='thermal-iframe';
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
+  document.body.appendChild(iframe);
+  const doc=iframe.contentWindow.document;
+  doc.open();
+  doc.write(htmlContent);
+  doc.close();
+  iframe.onload=function(){setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();},400);};
+}
+
+function buildPrintHTML(content){
+  return `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
+@page{size:80mm auto;margin:0}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{width:80mm;margin:0;padding:0;background:#fff;font-size:12px;font-weight:700}
+.rh{text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000;margin-bottom:3px}
+.rh-name{font-size:16px;font-weight:900;display:block}
+.rh-sub{font-size:10px;color:#333;display:block;margin-top:2px;font-weight:700}
 .rh-type,.rh-badge{font-size:11px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 10px;border-radius:20px;margin-top:4px}
-/* Meta */
-.rm{padding:4px 0;border-bottom:1px dashed #000;margin-bottom:4px}
+.rm{padding:4px 4px;border-bottom:1px dashed #999;margin-bottom:3px}
 .mr{display:flex;justify-content:space-between;font-size:11px;padding:1px 0;font-weight:700}
 .mr span:last-child{font-weight:900}
-/* Gaming */
-.rsec-game{background:#e8e8e8;padding:5px 0;border-bottom:2px dashed #000;margin-bottom:4px}
-.rsec-game-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #aaa}
-/* Drinks */
-.rsec-drinks{padding:4px 0;border-bottom:2px dashed #000;margin-bottom:4px}
-div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 0!important;border-bottom:1px solid #ddd!important}
-div[style*="grid-template-columns"] span:first-child{flex:1;text-align:right}
-div[style*="grid-template-columns"] span:nth-child(2){width:25px;text-align:center}
-div[style*="grid-template-columns"] span:last-child{width:55px;text-align:center;font-weight:900}
-/* Total */
-.rtot{display:flex;justify-content:space-between;font-size:16px;font-weight:900;border-top:3px solid #000;border-bottom:3px solid #000;padding:6px 0;margin:4px 0}
-.rtot span{color:#000!important;font-weight:900!important}
-/* Payment */
-.rp{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px dashed #000;font-weight:700}
-/* Sections */
-.rsec{padding:4px 0;border-bottom:1px dashed #000;margin-bottom:2px}
-.rsec-t{font-size:10px;font-weight:900;margin-bottom:3px;border-bottom:1px solid #ccc;padding-bottom:2px}
-.rrow{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;font-weight:700}
+.rsec-game{background:#e8e8e8;padding:5px 4px;border-bottom:2px dashed #999;margin-bottom:3px}
+.rsec-game-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #bbb}
+.rsec-drinks{padding:4px 4px;border-bottom:2px dashed #999;margin-bottom:3px}
+.rsec{padding:4px 4px;border-bottom:1px dashed #999;margin-bottom:2px}
+.rsec-t{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;border-bottom:1px solid #ccc;padding-bottom:2px}
+.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
 .rrow.bold{font-weight:900}
 .rrow.ok{color:#1a6a2a}
 .rrow.err{color:#a00}
-/* Footer */
-.rf{text-align:center;padding:6px 0;font-size:10px;color:#333;line-height:1.8;font-weight:700}
-.rf-brand{font-size:13px;font-weight:900;color:#000;display:block}
-.rf-dots{letter-spacing:3px;display:block}
-/* Notes */
-div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-style:italic;font-weight:700;font-size:10px}
-/* Discount */
-div[style*="padding:3px 8px"]{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#555;font-weight:700}
-/* All text black */
-*{color:#000!important}
-</style>
-</head>
-<body>${box.innerHTML}</body>
-</html>`;
+.rtot{display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:6px 4px;margin:3px 0}
+.rp{display:flex;justify-content:space-between;font-size:11px;padding:3px 4px;border-bottom:1px dashed #999;font-weight:700}
+.rf{text-align:center;padding:6px 4px;font-size:10px;color:#333;line-height:1.8;font-weight:700}
+.rf-brand{font-size:13px;font-weight:900;color:#000;display:block;margin-top:2px}
+.rf-dots{letter-spacing:3px;display:block;margin-bottom:3px}
+div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 4px!important;border-bottom:1px solid #ddd!important}
+div[style*="grid-template-columns"] span:first-child{flex:1!important;text-align:right!important}
+div[style*="grid-template-columns"] span:nth-child(2){width:24px!important;text-align:center!important}
+div[style*="grid-template-columns"] span:last-child{width:54px!important;text-align:left!important;font-weight:900!important}
+div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-style:italic!important;font-size:10px!important;font-weight:700!important}
+div[style*="padding:3px 8px"]{display:flex!important;justify-content:space-between!important;font-size:11px!important;padding:2px 4px!important;font-weight:700!important}
+*{color:#000!important}</style></head><body>${content}</body></html>`;
+}
 
-  const w=window.open('','_blank','width=340,height=700');
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  w.onload=function(){
-    setTimeout(function(){w.focus();w.print();},500);
-  };
-};
-
-window.doPrint=function(){
+window.thermalPrint=function(){
   const box=document.getElementById('rcpt-content');
   if(!box)return;
-  const w=window.open('','_blank','width=302,height=600,scrollbars=yes');
-  w.document.write(`<!DOCTYPE html>
-<html dir="rtl" lang="ar"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-@page{margin:0;size:80mm auto;padding:0}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000!important;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html{width:80mm;margin:0;padding:0}
-body{width:80mm;max-width:80mm;font-size:12px;background:#fff;font-weight:700;margin:0;padding:0;overflow:hidden}
-
-/* ===== HEADER ===== */
-.rh{padding:10px 8px 8px;text-align:center;border-bottom:2px dashed #000}
-.rh-name{font-size:17px;font-weight:900;display:block}
-.rh-sub{font-size:10px;color:#000;margin-top:3px;display:block;font-weight:700}
-.rh-type{font-size:11px;font-weight:900;margin-top:5px;border:2px solid #000;display:inline-block;padding:2px 12px;border-radius:20px}
-
-/* ===== META ===== */
-.rm{padding:7px 8px;border-bottom:1px dashed #000}
-.mr{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
-.mr span{color:#000!important;font-weight:700}
-.mr span:last-child{font-weight:900}
-
-/* ===== GAMING SECTION ===== */
-.rsec-game{background:#e8e8e8!important;-webkit-print-color-adjust:exact;border-bottom:2px dashed #000;padding:7px 8px}
-.rsec-game-title{font-size:10px;font-weight:900;color:#000;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #000}
-.rsec-game div{color:#000!important;font-weight:900!important;font-size:14px!important}
-.rsec-game div div{font-weight:900!important;font-size:14px!important}
-
-/* ===== DRINKS SECTION ===== */
-.rsec-drinks{padding:6px 8px;border-bottom:2px dashed #000}
-div[style*="grid-template-columns:1fr 28px 46px"]{
-  display:grid!important;
-  grid-template-columns:1fr 24px 52px!important;
-  font-size:14px!important;
-  font-weight:900!important;
-  padding:4px 0!important;
-  border-bottom:1px solid #aaa!important;
-  color:#000!important;
-}
-div[style*="grid-template-columns:1fr 28px 46px"] span{
-  color:#000!important;
-  font-weight:900!important;
-  font-size:14px!important;
-}
-div[style*="grid-template-columns:1fr 28px 46px"] span:last-child{
-  font-weight:900!important;
-  text-align:center!important;
-  font-size:14px!important;
-}
-/* هيدر الجدول */
-div[style*="grid-template-columns:1fr 28px 46px"][style*="color:#888"]{
-  font-weight:900!important;
-  border-bottom:1.5px solid #000!important;
-  font-size:10px!important;
-}
-
-/* ===== DISCOUNT ===== */
-div[style*="padding:3px 8px"]{color:#000!important;font-weight:700!important;}
-
-/* ===== TOTAL ===== */
-.rtot{padding:9px 8px!important;display:flex!important;justify-content:space-between!important;font-size:16px!important;font-weight:900!important;border-top:3px solid #000!important;border-bottom:3px solid #000!important;margin:3px 0!important;color:#000!important}
-.rtot span{color:#000!important;font-weight:900!important}
-
-/* ===== PAYMENT ===== */
-.rp{padding:5px 8px;display:flex;justify-content:space-between;font-size:11px;border-bottom:1px dashed #000;font-weight:700;color:#000!important}
-.rp span{color:#000!important;font-weight:700!important}
-
-/* ===== SECTIONS ===== */
-.rsec{padding:6px 8px;border-bottom:1px dashed #000}
-.rsec-t{font-size:10px;font-weight:900;color:#000;margin-bottom:4px;border-bottom:1.5px solid #000;padding-bottom:2px}
-.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700;color:#000!important}
-.rrow span{color:#000!important}
-.rrow.bold{font-weight:900}
-
-/* ===== FOOTER ===== */
-.rf{padding:8px;text-align:center;font-size:10px;color:#000;line-height:2;font-weight:700}
-.rf-brand{font-size:14px;font-weight:900;color:#000;display:block;margin-top:3px}
-.rf-dots{letter-spacing:3px;margin-bottom:3px;display:block}
-
-/* ===== BAR ITEMS ===== */
-div[style*="طلبات"]{color:#000!important}
-.ri-head{display:grid;grid-template-columns:1fr 24px 52px;gap:2px;font-size:10px;color:#000;padding-bottom:4px;border-bottom:1.5px solid #000;margin-bottom:3px;font-weight:900;text-align:center}
-.ri-row{display:grid;grid-template-columns:1fr 24px 52px;gap:2px;font-size:13px;padding:4px 0;border-bottom:1px solid #aaa;color:#000;font-weight:900;text-align:center}
-.ri-row span{color:#000!important;font-weight:700!important}
-.ri-row span:last-child{font-weight:900!important;text-align:center!important}
-
-/* ===== NOTES ===== */
-div[style*="b45309"],div[style*="font-style:italic"]{color:#333!important;font-weight:700!important;font-style:italic}
-
-/* ===== REPRINT BANNER ===== */
-div[style*="FFF3CD"]{background:#f0f0f0!important;color:#000!important;font-weight:900!important;-webkit-print-color-adjust:exact}
-
-/* ===== إخفاء أي عناصر بيكسر الطباعة ===== */
-.rcpt-btns{display:none!important}
-/* منع direction:ltr من يأثر على الأرقام */
-span[style*="direction:ltr"]{direction:rtl!important;text-align:center!important}
-div[style*="direction:ltr"]{direction:rtl!important}
-.ri-row span:last-child,
-.ri-sess span:last-child{direction:rtl!important;text-align:center!important;font-weight:900!important}
-</style></head>
-<body><div style="width:80mm;margin:0;padding:0;direction:rtl;font-family:'Cairo',sans-serif">`+box.innerHTML+`</div></body></html>`);
-  w.document.close();
-  w.onload=function(){w.focus();w.print();};
+  doThermalPrint(buildPrintHTML(box.innerHTML));
 };
+
+window.doPrint=window.thermalPrint;
 
 requireAuth(async(user,userData)=>{
   const isAdm=user.uid===ADMIN_UID;

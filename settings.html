@@ -43,6 +43,41 @@
 .cat-card-body{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .item-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-radius:8px;font-size:12px}
 .add-item-row{display:flex;gap:6px}
+
+/* RECEIPT EDITOR */
+.re-page{display:flex;flex-direction:column;gap:0;height:calc(100vh - 120px);margin:-20px -16px}
+.re-toolbar{background:#0F172A;border-bottom:1px solid #334155;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.re-main{display:grid;grid-template-columns:200px 1fr 200px;gap:0;flex:1;overflow:hidden}
+.re-canvas{background:#334155;display:flex;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
+.re-side{background:#0F172A;border-left:1px solid #334155;padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.re-side-r{border-left:none;border-right:1px solid #334155}
+.re-paper{background:#fff;width:260px;min-height:380px;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.4);border-radius:4px;overflow:hidden}
+.r-elem{position:relative;cursor:pointer;transition:outline .1s}
+.r-elem:hover{outline:1px dashed #3B82F6}
+.r-elem.selected{outline:2px solid #3B82F6!important}
+.r-elem .elem-handle{display:none;position:absolute;top:-1px;right:-1px;background:#3B82F6;color:#fff;font-size:8px;padding:1px 5px;border-radius:0 0 0 4px;z-index:10;white-space:nowrap}
+.r-elem.selected .elem-handle{display:block}
+.re-sec{background:#1E293B;border:0.5px solid #334155;border-radius:8px;overflow:hidden;margin-bottom:5px}
+.re-sec-h{padding:6px 10px;font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;background:#0F172A;border-bottom:0.5px solid #334155}
+.re-sec-b{padding:7px;display:flex;flex-direction:column;gap:5px}
+.re-prop-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.re-prop-label{font-size:11px;color:#94A3B8;flex:1}
+.re-prop-select{background:#0F172A;border:0.5px solid #334155;border-radius:5px;padding:3px 7px;font-size:11px;color:#F1F5F9;font-family:"Cairo",sans-serif}
+.re-align-btns{display:flex;gap:3px}
+.re-ab{padding:3px 7px;border:0.5px solid #334155;border-radius:4px;font-size:10px;cursor:pointer;background:#0F172A;color:#64748B;font-family:"Cairo",sans-serif}
+.re-ab.act{background:#1E3A8A;border-color:#3B82F6;color:#93C5FD}
+.re-no-sel{text-align:center;padding:16px 8px;color:#475569;font-size:11px}
+.re-tb-btn{padding:4px 9px;border:0.5px solid #334155;border-radius:6px;font-size:11px;cursor:pointer;background:#1E293B;color:#94A3B8;font-family:"Cairo",sans-serif;white-space:nowrap}
+.re-tb-btn:hover,.re-tb-btn.act{background:#1E3A8A;border-color:#3B82F6;color:#93C5FD}
+.re-tb-sep{width:1px;height:24px;background:#334155;margin:0 3px}
+.re-range-wrap{display:flex;align-items:center;gap:4px;width:100%}
+.re-range-wrap input[type=range]{flex:1;accent-color:#3B82F6}
+.re-range-val{font-size:11px;color:#93C5FD;min-width:28px;text-align:center}
+.re-tog{width:30px;height:17px;border-radius:9px;cursor:pointer;position:relative;flex-shrink:0;transition:background .12s}
+.re-tog.on{background:#10B981}.re-tog.off{background:#334155}
+.re-tog-k{position:absolute;top:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .12s}
+.re-tog.on .re-tog-k{left:15px}.re-tog.off .re-tog-k{left:2px}
+
 </style>
 </head>
 <body>
@@ -61,6 +96,7 @@
     <div class="pnb" onclick="showPage('timer')">تصنيفات التايمر</div>
     <div class="pnb" onclick="showPage('expcats')">تصنيفات المصاريف</div>
     <div class="pnb" onclick="showPage('receipts')">إعدادات الرسيتات</div>
+    <div class="pnb" onclick="showPage('receipts2')">محرر الرسيت</div>
   </div>
 
   <!-- USERS -->
@@ -212,6 +248,56 @@
     </div>
   </div>
 
+  <!-- RECEIPT EDITOR PAGE -->
+  <div id="p-receipts2" class="page re-page">
+    <!-- التولبار -->
+    <div class="re-toolbar">
+      <div class="re-tb-btn" onclick="reAddElem('text')">+ نص</div>
+      <div class="re-tb-btn" onclick="reAddElem('divider')">+ خط فاصل</div>
+      <div class="re-tb-btn" onclick="reAddElem('spacer')">+ مسافة</div>
+      <div class="re-tb-sep"></div>
+      <div class="re-tb-btn" onclick="reMoveUp()">↑ لفوق</div>
+      <div class="re-tb-btn" onclick="reMoveDown()">↓ لتحت</div>
+      <div class="re-tb-btn" style="color:#FCA5A5;border-color:#7f1d1d" onclick="reDeleteElem()">حذف</div>
+      <div class="re-tb-sep"></div>
+      <div class="re-tb-btn act" id="re-tab-client" onclick="reSwitchTab('client')">العميل</div>
+      <div class="re-tb-btn" id="re-tab-bar" onclick="reSwitchTab('bar')">البار</div>
+      <div class="re-tb-btn" id="re-tab-shift" onclick="reSwitchTab('shift')">الشيفت</div>
+      <div class="re-tb-btn" id="re-tab-salary" onclick="reSwitchTab('salary')">المرتب</div>
+      <div class="re-tb-sep"></div>
+      <div class="re-tb-btn" style="background:#064E3B;border-color:#10B981;color:#6EE7B7" onclick="reSaveConfig()">حفظ الإعدادات</div>
+    </div>
+    <!-- البودي -->
+    <div class="re-main">
+      <!-- قايمة العناصر -->
+      <div class="re-side re-side-r">
+        <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;padding:3px 0">العناصر</div>
+        <div class="re-sec"><div class="re-sec-h">الهيدر</div><div class="re-sec-b" id="re-list-header"></div></div>
+        <div class="re-sec"><div class="re-sec-h">البيانات</div><div class="re-sec-b" id="re-list-meta"></div></div>
+        <div class="re-sec"><div class="re-sec-h">المحتوى</div><div class="re-sec-b" id="re-list-content"></div></div>
+        <div class="re-sec"><div class="re-sec-h">التذييل</div><div class="re-sec-b" id="re-list-footer"></div></div>
+      </div>
+      <!-- الرسيت -->
+      <div class="re-canvas">
+        <div>
+          <div style="font-size:10px;color:#94A3B8;text-align:center;margin-bottom:8px;direction:rtl">معاينة مباشرة — اضغط على أي عنصر</div>
+          <div class="re-paper"><div id="re-paper-inner" style="direction:rtl"></div></div>
+        </div>
+      </div>
+      <!-- الخصائص -->
+      <div class="re-side">
+        <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;padding:3px 0">خصائص العنصر</div>
+        <div id="re-props-panel"><div class="re-no-sel">اضغط على عنصر لتعديله</div></div>
+        <div style="border-top:0.5px solid #334155;margin:6px 0;padding-top:6px">
+          <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;margin-bottom:5px">إعدادات عامة</div>
+          <div class="re-sec"><div class="re-sec-h">اسم المحل</div><div class="re-sec-b"><input class="finp" id="re-g-name" value="Camp Game Zone" oninput="reRender()" style="font-size:11px"></div></div>
+          <div class="re-sec"><div class="re-sec-h">العنوان الفرعي</div><div class="re-sec-b"><input class="finp" id="re-g-sub" value="كافيه وبلايستيشن" oninput="reRender()" style="font-size:11px"></div></div>
+          <div class="re-sec"><div class="re-sec-h">رسالة الختام</div><div class="re-sec-b"><input class="finp" id="re-g-footer" value="شكراً لزيارتكم" oninput="reRender()" style="font-size:11px"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- EXP CATS -->
   <div id="p-expcats" class="page">
     <div class="card">
@@ -246,7 +332,7 @@
 import { db, auth, ADMIN_UID, requireAuth, logTransaction,
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, getDoc } from './firebase.js';
 
-const PAGES=['users','tables','timer','expcats','receipts'];
+const PAGES=['users','tables','timer','expcats','receipts','receipts2'];
 const ROLE_BADGES={'كاشير':'r-cashier','موظف':'r-staff','مشرف':'r-admin'};
 const PERMS_LABELS={
   // نقطة البيع
@@ -896,6 +982,236 @@ window.addMCat=async function(){const v=document.getElementById('mc-inp').value.
 window.delMCat=async function(i){MCATS.splice(i,1);await saveCats();renderTags(MCATS,'m-cats-wrap','delMCat');};
 
 window.closeOvl=function(){document.getElementById('ovl').style.display='none';};
+
+// ===== RECEIPT EDITOR =====
+let reCurTab='client';
+let reSelectedId=null;
+const RE_ELEMS={
+  client:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'sub',type:'sub',label:'العنوان الفرعي',show:true,fontSize:11,fontWeight:700,align:'center'},
+    {id:'badge',type:'badge',label:'وصل دفع',show:true,fontSize:10,fontWeight:900,align:'center'},
+    {id:'div1',type:'divider',label:'خط فاصل 1',show:true,style:'dashed',thickness:2},
+    {id:'table',type:'meta',label:'الطاولة',show:true,fontSize:11,fontWeight:700},
+    {id:'date',type:'meta',label:'التاريخ',show:true,fontSize:11,fontWeight:700},
+    {id:'time',type:'meta',label:'الوقت',show:true,fontSize:11,fontWeight:700},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'div2',type:'divider',label:'خط فاصل 2',show:true,style:'dashed',thickness:1},
+    {id:'games',type:'games',label:'سكشن الألعاب',show:true,fontSize:11,fontWeight:700,bgColor:'#e8e8e8'},
+    {id:'div3',type:'divider',label:'خط فاصل 3',show:true,style:'dashed',thickness:2},
+    {id:'drinks',type:'drinks',label:'سكشن المشاريب',show:true,fontSize:11,fontWeight:700,showPrice:true},
+    {id:'div4',type:'divider',label:'خط فاصل 4',show:true,style:'dashed',thickness:2},
+    {id:'total',type:'total',label:'الإجمالي',show:true,fontSize:15,fontWeight:900},
+    {id:'div5',type:'divider',label:'خط فاصل 5',show:true,style:'solid',thickness:2},
+    {id:'pay',type:'pay',label:'طريقة الدفع',show:true,fontSize:11,fontWeight:700},
+    {id:'div6',type:'divider',label:'خط فاصل 6',show:true,style:'dashed',thickness:1},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'ftext',type:'footertext',label:'رسالة الختام',show:true,fontSize:11,fontWeight:700,align:'center'},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  bar:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'طلب بار',show:true,fontSize:10,fontWeight:900,align:'center'},
+    {id:'div1',type:'divider',label:'خط فاصل 1',show:true,style:'dashed',thickness:2},
+    {id:'table',type:'meta',label:'الطاولة',show:true,fontSize:11,fontWeight:700},
+    {id:'time',type:'meta',label:'الوقت',show:true,fontSize:11,fontWeight:700},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'div2',type:'divider',label:'خط فاصل 2',show:true,style:'dashed',thickness:2},
+    {id:'baritems',type:'baritems',label:'الطلبات',show:true,fontSize:12,fontWeight:700,showNotes:true,showQty:true},
+    {id:'div3',type:'divider',label:'خط فاصل 3',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  shift:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'تقفيل شيفت',show:true,fontSize:10,fontWeight:900,align:'center'},
+    {id:'div1',type:'divider',label:'خط فاصل 1',show:true,style:'dashed',thickness:2},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'date',type:'meta',label:'التاريخ',show:true,fontSize:11,fontWeight:700},
+    {id:'div2',type:'divider',label:'خط فاصل 2',show:true,style:'dashed',thickness:1},
+    {id:'sales',type:'shiftsales',label:'المبيعات',show:true,fontSize:11,fontWeight:700,showCash:true,showElec:true},
+    {id:'div3',type:'divider',label:'خط فاصل 3',show:true,style:'dashed',thickness:1},
+    {id:'exps',type:'shiftexps',label:'المصاريف',show:true,fontSize:11,fontWeight:700},
+    {id:'div4',type:'divider',label:'خط فاصل 4',show:true,style:'dashed',thickness:1},
+    {id:'vault',type:'shiftvault',label:'الخزينة',show:true,fontSize:11,fontWeight:700,showActual:true,showDiff:true},
+    {id:'div5',type:'divider',label:'خط فاصل 5',show:true,style:'dashed',thickness:1},
+    {id:'total',type:'total',label:'صافي الشيفت',show:true,fontSize:15,fontWeight:900},
+    {id:'div6',type:'divider',label:'خط فاصل 6',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  salary:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'كشف مرتب',show:true,fontSize:10,fontWeight:900,align:'center'},
+    {id:'div1',type:'divider',label:'خط فاصل 1',show:true,style:'dashed',thickness:2},
+    {id:'empname',type:'meta',label:'اسم الموظف',show:true,fontSize:11,fontWeight:700},
+    {id:'month',type:'meta',label:'الشهر',show:true,fontSize:11,fontWeight:700},
+    {id:'div2',type:'divider',label:'خط فاصل 2',show:true,style:'dashed',thickness:1},
+    {id:'days',type:'saldays',label:'أيام العمل',show:true,fontSize:11,fontWeight:700},
+    {id:'salary',type:'salsalary',label:'المرتب',show:true,fontSize:11,fontWeight:700},
+    {id:'div3',type:'divider',label:'خط فاصل 3',show:true,style:'dashed',thickness:1},
+    {id:'draws',type:'saldraws',label:'السحوبات',show:true,fontSize:11,fontWeight:700},
+    {id:'div4',type:'divider',label:'خط فاصل 4',show:true,style:'dashed',thickness:1},
+    {id:'total',type:'total',label:'الصافي',show:true,fontSize:15,fontWeight:900},
+    {id:'div5',type:'divider',label:'خط فاصل 5',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ]
+};
+
+function reGetVal(id,fallback=''){const el=document.getElementById(id);return el?el.value:fallback;}
+
+window.reRender=function(){
+  const paper=document.getElementById('re-paper-inner');
+  if(!paper)return;
+  const name=reGetVal('re-g-name','Camp Game Zone');
+  const sub=reGetVal('re-g-sub','');
+  const footer=reGetVal('re-g-footer','شكراً لزيارتكم');
+  const elems=RE_ELEMS[reCurTab];
+  paper.innerHTML='';
+  elems.forEach(el=>{
+    if(!el.show)return;
+    const div=document.createElement('div');
+    div.className='r-elem'+(reSelectedId===el.id?' selected':'');
+    div.dataset.id=el.id;
+    div.onclick=(e)=>{e.stopPropagation();reSelect(el.id);};
+    const handle=document.createElement('div');
+    handle.className='elem-handle';handle.textContent=el.label;
+    div.appendChild(handle);
+    const c=document.createElement('div');
+    const fs=el.fontSize||11;const fw=el.fontWeight||700;
+    switch(el.type){
+      case 'header':c.style.cssText=`text-align:${el.align||'center'};padding:8px 4px 4px`;c.innerHTML=`<span style="font-size:${fs}px;font-weight:${fw};display:block;color:#000">${name}</span>`;break;
+      case 'sub':c.style.cssText=`text-align:${el.align||'center'};padding:2px 4px`;c.innerHTML=sub?`<span style="font-size:${fs}px;font-weight:${fw};color:#444">${sub}</span>`:'<span style="font-size:10px;color:#ccc;font-style:italic">العنوان الفرعي</span>';break;
+      case 'badge':c.style.cssText='text-align:center;padding:2px 4px 6px';c.innerHTML=`<span style="font-size:${fs}px;font-weight:${fw};border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;color:#000">${el.label}</span>`;break;
+      case 'divider':c.innerHTML=`<hr style="border:none;border-top:${el.thickness||1}px ${el.style||'dashed'} #000;margin:0">`;break;
+      case 'dots':c.style.cssText='text-align:center;padding:4px;color:#000;letter-spacing:3px;font-size:12px';c.textContent='. . . . . . . . .';break;
+      case 'meta':{const v={table:'غرفة 1',date:'21/3/2026',time:'9:45 م',cashier:'أحمد',empname:'محمد علي',month:'مارس 2026'}[el.id]||el.label;c.style.cssText='padding:2px 6px';c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000;padding:1px 0"><span style="color:#555">${el.label}</span><span>${v}</span></div>`;break;}
+      case 'games':c.style.cssText=`background:${el.bgColor||'#e8e8e8'};padding:5px 6px`;c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #bbb;padding-bottom:2px;margin-bottom:3px;color:#000">الألعاب</div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000"><div><div>PS5 سنجل</div><div style="font-size:9px;color:#666">1 ساعة 30 دقيقة</div></div><div>45.00 ج</div></div>`;break;
+      case 'drinks':c.style.cssText='padding:4px 6px';c.innerHTML=`<div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''} 20px 42px;font-size:9px;color:#666;font-weight:900;padding-bottom:2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center"><span style="text-align:right">الصنف</span>${el.showPrice?'<span>سعر</span>':''}<span>ك</span><span>إجمالي</span></div><div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''} 20px 42px;font-size:${fs}px;padding:2px 0;border-bottom:1px solid #eee;font-weight:${fw};text-align:center;color:#000"><span style="text-align:right">قهوة</span>${el.showPrice?'<span style="font-size:9px;color:#555">25</span>':''}<span>×1</span><span style="font-weight:900">25.00</span></div><div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''} 20px 42px;font-size:${fs}px;padding:2px 0;font-weight:${fw};text-align:center;color:#000"><span style="text-align:right">بيبسي</span>${el.showPrice?'<span style="font-size:9px;color:#555">7</span>':''}<span>×2</span><span style="font-weight:900">14.00</span></div>`;break;
+      case 'baritems':c.style.cssText='padding:5px 6px';c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:4px;color:#000">الطلبات</div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 0;border-bottom:1px solid #eee;color:#000"><div><div>قهوة</div>${el.showNotes?'<div style="font-size:9px;color:#b45309;font-style:italic">سكر زيادة</div>':''}</div>${el.showQty?'<div style="font-weight:900">×1</div>':''}</div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 0;color:#000"><div>بيبسي</div>${el.showQty?'<div style="font-weight:900">×2</div>':''}</div>`;break;
+      case 'total':c.style.cssText=`display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:5px 6px;color:#000`;c.innerHTML=`<span>${el.label}</span><span>1284.00 ج</span>`;break;
+      case 'pay':c.style.cssText=`display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 6px;color:#000`;c.innerHTML='<span>طريقة الدفع</span><span>نقدي</span>';break;
+      case 'footertext':c.style.cssText=`text-align:${el.align||'center'};font-size:${fs}px;font-weight:${fw};padding:2px 4px;color:#444`;c.textContent=footer;break;
+      case 'brand':c.style.cssText=`text-align:${el.align||'center'};font-size:${fs}px;font-weight:${fw};padding:2px 4px 6px;color:#000`;c.textContent=name;break;
+      case 'shiftsales':c.style.cssText='padding:4px 6px';c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">المبيعات</div>${el.showCash?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>نقدي</span><span>915.00 ج</span></div>`:''} ${el.showElec?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>إلكتروني</span><span>85.00 ج</span></div>`:''}<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#000"><span>الإجمالي</span><span>1000.00 ج</span></div>`;break;
+      case 'shiftexps':c.style.cssText='padding:4px 6px';c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">المصاريف</div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>سحب أحمد</span><span>50.00 ج</span></div>`;break;
+      case 'shiftvault':c.style.cssText='padding:4px 6px';c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">الخزينة</div>${el.showActual?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>المفروض</span><span>950.00 ج</span></div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>الفعلي</span><span>948.00 ج</span></div>`:''} ${el.showDiff?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#c00"><span>عجز</span><span>−2.00 ج</span></div>`:''}`;break;
+      case 'saldays':c.style.cssText='padding:2px 6px';c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000"><span>أيام العمل</span><span>26 يوم</span></div>`;break;
+      case 'salsalary':c.style.cssText='padding:2px 6px';c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000"><span>المرتب الأساسي</span><span>3000.00 ج</span></div>`;break;
+      case 'saldraws':c.style.cssText='padding:4px 6px';c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">السحوبات</div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>سحب 15/3</span><span>200.00 ج</span></div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#000"><span>إجمالي</span><span>350.00 ج</span></div>`;break;
+    }
+    div.appendChild(c);
+    paper.appendChild(div);
+  });
+  reBuildList();
+};
+
+function reSelect(id){
+  reSelectedId=id;
+  reRender();
+  reShowProps(id);
+}
+document.addEventListener('click',()=>{if(reSelectedId){reSelectedId=null;reRender();reShowProps(null);}});
+
+function reShowProps(id){
+  const panel=document.getElementById('re-props-panel');
+  if(!panel)return;
+  if(!id){panel.innerHTML='<div class="re-no-sel">اضغط على عنصر لتعديله</div>';return;}
+  const el=RE_ELEMS[reCurTab].find(e=>e.id===id);
+  if(!el){panel.innerHTML='';return;}
+  const fs=el.fontSize||11;const fw=el.fontWeight||700;
+  let h=`<div style="font-size:11px;font-weight:700;color:#93C5FD;margin-bottom:6px;padding:5px 8px;background:#1E3A8A;border-radius:6px">${el.label}</div>`;
+  h+=`<div class="re-sec"><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">إظهار</span><div class="re-tog ${el.show?'on':'off'}" onclick="reTogShow('${id}')"><div class="re-tog-k"></div></div></div></div></div>`;
+  if(el.fontSize!==undefined){
+    h+=`<div class="re-sec"><div class="re-sec-h">الخط</div><div class="re-sec-b">
+      <div class="re-prop-row"><span class="re-prop-label">الحجم</span>
+        <div class="re-range-wrap"><input type="range" min="8" max="24" value="${fs}" step="1" oninput="reUpdateProp('${id}','fontSize',+this.value);document.getElementById('re-fs-val').textContent=this.value+'px'"><span class="re-range-val" id="re-fs-val">${fs}px</span></div>
+      </div>
+      <div class="re-prop-row"><span class="re-prop-label">السمك</span>
+        <select class="re-prop-select" onchange="reUpdateProp('${id}','fontWeight',+this.value)">
+          <option value="400" ${fw==400?'selected':''}>عادي</option>
+          <option value="700" ${fw==700?'selected':''}>عريض</option>
+          <option value="900" ${fw==900?'selected':''}>أعرض</option>
+        </select>
+      </div>
+    </div></div>`;
+  }
+  if(el.align!==undefined){
+    h+=`<div class="re-sec"><div class="re-sec-h">المحاذاة</div><div class="re-sec-b">
+      <div class="re-align-btns">
+        <div class="re-ab ${el.align==='right'?'act':''}" onclick="reUpdateProp('${id}','align','right');reShowProps('${id}')">يمين</div>
+        <div class="re-ab ${el.align==='center'?'act':''}" onclick="reUpdateProp('${id}','align','center');reShowProps('${id}')">وسط</div>
+        <div class="re-ab ${el.align==='left'?'act':''}" onclick="reUpdateProp('${id}','align','left');reShowProps('${id}')">يسار</div>
+      </div>
+    </div></div>`;
+  }
+  if(el.type==='divider'){
+    h+=`<div class="re-sec"><div class="re-sec-h">الخط الفاصل</div><div class="re-sec-b">
+      <div class="re-prop-row"><span class="re-prop-label">النوع</span><select class="re-prop-select" onchange="reUpdateProp('${id}','style',this.value)"><option value="dashed" ${el.style==='dashed'?'selected':''}>متقطع</option><option value="solid" ${el.style==='solid'?'selected':''}>صلب</option><option value="dotted" ${el.style==='dotted'?'selected':''}>نقاط</option><option value="double" ${el.style==='double'?'selected':''}>مزدوج</option></select></div>
+      <div class="re-prop-row"><span class="re-prop-label">السُمك</span><div class="re-range-wrap"><input type="range" min="1" max="4" value="${el.thickness||1}" step="1" oninput="reUpdateProp('${id}','thickness',+this.value);document.getElementById('re-th-val').textContent=this.value+'px'"><span class="re-range-val" id="re-th-val">${el.thickness||1}px</span></div></div>
+    </div></div>`;
+  }
+  if(el.type==='drinks'){h+=`<div class="re-sec"><div class="re-sec-h">المشاريب</div><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">إظهار السعر</span><div class="re-tog ${el.showPrice?'on':'off'}" onclick="reTogBool('${id}','showPrice')"><div class="re-tog-k"></div></div></div></div></div>`;}
+  if(el.type==='baritems'){h+=`<div class="re-sec"><div class="re-sec-h">البار</div><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">الملاحظات</span><div class="re-tog ${el.showNotes?'on':'off'}" onclick="reTogBool('${id}','showNotes')"><div class="re-tog-k"></div></div></div><div class="re-prop-row"><span class="re-prop-label">الكمية</span><div class="re-tog ${el.showQty?'on':'off'}" onclick="reTogBool('${id}','showQty')"><div class="re-tog-k"></div></div></div></div></div>`;}
+  if(el.type==='games'){h+=`<div class="re-sec"><div class="re-sec-h">الألعاب</div><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">لون الخلفية</span><input type="color" value="${el.bgColor||'#e8e8e8'}" onchange="reUpdateProp('${id}','bgColor',this.value)" style="width:32px;height:24px;border:0.5px solid #334155;border-radius:4px;cursor:pointer;background:none;padding:0"></div></div></div>`;}
+  if(el.type==='shiftsales'){h+=`<div class="re-sec"><div class="re-sec-h">المبيعات</div><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">نقدي</span><div class="re-tog ${el.showCash?'on':'off'}" onclick="reTogBool('${id}','showCash')"><div class="re-tog-k"></div></div></div><div class="re-prop-row"><span class="re-prop-label">إلكتروني</span><div class="re-tog ${el.showElec?'on':'off'}" onclick="reTogBool('${id}','showElec')"><div class="re-tog-k"></div></div></div></div></div>`;}
+  if(el.type==='shiftvault'){h+=`<div class="re-sec"><div class="re-sec-h">الخزينة</div><div class="re-sec-b"><div class="re-prop-row"><span class="re-prop-label">الفعلي</span><div class="re-tog ${el.showActual?'on':'off'}" onclick="reTogBool('${id}','showActual')"><div class="re-tog-k"></div></div></div><div class="re-prop-row"><span class="re-prop-label">الفرق</span><div class="re-tog ${el.showDiff?'on':'off'}" onclick="reTogBool('${id}','showDiff')"><div class="re-tog-k"></div></div></div></div></div>`;}
+  panel.innerHTML=h;
+}
+
+window.reUpdateProp=function(id,k,v){const el=RE_ELEMS[reCurTab].find(e=>e.id===id);if(el){el[k]=v;reRender();}};
+window.reTogShow=function(id){const el=RE_ELEMS[reCurTab].find(e=>e.id===id);if(el){el.show=!el.show;reRender();reShowProps(id);}};
+window.reTogBool=function(id,k){const el=RE_ELEMS[reCurTab].find(e=>e.id===id);if(el){el[k]=!el[k];reRender();reShowProps(id);}};
+
+function reBuildList(){
+  ['header','meta','content','footer'].forEach(s=>{const el=document.getElementById('re-list-'+s);if(el)el.innerHTML='';});
+  RE_ELEMS[reCurTab].forEach(e=>{
+    const s=reGetSection(e.type);
+    const c=document.getElementById('re-list-'+s);if(!c)return;
+    const d=document.createElement('div');
+    d.style.cssText=`display:flex;align-items:center;justify-content:space-between;padding:3px 6px;border-radius:5px;cursor:pointer;font-size:10px;background:${reSelectedId===e.id?'#1E3A8A':'transparent'};color:${e.show?'#F1F5F9':'#475569'};margin-bottom:2px`;
+    d.innerHTML=`<span>${e.label}</span><span style="font-size:9px">${e.show?'✓':'—'}</span>`;
+    d.onclick=()=>reSelect(e.id);
+    c.appendChild(d);
+  });
+}
+function reGetSection(t){if(['header','sub','badge'].includes(t))return 'header';if(['meta'].includes(t))return 'meta';if(['footertext','brand','dots'].includes(t))return 'footer';return 'content';}
+
+window.reMoveUp=function(){if(!reSelectedId)return;const arr=RE_ELEMS[reCurTab];const i=arr.findIndex(e=>e.id===reSelectedId);if(i>0){[arr[i-1],arr[i]]=[arr[i],arr[i-1]];reRender();}};
+window.reMoveDown=function(){if(!reSelectedId)return;const arr=RE_ELEMS[reCurTab];const i=arr.findIndex(e=>e.id===reSelectedId);if(i<arr.length-1){[arr[i],arr[i+1]]=[arr[i+1],arr[i]];reRender();}};
+window.reDeleteElem=function(){if(!reSelectedId)return;const arr=RE_ELEMS[reCurTab];const i=arr.findIndex(e=>e.id===reSelectedId);if(i>=0){arr.splice(i,1);reSelectedId=null;reRender();reShowProps(null);}};
+
+let reCustomCount=0;
+window.reAddElem=function(type){
+  reCustomCount++;
+  const id='custom_'+reCustomCount;
+  const el={id,type,label:type==='text'?'نص جديد':'خط فاصل',show:true};
+  if(type==='text'){el.fontSize=11;el.fontWeight=700;el.align='center';}
+  if(type==='divider'){el.style='dashed';el.thickness=1;}
+  RE_ELEMS[reCurTab].push(el);
+  reSelectedId=id;reRender();reShowProps(id);
+};
+
+window.reSwitchTab=function(tab){
+  reCurTab=tab;reSelectedId=null;
+  ['client','bar','shift','salary'].forEach(t=>document.getElementById('re-tab-'+t)?.classList.toggle('act',t===tab));
+  reRender();reShowProps(null);
+};
+
+window.reSaveConfig=async function(){
+  const config={
+    name:reGetVal('re-g-name','Camp Game Zone'),
+    sub:reGetVal('re-g-sub',''),
+    footer:reGetVal('re-g-footer','شكراً لزيارتكم'),
+    elems:{}
+  };
+  Object.keys(RE_ELEMS).forEach(tab=>{config.elems[tab]=RE_ELEMS[tab].map(e=>({...e}));});
+  try{
+    await setDoc(doc(db,'settings','receipts'),config);
+    alert('✅ تم حفظ إعدادات الرسيت');
+  }catch(e){alert('حصل خطأ: '+e.message);}
+};
 
 requireAuth(async(user,userData)=>{
   if(user.uid!==ADMIN_UID){alert('الإعدادات للأدمن فقط');window.location.href='dashboard.html';return;}

@@ -1259,6 +1259,11 @@ window.openReturn=async function(){
   ovl.style.display='flex';
 
   window.finishReturn=async function(total){
+    if(window._returningLock) return;
+    window._returningLock=true;
+    const btn=document.querySelector('.btn-confirm');
+    if(btn){btn.textContent='جاري...';btn.style.opacity='0.6';btn.style.pointerEvents='none';}
+    try{
     const items=(sel.order||[]).filter(i=>!i.cm);
     const today=dateStr();
     const tKey=todayKey();
@@ -1287,13 +1292,19 @@ window.openReturn=async function(){
 
     await logTransaction('تقفيل مرتجعات',`${fmt(total)} — ${items.length} صنف`,'pos');
 
-    // 4. رسيت المرتجع
+    // 3. رسيت المرتجع
     const rcptHTML=buildReturnReceipt(items,total,today);
     sel.busy=false;sel.openAt=null;sel.order=[];sel.sessions=[];
     await saveTable(sel);
     closeOvl();
     showReceipt(rcptHTML);
     renderAll();
+    }catch(err){
+      alert('حصل خطأ — حاول تاني');
+      console.error(err);
+    }finally{
+      window._returningLock=false;
+    }
   };
 };
 

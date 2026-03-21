@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — محرر الرسيت</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.re-wrap{display:grid;grid-template-columns:190px 1fr 210px;height:calc(100vh - 52px);overflow:hidden}
+/* التولبار */
+.re-toolbar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:6px 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.re-tb-btn{padding:4px 10px;border:0.5px solid var(--border);border-radius:7px;font-size:11px;cursor:pointer;background:var(--bg3);color:var(--text2);font-family:'Cairo',sans-serif;white-space:nowrap;transition:all .12s}
+.re-tb-btn:hover{border-color:var(--accent);color:#93C5FD}
+.re-tb-btn.act{background:#1E3A8A;border-color:var(--accent);color:#fff}
+.re-tb-btn.danger{color:#FCA5A5;border-color:#7f1d1d}
+.re-tb-btn.success{background:#064E3B;border-color:var(--green);color:#6EE7B7}
+.re-sep{width:1px;height:22px;background:var(--border);margin:0 3px}
+/* السايد */
+.re-side{background:var(--bg2);border-left:0.5px solid var(--border);padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.re-side-r{border-left:none;border-right:0.5px solid var(--border)}
+/* الكانفاس */
+.re-canvas{background:#1a2535;display:flex;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
+/* الرسيت */
+.re-paper{background:#fff;width:260px;min-height:380px;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+/* عناصر */
+.r-elem{position:relative;cursor:pointer}
+.r-elem:hover{outline:1px dashed #3B82F6}
+.r-elem.selected{outline:2px solid #3B82F6!important}
+.r-elem .elem-lbl{display:none;position:absolute;top:0;right:0;background:#3B82F6;color:#fff;font-size:8px;padding:1px 6px;border-radius:0 0 0 5px;z-index:10;white-space:nowrap;font-family:'Cairo',sans-serif}
+.r-elem.selected .elem-lbl{display:block}
+/* السكشنز */
+.re-sec{background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:5px}
+.re-sec-h{padding:6px 10px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;background:var(--bg2);border-bottom:0.5px solid var(--border)}
+.re-sec-b{padding:7px 9px;display:flex;flex-direction:column;gap:5px}
+/* خصائص */
+.p-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.p-lbl{font-size:11px;color:var(--text2);flex:1}
+.p-sel{background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:3px 7px;font-size:11px;color:var(--text1);font-family:'Cairo',sans-serif}
+.p-inp{background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:3px 7px;font-size:11px;color:var(--text1);font-family:'Cairo',sans-serif;width:100%}
+.p-inp:focus,.p-sel:focus{outline:none;border-color:var(--accent)}
+.p-range{display:flex;align-items:center;gap:5px;width:100%}
+.p-range input{flex:1;accent-color:#3B82F6}
+.p-val{font-size:11px;color:#93C5FD;min-width:30px;text-align:center}
+.p-aligns{display:flex;gap:3px}
+.p-al{padding:3px 8px;border:0.5px solid var(--border);border-radius:5px;font-size:10px;cursor:pointer;background:var(--bg2);color:var(--text3);font-family:'Cairo',sans-serif}
+.p-al.act{background:#1E3A8A;border-color:var(--accent);color:#93C5FD}
+/* toggle */
+.tog{width:30px;height:17px;border-radius:9px;cursor:pointer;position:relative;flex-shrink:0;transition:background .12s}
+.tog.on{background:var(--green)}.tog.off{background:var(--border)}
+.tog-k{position:absolute;top:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .12s}
+.tog.on .tog-k{left:15px}.tog.off .tog-k{left:2px}
+/* قايمة العناصر */
+.el-item{display:flex;align-items:center;justify-content:space-between;padding:4px 7px;border-radius:6px;cursor:pointer;font-size:11px;color:var(--text2);margin-bottom:2px;transition:background .1s}
+.el-item:hover{background:var(--bg2)}
+.el-item.sel{background:#1E3A8A;color:#93C5FD}
+.el-item.hidden{color:var(--text3);text-decoration:line-through}
+.no-sel{text-align:center;padding:16px 8px;color:var(--text3);font-size:11px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="logo">C</div>
+    <div class="app-name">محرر الرسيت</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <!-- تبويبات الرسيتات -->
+    <div class="re-tb-btn act" id="rt-client" onclick="switchTab('client')">رسيت العميل</div>
+    <div class="re-tb-btn" id="rt-bar" onclick="switchTab('bar')">رسيت البار</div>
+    <div class="re-tb-btn" id="rt-shift" onclick="switchTab('shift')">رسيت الشيفت</div>
+    <div class="re-tb-btn" id="rt-salary" onclick="switchTab('salary')">رسيت المرتب</div>
+    <div style="width:1px;height:22px;background:var(--border);margin:0 4px"></div>
+    <div class="re-tb-btn success" onclick="saveConfig()">حفظ الإعدادات</div>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div style="background:var(--bg2);border-bottom:0.5px solid var(--border);padding:5px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+  <div class="re-tb-btn" onclick="addElem('text')">+ نص</div>
+  <div class="re-tb-btn" onclick="addElem('divider')">+ خط فاصل</div>
+  <div class="re-tb-btn" onclick="addElem('spacer')">+ مسافة</div>
+  <div class="re-sep"></div>
+  <div class="re-tb-btn" onclick="moveUp()">↑ لفوق</div>
+  <div class="re-tb-btn" onclick="moveDown()">↓ لتحت</div>
+  <div class="re-tb-btn danger" onclick="deleteElem()">حذف</div>
+  <div class="re-sep"></div>
+  <span style="font-size:11px;color:var(--text3)">اضغط على أي عنصر في الرسيت لتعديله</span>
+</div>
+
+<div class="re-wrap">
+  <!-- قايمة العناصر -->
+  <div class="re-side re-side-r">
+    <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 2px">العناصر</div>
+    <div class="re-sec"><div class="re-sec-h">الهيدر</div><div class="re-sec-b" id="list-header"></div></div>
+    <div class="re-sec"><div class="re-sec-h">البيانات</div><div class="re-sec-b" id="list-meta"></div></div>
+    <div class="re-sec"><div class="re-sec-h">المحتوى</div><div class="re-sec-b" id="list-content"></div></div>
+    <div class="re-sec"><div class="re-sec-h">التذييل</div><div class="re-sec-b" id="list-footer"></div></div>
+  </div>
+
+  <!-- الكانفاس -->
+  <div class="re-canvas" onclick="deselect()">
+    <div>
+      <div style="font-size:10px;color:#64748B;text-align:center;margin-bottom:10px;direction:rtl">معاينة — 80mm</div>
+      <div class="re-paper"><div id="paper" style="direction:rtl"></div></div>
+    </div>
+  </div>
+
+  <!-- الخصائص -->
+  <div class="re-side">
+    <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 2px">الخصائص</div>
+    <div id="props"><div class="no-sel">اضغط على عنصر<br>في الرسيت لتعديله</div></div>
+    <div style="border-top:0.5px solid var(--border);padding-top:8px;margin-top:4px;display:flex;flex-direction:column;gap:5px">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 2px">إعدادات عامة</div>
+      <div class="re-sec">
+        <div class="re-sec-h">اسم المحل</div>
+        <div class="re-sec-b"><input class="p-inp" id="g-name" value="Camp Game Zone" oninput="render()"></div>
+      </div>
+      <div class="re-sec">
+        <div class="re-sec-h">العنوان الفرعي</div>
+        <div class="re-sec-b"><input class="p-inp" id="g-sub" value="كافيه وبلايستيشن" oninput="render()"></div>
+      </div>
+      <div class="re-sec">
+        <div class="re-sec-h">رسالة الختام</div>
+        <div class="re-sec-b"><input class="p-inp" id="g-footer" value="شكراً لزيارتكم" oninput="render()"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth, doc, getDoc, setDoc } from './firebase.js';
+
+let curTab='client', selId=null, customN=0;
+
+const DEFS={
+  client:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'sub',type:'sub',label:'العنوان الفرعي',show:true,fontSize:11,fontWeight:700,align:'center'},
+    {id:'badge',type:'badge',label:'وصل دفع',show:true,fontSize:10,fontWeight:900},
+    {id:'d1',type:'divider',label:'خط 1',show:true,style:'dashed',thickness:2},
+    {id:'table',type:'meta',label:'الطاولة',show:true,fontSize:11,fontWeight:700},
+    {id:'date',type:'meta',label:'التاريخ',show:true,fontSize:11,fontWeight:700},
+    {id:'time',type:'meta',label:'الوقت',show:true,fontSize:11,fontWeight:700},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'d2',type:'divider',label:'خط 2',show:true,style:'dashed',thickness:1},
+    {id:'games',type:'games',label:'سكشن الألعاب',show:true,fontSize:11,fontWeight:700,bgColor:'#e8e8e8'},
+    {id:'d3',type:'divider',label:'خط 3',show:true,style:'dashed',thickness:2},
+    {id:'drinks',type:'drinks',label:'سكشن المشاريب',show:true,fontSize:11,fontWeight:700,showPrice:true},
+    {id:'d4',type:'divider',label:'خط 4',show:true,style:'dashed',thickness:2},
+    {id:'total',type:'total',label:'الإجمالي',show:true,fontSize:15,fontWeight:900},
+    {id:'d5',type:'divider',label:'خط 5',show:true,style:'solid',thickness:2},
+    {id:'pay',type:'pay',label:'طريقة الدفع',show:true,fontSize:11,fontWeight:700},
+    {id:'d6',type:'divider',label:'خط 6',show:true,style:'dashed',thickness:1},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'ftext',type:'footertext',label:'رسالة الختام',show:true,fontSize:11,fontWeight:700,align:'center'},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  bar:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'طلب بار',show:true,fontSize:10,fontWeight:900},
+    {id:'d1',type:'divider',label:'خط 1',show:true,style:'dashed',thickness:2},
+    {id:'table',type:'meta',label:'الطاولة',show:true,fontSize:11,fontWeight:700},
+    {id:'time',type:'meta',label:'الوقت',show:true,fontSize:11,fontWeight:700},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'d2',type:'divider',label:'خط 2',show:true,style:'dashed',thickness:2},
+    {id:'baritems',type:'baritems',label:'الطلبات',show:true,fontSize:12,fontWeight:700,showNotes:true,showQty:true},
+    {id:'d3',type:'divider',label:'خط 3',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  shift:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'تقفيل شيفت',show:true,fontSize:10,fontWeight:900},
+    {id:'d1',type:'divider',label:'خط 1',show:true,style:'dashed',thickness:2},
+    {id:'cashier',type:'meta',label:'الكاشير',show:true,fontSize:11,fontWeight:700},
+    {id:'date',type:'meta',label:'التاريخ',show:true,fontSize:11,fontWeight:700},
+    {id:'d2',type:'divider',label:'خط 2',show:true,style:'dashed',thickness:1},
+    {id:'sales',type:'shiftsales',label:'المبيعات',show:true,fontSize:11,fontWeight:700,showCash:true,showElec:true},
+    {id:'d3',type:'divider',label:'خط 3',show:true,style:'dashed',thickness:1},
+    {id:'exps',type:'shiftexps',label:'المصاريف',show:true,fontSize:11,fontWeight:700},
+    {id:'d4',type:'divider',label:'خط 4',show:true,style:'dashed',thickness:1},
+    {id:'vault',type:'shiftvault',label:'الخزينة',show:true,fontSize:11,fontWeight:700,showActual:true,showDiff:true},
+    {id:'d5',type:'divider',label:'خط 5',show:true,style:'dashed',thickness:1},
+    {id:'total',type:'total',label:'صافي الشيفت',show:true,fontSize:15,fontWeight:900},
+    {id:'d6',type:'divider',label:'خط 6',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ],
+  salary:[
+    {id:'hdr',type:'header',label:'اسم المحل',show:true,fontSize:17,fontWeight:900,align:'center'},
+    {id:'badge',type:'badge',label:'كشف مرتب',show:true,fontSize:10,fontWeight:900},
+    {id:'d1',type:'divider',label:'خط 1',show:true,style:'dashed',thickness:2},
+    {id:'empname',type:'meta',label:'اسم الموظف',show:true,fontSize:11,fontWeight:700},
+    {id:'month',type:'meta',label:'الشهر',show:true,fontSize:11,fontWeight:700},
+    {id:'d2',type:'divider',label:'خط 2',show:true,style:'dashed',thickness:1},
+    {id:'days',type:'saldays',label:'أيام العمل',show:true,fontSize:11,fontWeight:700},
+    {id:'salary',type:'salsalary',label:'المرتب',show:true,fontSize:11,fontWeight:700},
+    {id:'d3',type:'divider',label:'خط 3',show:true,style:'dashed',thickness:1},
+    {id:'draws',type:'saldraws',label:'السحوبات',show:true,fontSize:11,fontWeight:700},
+    {id:'d4',type:'divider',label:'خط 4',show:true,style:'dashed',thickness:1},
+    {id:'total',type:'total',label:'الصافي',show:true,fontSize:15,fontWeight:900},
+    {id:'d5',type:'divider',label:'خط 5',show:true,style:'dashed',thickness:2},
+    {id:'fdots',type:'dots',label:'نقاط الختام',show:true},
+    {id:'fbrand',type:'brand',label:'اسم المحل (ختام)',show:true,fontSize:13,fontWeight:900,align:'center'},
+  ]
+};
+
+const ELEMS=JSON.parse(JSON.stringify(DEFS));
+
+function gv(id,fb=''){const e=document.getElementById(id);return e?e.value:fb;}
+function sel(){return ELEMS[curTab].find(e=>e.id===selId);}
+
+// ===== RENDER =====
+function render(){
+  const paper=document.getElementById('paper');
+  if(!paper)return;
+  const name=gv('g-name','Camp Game Zone');
+  const sub=gv('g-sub','');
+  const footer=gv('g-footer','شكراً لزيارتكم');
+  paper.innerHTML='';
+
+  ELEMS[curTab].forEach(el=>{
+    if(!el.show)return;
+    const wrap=document.createElement('div');
+    wrap.className='r-elem'+(selId===el.id?' selected':'');
+    wrap.dataset.id=el.id;
+    wrap.onclick=(e)=>{e.stopPropagation();selectEl(el.id);};
+    const lbl=document.createElement('div');
+    lbl.className='elem-lbl';lbl.textContent=el.label;
+    wrap.appendChild(lbl);
+    const c=document.createElement('div');
+    const fs=el.fontSize||11,fw=el.fontWeight||700;
+
+    switch(el.type){
+      case 'header':
+        c.style.cssText=`text-align:${el.align||'center'};padding:8px 4px 4px`;
+        c.innerHTML=`<span style="font-size:${fs}px;font-weight:${fw};display:block;color:#000">${name}</span>`;
+        break;
+      case 'sub':
+        c.style.cssText=`text-align:${el.align||'center'};padding:2px 4px`;
+        c.innerHTML=sub?`<span style="font-size:${fs}px;font-weight:${fw};color:#444">${sub}</span>`:`<span style="font-size:10px;color:#bbb;font-style:italic">العنوان الفرعي</span>`;
+        break;
+      case 'badge':
+        c.style.cssText='text-align:center;padding:3px 4px 7px';
+        c.innerHTML=`<span style="font-size:${fs}px;font-weight:${fw};border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;color:#000">${el.label}</span>`;
+        break;
+      case 'divider':
+        c.innerHTML=`<hr style="border:none;border-top:${el.thickness||1}px ${el.style||'dashed'} #000;margin:0">`;
+        break;
+      case 'dots':
+        c.style.cssText='text-align:center;padding:5px 4px;color:#000;letter-spacing:3px;font-size:11px';
+        c.textContent='. . . . . . . . .';
+        break;
+      case 'meta':{
+        const vals={table:'غرفة 1',date:'21/3/2026',time:'9:45 م',cashier:'أحمد',empname:'محمد علي',month:'مارس 2026'};
+        c.style.cssText='padding:2px 6px';
+        c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000;padding:1px 0"><span style="color:#555">${el.label}</span><span>${vals[el.id]||'—'}</span></div>`;
+        break;}
+      case 'games':
+        c.style.cssText=`background:${el.bgColor||'#e8e8e8'};padding:5px 6px`;
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #bbb;padding-bottom:2px;margin-bottom:3px;color:#000">الألعاب</div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000">
+            <div><div>PS5 سنجل</div><div style="font-size:9px;color:#666">1 ساعة 30 دقيقة</div></div><div>45.00 ج</div></div>`;
+        break;
+      case 'drinks':
+        c.style.cssText='padding:4px 6px';
+        c.innerHTML=`<div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''}20px 42px;font-size:9px;color:#666;font-weight:900;padding-bottom:2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center"><span style="text-align:right">الصنف</span>${el.showPrice?'<span>سعر</span>':''}<span>ك</span><span>إجمالي</span></div>
+          <div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''}20px 42px;font-size:${fs}px;padding:2px 0;border-bottom:1px solid #eee;font-weight:${fw};text-align:center;color:#000"><span style="text-align:right">قهوة</span>${el.showPrice?'<span style="font-size:9px;color:#555">25</span>':''}<span>×1</span><span style="font-weight:900">25.00</span></div>
+          <div style="display:grid;grid-template-columns:1fr ${el.showPrice?'36px ':''}20px 42px;font-size:${fs}px;padding:2px 0;font-weight:${fw};text-align:center;color:#000"><span style="text-align:right">بيبسي</span>${el.showPrice?'<span style="font-size:9px;color:#555">7</span>':''}<span>×2</span><span style="font-weight:900">14.00</span></div>`;
+        break;
+      case 'baritems':
+        c.style.cssText='padding:5px 6px';
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:4px;color:#000">الطلبات</div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 0;border-bottom:1px solid #eee;color:#000"><div><div>قهوة</div>${el.showNotes?'<div style="font-size:9px;color:#b45309;font-style:italic">سكر زيادة</div>':''}</div>${el.showQty?'<div style="font-weight:900">×1</div>':''}</div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 0;color:#000"><div>بيبسي</div>${el.showQty?'<div style="font-weight:900">×2</div>':''}</div>`;
+        break;
+      case 'total':
+        c.style.cssText=`display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:6px 6px;color:#000`;
+        c.innerHTML=`<span>${el.label}</span><span>1284.00 ج</span>`;
+        break;
+      case 'pay':
+        c.style.cssText=`display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:3px 6px;color:#000`;
+        c.innerHTML='<span>طريقة الدفع</span><span>نقدي</span>';
+        break;
+      case 'footertext':
+        c.style.cssText=`text-align:${el.align||'center'};font-size:${fs}px;font-weight:${fw};padding:3px 4px;color:#444`;
+        c.textContent=footer;
+        break;
+      case 'brand':
+        c.style.cssText=`text-align:${el.align||'center'};font-size:${fs}px;font-weight:${fw};padding:3px 4px 7px;color:#000`;
+        c.textContent=name;
+        break;
+      case 'shiftsales':
+        c.style.cssText='padding:4px 6px';
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">المبيعات</div>
+          ${el.showCash?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>نقدي</span><span>915.00 ج</span></div>`:''}
+          ${el.showElec?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>إلكتروني</span><span>85.00 ج</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#000"><span>الإجمالي</span><span>1000.00 ج</span></div>`;
+        break;
+      case 'shiftexps':
+        c.style.cssText='padding:4px 6px';
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">المصاريف</div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>سحب أحمد</span><span>50.00 ج</span></div>`;
+        break;
+      case 'shiftvault':
+        c.style.cssText='padding:4px 6px';
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">الخزينة</div>
+          ${el.showActual?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>المفروض</span><span>950.00 ج</span></div><div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>الفعلي</span><span>948.00 ج</span></div>`:''}
+          ${el.showDiff?`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#c00"><span>عجز</span><span>−2.00 ج</span></div>`:''}`;
+        break;
+      case 'saldays':
+        c.style.cssText='padding:2px 6px';
+        c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000"><span>أيام العمل</span><span>26 يوم</span></div>`;
+        break;
+      case 'salsalary':
+        c.style.cssText='padding:2px 6px';
+        c.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};color:#000"><span>المرتب الأساسي</span><span>3000.00 ج</span></div>`;
+        break;
+      case 'saldraws':
+        c.style.cssText='padding:4px 6px';
+        c.innerHTML=`<div style="font-size:9px;font-weight:900;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:3px;color:#000">السحوبات</div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:${fw};padding:1px 0;color:#000"><span>سحب 15/3</span><span>200.00 ج</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:${fs}px;font-weight:900;padding:1px 0;color:#000"><span>إجمالي السحوبات</span><span>350.00 ج</span></div>`;
+        break;
+      case 'text':
+        c.style.cssText=`text-align:${el.align||'center'};font-size:${fs}px;font-weight:${fw};padding:3px 6px;color:#000`;
+        c.textContent=el.text||'نص جديد';
+        break;
+      case 'spacer':
+        c.style.cssText=`height:${el.height||8}px`;
+        break;
+    }
+    wrap.appendChild(c);
+    paper.appendChild(wrap);
+  });
+  buildList();
+}
+
+// ===== SELECT =====
+function selectEl(id){selId=id;render();showProps();}
+function deselect(){selId=null;render();showProps();}
+
+// ===== PROPS =====
+function showProps(){
+  const panel=document.getElementById('props');
+  if(!panel)return;
+  const el=sel();
+  if(!el){panel.innerHTML='<div class="no-sel">اضغط على عنصر<br>في الرسيت لتعديله</div>';return;}
+  const fs=el.fontSize||11,fw=el.fontWeight||700;
+
+  let h=`<div style="font-size:11px;font-weight:700;color:#93C5FD;padding:6px 8px;background:#1E3A8A;border-radius:7px;margin-bottom:6px">${el.label}</div>`;
+
+  // إظهار
+  h+=`<div class="re-sec"><div class="re-sec-b"><div class="p-row"><span class="p-lbl">إظهار العنصر</span><div class="tog ${el.show?'on':'off'}" onclick="togProp('show')"><div class="tog-k"></div></div></div></div></div>`;
+
+  // خط
+  if(el.fontSize!==undefined){
+    h+=`<div class="re-sec"><div class="re-sec-h">الخط</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">الحجم</span>
+        <div class="p-range"><input type="range" min="8" max="24" value="${fs}" step="1" oninput="setProp('fontSize',+this.value);document.getElementById('p-fs').textContent=this.value+'px'"><span class="p-val" id="p-fs">${fs}px</span></div>
+      </div>
+      <div class="p-row"><span class="p-lbl">السُمك</span>
+        <select class="p-sel" onchange="setProp('fontWeight',+this.value)">
+          <option value="400" ${fw==400?'selected':''}>عادي</option>
+          <option value="700" ${fw==700?'selected':''}>عريض</option>
+          <option value="900" ${fw==900?'selected':''}>أعرض</option>
+        </select>
+      </div>
+    </div></div>`;
+  }
+
+  // محاذاة
+  if(el.align!==undefined){
+    h+=`<div class="re-sec"><div class="re-sec-h">المحاذاة</div><div class="re-sec-b">
+      <div class="p-aligns">
+        <div class="p-al ${el.align==='right'?'act':''}" onclick="setProp('align','right');showProps()">يمين</div>
+        <div class="p-al ${el.align==='center'?'act':''}" onclick="setProp('align','center');showProps()">وسط</div>
+        <div class="p-al ${el.align==='left'?'act':''}" onclick="setProp('align','left');showProps()">يسار</div>
+      </div>
+    </div></div>`;
+  }
+
+  // نص مخصص
+  if(el.type==='text'){
+    h+=`<div class="re-sec"><div class="re-sec-h">النص</div><div class="re-sec-b">
+      <input class="p-inp" value="${el.text||''}" oninput="setProp('text',this.value)" placeholder="اكتب النص هنا">
+    </div></div>`;
+  }
+
+  // خط فاصل
+  if(el.type==='divider'){
+    h+=`<div class="re-sec"><div class="re-sec-h">الخط الفاصل</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">النوع</span>
+        <select class="p-sel" onchange="setProp('style',this.value)">
+          <option value="dashed" ${el.style==='dashed'?'selected':''}>متقطع</option>
+          <option value="solid" ${el.style==='solid'?'selected':''}>صلب</option>
+          <option value="dotted" ${el.style==='dotted'?'selected':''}>نقاط</option>
+          <option value="double" ${el.style==='double'?'selected':''}>مزدوج</option>
+        </select>
+      </div>
+      <div class="p-row"><span class="p-lbl">السُمك</span>
+        <div class="p-range"><input type="range" min="1" max="5" value="${el.thickness||1}" step="1" oninput="setProp('thickness',+this.value);document.getElementById('p-th').textContent=this.value+'px'"><span class="p-val" id="p-th">${el.thickness||1}px</span></div>
+      </div>
+    </div></div>`;
+  }
+
+  // مسافة
+  if(el.type==='spacer'){
+    h+=`<div class="re-sec"><div class="re-sec-h">المسافة</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">الارتفاع</span>
+        <div class="p-range"><input type="range" min="2" max="30" value="${el.height||8}" step="1" oninput="setProp('height',+this.value);document.getElementById('p-sp').textContent=this.value+'px'"><span class="p-val" id="p-sp">${el.height||8}px</span></div>
+      </div>
+    </div></div>`;
+  }
+
+  // ألعاب
+  if(el.type==='games'){
+    h+=`<div class="re-sec"><div class="re-sec-h">الألعاب</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">لون الخلفية</span>
+        <input type="color" value="${el.bgColor||'#e8e8e8'}" onchange="setProp('bgColor',this.value)" style="width:32px;height:24px;border:0.5px solid var(--border);border-radius:4px;cursor:pointer;padding:0">
+      </div>
+    </div></div>`;
+  }
+
+  // مشاريب
+  if(el.type==='drinks'){
+    h+=`<div class="re-sec"><div class="re-sec-h">المشاريب</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">إظهار السعر</span><div class="tog ${el.showPrice?'on':'off'}" onclick="togProp('showPrice')"><div class="tog-k"></div></div></div>
+    </div></div>`;
+  }
+
+  // بار
+  if(el.type==='baritems'){
+    h+=`<div class="re-sec"><div class="re-sec-h">البار</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">الملاحظات</span><div class="tog ${el.showNotes?'on':'off'}" onclick="togProp('showNotes')"><div class="tog-k"></div></div></div>
+      <div class="p-row"><span class="p-lbl">الكمية</span><div class="tog ${el.showQty?'on':'off'}" onclick="togProp('showQty')"><div class="tog-k"></div></div></div>
+    </div></div>`;
+  }
+
+  // شيفت
+  if(el.type==='shiftsales'){
+    h+=`<div class="re-sec"><div class="re-sec-h">المبيعات</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">نقدي</span><div class="tog ${el.showCash?'on':'off'}" onclick="togProp('showCash')"><div class="tog-k"></div></div></div>
+      <div class="p-row"><span class="p-lbl">إلكتروني</span><div class="tog ${el.showElec?'on':'off'}" onclick="togProp('showElec')"><div class="tog-k"></div></div></div>
+    </div></div>`;
+  }
+  if(el.type==='shiftvault'){
+    h+=`<div class="re-sec"><div class="re-sec-h">الخزينة</div><div class="re-sec-b">
+      <div class="p-row"><span class="p-lbl">الفعلي</span><div class="tog ${el.showActual?'on':'off'}" onclick="togProp('showActual')"><div class="tog-k"></div></div></div>
+      <div class="p-row"><span class="p-lbl">الفرق</span><div class="tog ${el.showDiff?'on':'off'}" onclick="togProp('showDiff')"><div class="tog-k"></div></div></div>
+    </div></div>`;
+  }
+
+  panel.innerHTML=h;
+}
+
+window.setProp=function(k,v){const e=sel();if(e){e[k]=v;render();}};
+window.togProp=function(k){const e=sel();if(e){e[k]=!e[k];render();showProps();}};
+
+// ===== LIST =====
+function buildList(){
+  const secs={header:['header','sub','badge'],meta:['meta'],footer:['footertext','brand','dots']};
+  ['header','meta','content','footer'].forEach(s=>{const el=document.getElementById('list-'+s);if(el)el.innerHTML='';});
+  ELEMS[curTab].forEach(e=>{
+    let sec='content';
+    if(secs.header.includes(e.type))sec='header';
+    else if(secs.meta.includes(e.type))sec='meta';
+    else if(secs.footer.includes(e.type))sec='footer';
+    const c=document.getElementById('list-'+sec);
+    if(!c)return;
+    const d=document.createElement('div');
+    d.className=`el-item${selId===e.id?' sel':''}${!e.show?' hidden':''}`;
+    d.innerHTML=`<span>${e.label}</span><span style="font-size:9px">${e.show?'✓':'—'}</span>`;
+    d.onclick=()=>selectEl(e.id);
+    c.appendChild(d);
+  });
+}
+
+// ===== MOVE / DELETE / ADD =====
+window.moveUp=function(){if(!selId)return;const a=ELEMS[curTab];const i=a.findIndex(e=>e.id===selId);if(i>0){[a[i-1],a[i]]=[a[i],a[i-1]];render();}};
+window.moveDown=function(){if(!selId)return;const a=ELEMS[curTab];const i=a.findIndex(e=>e.id===selId);if(i<a.length-1){[a[i],a[i+1]]=[a[i+1],a[i]];render();}};
+window.deleteElem=function(){if(!selId)return;const a=ELEMS[curTab];const i=a.findIndex(e=>e.id===selId);if(i>=0){a.splice(i,1);selId=null;render();showProps();}};
+window.addElem=function(type){
+  customN++;const id='c'+customN;
+  const e={id,type,label:type==='text'?'نص جديد':type==='divider'?'خط فاصل':'مسافة',show:true};
+  if(type==='text'){e.fontSize=11;e.fontWeight=700;e.align='center';e.text='نص جديد';}
+  if(type==='divider'){e.style='dashed';e.thickness=1;}
+  if(type==='spacer'){e.height=8;}
+  ELEMS[curTab].push(e);selId=id;render();showProps();
+};
+
+// ===== SWITCH TAB =====
+window.switchTab=function(tab){
+  curTab=tab;selId=null;
+  ['client','bar','shift','salary'].forEach(t=>document.getElementById('rt-'+t)?.classList.toggle('act',t===tab));
+  render();showProps();
+};
+
+// ===== SAVE =====
+window.saveConfig=async function(){
+  const cfg={
+    name:gv('g-name','Camp Game Zone'),
+    sub:gv('g-sub',''),
+    footer:gv('g-footer','شكراً لزيارتكم'),
+    elems:{}
+  };
+  Object.keys(ELEMS).forEach(t=>{cfg.elems[t]=ELEMS[t].map(e=>({...e}));});
+  try{
+    await setDoc(doc(db,'settings','receipts'),cfg);
+    alert('✅ تم حفظ إعدادات الرسيت');
+  }catch(e){alert('حصل خطأ: '+e.message);}
+};
+
+// ===== LOAD =====
+async function loadConfig(){
+  try{
+    const snap=await getDoc(doc(db,'settings','receipts'));
+    if(!snap.exists())return;
+    const d=snap.data();
+    if(d.name)document.getElementById('g-name').value=d.name;
+    if(d.sub)document.getElementById('g-sub').value=d.sub;
+    if(d.footer)document.getElementById('g-footer').value=d.footer;
+    if(d.elems){
+      Object.keys(d.elems).forEach(t=>{if(ELEMS[t])ELEMS[t]=d.elems[t];});
+    }
+  }catch(e){}
+}
+
+requireAuth(async(user,userData)=>{
+  if(user.uid!==ADMIN_UID){
+    document.body.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3)">هذه الصفحة للأدمن فقط</div>';
+    return;
+  }
+  document.getElementById('uname').textContent='Admin';
+  await loadConfig();
+  render();
+});
+</script>
+</body>
+</html>

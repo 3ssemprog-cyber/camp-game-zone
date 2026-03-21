@@ -45,7 +45,7 @@
 .add-item-row{display:flex;gap:6px}
 
 /* RECEIPT EDITOR */
-.re-page{display:flex;flex-direction:column;gap:0;height:calc(100vh - 120px);margin:-20px -16px}
+#p-receipts2{display:none;flex-direction:column;gap:0;height:calc(100vh - 120px);margin:-20px -16px}
 .re-toolbar{background:#0F172A;border-bottom:1px solid #334155;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
 .re-main{display:grid;grid-template-columns:200px 1fr 200px;gap:0;flex:1;overflow:hidden}
 .re-canvas{background:#334155;display:flex;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
@@ -95,8 +95,6 @@
     <div class="pnb" onclick="showPage('tables')">الطاولات</div>
     <div class="pnb" onclick="showPage('timer')">تصنيفات التايمر</div>
     <div class="pnb" onclick="showPage('expcats')">تصنيفات المصاريف</div>
-    <div class="pnb" onclick="showPage('receipts')">إعدادات الرسيتات</div>
-    <div class="pnb" onclick="showPage('receipts2')">محرر الرسيت</div>
   </div>
 
   <!-- USERS -->
@@ -332,7 +330,7 @@
 import { db, auth, ADMIN_UID, requireAuth, logTransaction,
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp, getDoc } from './firebase.js';
 
-const PAGES=['users','tables','timer','expcats','receipts','receipts2'];
+const PAGES=['users','tables','timer','expcats'];
 const ROLE_BADGES={'كاشير':'r-cashier','موظف':'r-staff','مشرف':'r-admin'};
 const PERMS_LABELS={
   // نقطة البيع
@@ -385,7 +383,18 @@ let USERS=[], TABLES=[], TIMER_CATS=[], DCATS=[], MCATS=[], ICATS=[];
 
 window.showPage=function(p){
   document.querySelectorAll('.pnb').forEach((e,i)=>e.classList.toggle('act',PAGES[i]===p));
-  PAGES.forEach(id=>document.getElementById('p-'+id).classList.toggle('act',id===p));
+  PAGES.forEach(id=>{
+    const el=document.getElementById('p-'+id);
+    if(!el)return;
+    const isActive=id===p;
+    el.classList.toggle('act',isActive);
+    // المحرر له display خاص
+    if(id==='receipts2'){
+      el.style.display=isActive?'flex':'none';
+    }
+  });
+  // لو فتحنا المحرر — render
+  if(p==='receipts2') setTimeout(()=>reRender(),100);
 };
 
 // ===== USERS =====

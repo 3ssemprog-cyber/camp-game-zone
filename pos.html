@@ -124,105 +124,7 @@
 .rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:3px}
 .rcpt-btns{display:flex;gap:8px}
 @media print{
-  @page{margin:0;size:80mm auto}
-  html,body{width:80mm;margin:0;padding:0;background:#fff}
   body>*{display:none!important}
-  .rcpt-overlay{
-    display:flex!important;
-    position:static!important;
-    width:80mm!important;
-    background:#fff!important;
-    padding:0!important;
-    margin:0!important;
-    flex-direction:column!important;
-    align-items:flex-start!important;
-  }
-  .rcpt-btns{display:none!important}
-  .rcpt-box{
-    width:80mm!important;
-    font-size:12px!important;
-    font-weight:700!important;
-    margin:0!important;
-    padding:0!important;
-    background:#fff!important;
-    box-shadow:none!important;
-    direction:rtl!important;
-    -webkit-print-color-adjust:exact!important;
-    print-color-adjust:exact!important;
-  }
-  /* خلي كل السكشنز بدون padding جانبي عشان الخطوط توصل للحافة */
-  .rcpt-box .rh,
-  .rcpt-box .rm,
-  .rcpt-box .rsec-game,
-  .rcpt-box .rsec-drinks,
-  .rcpt-box .rtot,
-  .rcpt-box .rp,
-  .rcpt-box .rf,
-  .rcpt-box .rsec,
-  .rcpt-box div[style*="padding"]{
-    padding-left:0!important;
-    padding-right:0!important;
-    margin-left:0!important;
-    margin-right:0!important;
-    width:100%!important;
-  }
-  /* الخطوط الفاصلة */
-  .rcpt-box .rh{border-bottom:2px dashed #000!important;padding-bottom:6px!important}
-  .rcpt-box .rm{border-bottom:1px dashed #000!important;padding-top:4px!important;padding-bottom:4px!important}
-  .rcpt-box .rsec-game{border-bottom:2px dashed #000!important;padding-top:5px!important;padding-bottom:5px!important}
-  .rcpt-box .rsec-drinks{border-bottom:2px dashed #000!important;padding-top:4px!important;padding-bottom:4px!important}
-  .rcpt-box .rtot{border-top:2px solid #000!important;border-bottom:2px solid #000!important;padding-top:6px!important;padding-bottom:6px!important}
-  .rcpt-box .rp{border-bottom:1px dashed #000!important;padding-top:3px!important;padding-bottom:3px!important}
-  /* محتوى داخلي يحتاج padding بسيط */
-  .rcpt-box .rm .mr,
-  .rcpt-box .rsec-game .game-row,
-  .rcpt-box .rsec-game .rsec-game-title,
-  .rcpt-box .rsec-drinks .dhead,
-  .rcpt-box .rsec-drinks .drow,
-  .rcpt-box .rtot,
-  .rcpt-box .rp,
-  .rcpt-box .rf{
-    padding-left:4px!important;
-    padding-right:4px!important;
-  }
-  /* reset كل الـ inline font sizes */
-  .rcpt-box *{
-    font-size:13px!important;
-    font-weight:700!important;
-    color:#000!important;
-    line-height:1.5!important;
-  }
-  /* عناوين أكبر */
-  .rcpt-box .rh-name{font-size:17px!important;font-weight:900!important}
-  .rcpt-box .rh-type,.rcpt-box .rh-badge{font-size:11px!important;font-weight:900!important;border:1.5px solid #000!important}
-  /* الإجمالي */
-  .rcpt-box .rtot{font-size:16px!important;font-weight:900!important;border-top:2px solid #000!important;border-bottom:2px solid #000!important}
-  .rcpt-box .rtot span{font-size:16px!important;font-weight:900!important}
-  /* سكشن الألعاب */
-  .rcpt-box .rsec-game{background:#e8e8e8!important;-webkit-print-color-adjust:exact!important}
-  .rcpt-box .rsec-game-title{font-size:11px!important;font-weight:900!important}
-  /* جدول الأصناف - grid موحد */
-  div[style*="grid-template-columns"]{
-    display:grid!important;
-    grid-template-columns:1fr 40px 24px 48px!important;
-    font-size:12px!important;
-    font-weight:700!important;
-    padding:3px 0!important;
-    border-bottom:1px solid #ccc!important;
-    width:100%!important;
-    align-items:center!important;
-  }
-  div[style*="grid-template-columns"] span{font-size:12px!important;font-weight:700!important;color:#000!important}
-  div[style*="grid-template-columns"] span:first-child{text-align:right!important}
-  div[style*="grid-template-columns"] span:nth-child(2){text-align:center!important;font-size:11px!important}
-  div[style*="grid-template-columns"] span:nth-child(3){text-align:center!important}
-  div[style*="grid-template-columns"] span:last-child{text-align:center!important;font-weight:900!important}
-  /* الملاحظات */
-  div[style*="b45309"],div[style*="font-style:italic"]{font-size:11px!important;color:#444!important;font-weight:700!important}
-  /* شيل direction ltr */
-  span[style*="direction:ltr"]{direction:rtl!important;text-align:center!important}
-  /* شيل الزرارين من الطباعة */
-  .rcpt-btns{display:none!important}
 }
   .rcpt-box .mr span:first-child{ font-weight:700!important; color:#333!important; }
   .rcpt-box .rsec-t,
@@ -348,14 +250,8 @@
   <div class="pop" id="pop"></div>
 </div>
 
-<!-- Receipt Overlay -->
-<div id="rcpt-view" class="rcpt-overlay">
-  <div class="rcpt-btns" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;gap:8px">
-    <button onclick="document.getElementById('rcpt-view').style.display='none'" style="padding:10px 24px;background:#1E293B;color:#94A3B8;border:0.5px solid #334155;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">رجوع</button>
-    <button onclick="window.print()" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">🖨 طباعة</button>
-  </div>
-  <div class="rcpt-box" id="rcpt-content" style="margin-bottom:70px"></div>
-</div>
+<!-- Receipt: printed directly via thermalPrint -->
+
 
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
@@ -617,86 +513,125 @@ function pickItem(it){
   document.getElementById('qinp').focus();
 }
 
+
+window.thermalPrint=function(html){
+  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+  if(!w)return;
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');@page{size:302px auto;margin:0}*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{width:302px;margin:0;padding:0;background:#fff;font-size:11px;font-weight:700}.rh{text-align:center;padding:9px 4px 7px;border-bottom:2px dashed #000}.rh-name{font-size:15px;font-weight:900;display:block}.rh-sub{font-size:9px;color:#444;display:block;margin-top:2px;font-weight:700}.rh-badge,.rh-type{font-size:9px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px}.rm{padding:5px 6px;border-bottom:1px dashed #000}.mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0;font-weight:700}.mr span:first-child{color:#555}.mr span:last-child{font-weight:900}.rgames{background:#ebebeb;padding:5px 0;border-bottom:2px dashed #000}.rgames-t{font-size:8px;font-weight:900;color:#333;letter-spacing:.4px;border-bottom:1px solid #ccc;padding:0 6px 2px;margin-bottom:3px}.rgame-row{display:flex;justify-content:space-between;font-size:11px;font-weight:700;padding:2px 6px}.rgame-dur{font-size:9px;color:#555;margin-top:1px;font-weight:700}.rdrinks{padding:4px 0;border-bottom:2px dashed #000}.rd-head{display:grid;font-size:8px;color:#555;font-weight:900;padding:0 6px 2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center}.rd-head span:first-child{text-align:right}.rd-row{display:grid;font-size:11px;padding:2px 6px;border-bottom:1px solid #eee;text-align:center;font-weight:700}.rd-row span:first-child{text-align:right}.rd-row span:last-child{font-weight:900}.rd-note{font-size:8px;color:#777;font-style:italic;margin-top:1px;text-align:right;font-weight:700}.rdisc{display:flex;justify-content:space-between;padding:2px 6px;font-size:10px;border-bottom:1px dashed #000;color:#555;font-weight:700}.rtot{display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:6px 6px}.rp{display:flex;justify-content:space-between;font-size:10px;padding:3px 6px;border-bottom:1px dashed #000;font-weight:700}.rbar-items{padding:5px 0;border-bottom:2px dashed #000}.rbar-t{font-size:8px;font-weight:900;color:#333;letter-spacing:.4px;border-bottom:1px solid #ccc;padding:0 6px 2px;margin-bottom:4px}.rbar-row{display:flex;justify-content:space-between;padding:3px 6px;border-bottom:1px solid #eee;font-size:11px;font-weight:700}.rbar-note{font-size:8px;color:#777;font-style:italic;margin-top:1px;font-weight:700}.rf{text-align:center;padding:7px 4px;font-size:10px;color:#444;line-height:1.8;font-weight:700}.rf-dots{letter-spacing:3px;display:block;margin-bottom:2px}.rf-brand{font-size:12px;font-weight:900;color:#000;display:block}.ri-head{display:grid;grid-template-columns:1fr 20px;font-size:9px;color:#555;font-weight:900;padding:0 6px 2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center}.ri-head span:first-child{text-align:right}.ri-row{display:grid;grid-template-columns:1fr 20px;font-size:11px;padding:3px 6px;border-bottom:1px solid #eee;font-weight:700;text-align:center}.ri-row span:first-child{text-align:right}.ri-row span:last-child{font-weight:900}.banner{padding:4px 6px;text-align:center;font-size:9px;font-weight:900;border-bottom:1px dashed #000}</style></head><body>'+html+'</body></html>');
+  w.document.close();
+  w.onload=function(){w.focus();w.print();};
+};
+
+window.showReceipt=function(html){
+  thermalPrint(html);
+};
+
 // ===== RECEIPT BUILDER =====
 function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false, discountAmt=0, cashAmt=0, elecAmt=0){
-  const cashier=document.getElementById('uname').textContent;
+  const cashier = document.getElementById('uname').textContent;
+  const name    = RCPT_CFG.name   || 'Camp Game Zone';
+  const sub     = RCPT_CFG.sub    || '';
+  const footer  = RCPT_CFG.footer || 'شكراً لزيارتكم';
 
+  // ===== رسيت البار =====
   if(isBar){
-    let itemsHTML='';
+    const BC = RCPT_CFG.bar || {};
+    let rows='';
     orderItems.filter(i=>!i.cm).forEach(i=>{
-      itemsHTML+=`<div class="ri-row">
-        <span style="text-align:right">${i.n}${i.note?`<div style="font-size:9px;color:#b45309;font-style:italic;font-weight:400">${i.note}</div>`:''}</span>
-        <span>×${i.q}</span>
-        <span style="font-weight:900;text-align:center">${isBar?'':fmt(i.q*i.p)}</span>
+      rows+=`<div class="rbar-row">
+        <div>
+          <div>${i.n}</div>
+          ${i.note&&BC.notes!==false?`<div class="rbar-note">${i.note}</div>`:''}
+        </div>
+        ${BC.qty!==false?`<div style="font-weight:900">×${i.q}</div>`:''}
       </div>`;
     });
-    orderItems.filter(i=>i.cm).forEach(i=>{itemsHTML+=`<div class="ri-cmt">* ${i.n}</div>`;});
-    const BC=RCPT_CFG.bar||{};
-    return `<div class="rh">
-      <div class="rh-name">${RCPT_CFG.name||'Camp Game Zone'}</div>
-      <div class="rh-type">طلب بار</div>
-    </div>
-    <div class="rm">
-      ${BC.table!==false?`<div class="mr"><span>الطاولة</span><span>${tname}</span></div>`:''}
-      <div class="mr"><span>التاريخ</span><span>${dateStr()}</span></div>
-      ${BC.time!==false?`<div class="mr"><span>الوقت</span><span>${nowT()}</span></div>`:''}
-      ${BC.cashier!==false?`<div class="mr"><span>الكاشير</span><span>${cashier}</span></div>`:''}
-    </div>
-    <div class="ri">
-      <div class="ri-head"><span>الصنف</span>${BC.qty!==false?'<span>كمية</span>':''}</div>
-      ${itemsHTML}
-    </div>
-    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>${RCPT_CFG.footer||'شكراً لزيارتكم'}<div class="rf-brand">${RCPT_CFG.name||'Camp Game Zone'}</div></div>`;
+    return `
+      <div class="rh">
+        <span class="rh-name">${name}</span>
+        <div class="rh-badge">طلب بار</div>
+      </div>
+      <div class="rm">
+        ${BC.table!==false?`<div class="mr"><span>الطاولة</span><span>${tname}</span></div>`:''}
+        ${BC.time!==false?`<div class="mr"><span>الوقت</span><span>${nowT()}</span></div>`:''}
+        ${BC.cashier!==false?`<div class="mr"><span>الكاشير</span><span>${cashier}</span></div>`:''}
+      </div>
+      <div class="rbar-items">
+        <div class="rbar-t">الطلبات الجديدة</div>
+        ${rows}
+      </div>
+      <div class="rf">
+        <span class="rf-dots">. . . . . . . . .</span>
+        <span class="rf-brand">${name}</span>
+      </div>`;
   }
 
-  // Client receipt
-  const CC=RCPT_CFG.client||{};
-  const endedSessions=sessions.filter(s=>s.end);
-  const drinks=orderItems.filter(i=>!i.cm);
-  const comments=orderItems.filter(i=>i.cm);
-  const hasSessions=endedSessions.length>0&&CC.games!==false;
-  const hasDrinks=drinks.length>0&&CC.drinks!==false;
+  // ===== رسيت العميل =====
+  const CC = RCPT_CFG.client || {};
+  const endedSessions = sessions.filter(s=>s.end);
+  const drinks        = orderItems.filter(i=>!i.cm);
+  const comments      = orderItems.filter(i=>i.cm);
 
-  // Gaming section — grey bg card
+  // سكشن الألعاب
   let gamingHTML='';
-  if(hasSessions){
+  if(endedSessions.length && CC.games!==false){
     let rows='';
     endedSessions.forEach(s=>{
-      rows+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:10px">
+      rows+=`<div class="rgame-row">
         <div>
-          <div style="font-weight:700;color:#111">${s.itemName||TC[s.cat]?.label||s.cat}</div>
-          <div style="font-size:9px;color:#666;margin-top:1px">${msPretty(s.end-s.start)}</div>
-          ${s.note?`<div style="font-size:9px;color:#b45309;font-style:italic">${s.note}</div>`:''}
+          <div>${s.itemName||TC[s.cat]?.label||s.cat}</div>
+          <div class="rgame-dur">${msPretty(s.end-s.start)}</div>
         </div>
-        <div style="font-weight:700">${fmt(sCost(s))}</div>
+        <div>${fmt(sCost(s))}</div>
       </div>`;
     });
-    gamingHTML=`<div style="background:#f0f0f0;border-bottom:2px dashed #ccc;padding:6px 8px"><div style="font-size:8px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #ccc">الألعاب</div>${rows}</div>`;
+    gamingHTML=`<div class="rgames"><div class="rgames-t">الألعاب</div>${rows}</div>`;
   }
 
-  // Drinks section
+  // سكشن المشاريب
   let drinksHTML='';
-  if(hasDrinks){
+  if(drinks.length && CC.drinks!==false){
+    const showPrice = CC.unitprice!==false;
+    const cols = showPrice ? '1fr 36px 20px 44px' : '1fr 20px 44px';
     let rows='';
-    drinks.forEach(i=>{rows+=`<div style="display:grid;grid-template-columns:1fr ${CC.unitprice!==false?'40px ':''}24px 48px;gap:0;font-size:12px;padding:3px 0;border-bottom:1px solid #ddd;text-align:center;align-items:start"><span style="text-align:right">${i.n}${i.note?`<div style="font-size:9px;color:#b45309;font-style:italic;font-weight:400">${i.note}</div>`:''}</span>${CC.unitprice!==false?`<span style="font-size:9px;color:#555">${fmt(i.p)}</span>`:''}<span>×${i.q}</span><span style="font-weight:700">${fmt(i.q*i.p)}</span></div>`;});
-    comments.forEach(i=>{rows+=`<div style="font-size:9px;color:#666;font-style:italic;padding:2px 0">* ${i.n}</div>`;});
-    drinksHTML=`<div style="padding:5px 8px;border-bottom:2px dashed #ccc"><div style="display:grid;grid-template-columns:1fr 40px 24px 48px;gap:0;font-size:11px;font-weight:900;color:#555;padding-bottom:3px;border-bottom:1.5px solid #000;margin-bottom:2px;text-align:center"><span style="text-align:right">الصنف</span><span>سعر</span><span>ك</span><span>إجمالي</span></div>${rows}</div>`;
+    drinks.forEach(i=>{
+      rows+=`<div class="rd-row" style="grid-template-columns:${cols}">
+        <span>${i.n}${i.note?`<div class="rd-note">${i.note}</div>`:''}</span>
+        ${showPrice?`<span style="font-size:9px;color:#555">${fmt(i.p)}</span>`:''}
+        <span>×${i.q}</span>
+        <span>${fmt(i.q*i.p)}</span>
+      </div>`;
+    });
+    comments.forEach(i=>{rows+=`<div style="font-size:9px;color:#666;font-style:italic;padding:2px 6px">* ${i.n}</div>`;});
+    drinksHTML=`<div class="rdrinks">
+      <div class="rd-head" style="grid-template-columns:${cols}">
+        <span>الصنف</span>${showPrice?'<span>سعر</span>':''}<span>ك</span><span>إجمالي</span>
+      </div>${rows}
+    </div>`;
   }
 
-  const discRow=discountAmt>0?`<div style="padding:3px 8px;display:flex;justify-content:space-between;font-size:10px;border-bottom:1px dashed #ccc;color:#666"><span>خصم</span><span>− ${fmt(discountAmt)}</span></div>`:'';
+  // الخصم
+  const discRow = discountAmt>0
+    ? `<div class="rdisc"><span>خصم</span><span>− ${fmt(discountAmt)}</span></div>`
+    : '';
 
+  // طريقة الدفع
   let payRows='';
-  if(payMethod==='جزء+جزء'&&(cashAmt||elecAmt)){
-    payRows=`<div class="rp"><span>نقدي</span><span style="font-weight:700">${fmt(cashAmt)}</span></div><div class="rp"><span>إلكتروني</span><span style="font-weight:700">${fmt(elecAmt)}</span></div>`;
-  } else {
-    payRows=`<div class="rp"><span>طريقة الدفع</span><span>${payMethod}</span></div>`;
+  if(CC.paymethod!==false){
+    if(payMethod==='جزء+جزء'&&(cashAmt||elecAmt)){
+      payRows=`<div class="rp"><span>نقدي</span><span>${fmt(cashAmt)}</span></div>
+               <div class="rp"><span>إلكتروني</span><span>${fmt(elecAmt)}</span></div>`;
+    } else {
+      payRows=`<div class="rp"><span>طريقة الدفع</span><span>${payMethod}</span></div>`;
+    }
   }
 
   return `
     <div class="rh">
-      <div class="rh-name">${RCPT_CFG.name||'Camp Game Zone'}</div>
-      ${RCPT_CFG.sub?`<div class="rh-sub">${RCPT_CFG.sub}</div>`:''}
-      <div class="rh-type">وصل دفع</div>
+      <span class="rh-name">${name}</span>
+      ${sub?`<span class="rh-sub">${sub}</span>`:''}
+      <div class="rh-badge">وصل دفع</div>
     </div>
     <div class="rm">
       ${CC.table!==false?`<div class="mr"><span>الطاولة</span><span>${tname}</span></div>`:''}
@@ -709,12 +644,11 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
     ${discRow}
     <div class="rtot"><span>الإجمالي</span><span>${fmt(total)}</span></div>
     ${payRows}
-    <div class="rf"><div class="rf-dots">- - - - - - - - - - - -</div>${RCPT_CFG.footer||'شكراً لزيارتكم'}<div class="rf-brand">${RCPT_CFG.name||'Camp Game Zone'}</div></div>`;
-}
-
-function showReceipt(html){
-  document.getElementById('rcpt-content').innerHTML=html;
-  document.getElementById('rcpt-view').style.display='flex';
+    <div class="rf">
+      <span class="rf-dots">. . . . . . . . .</span>
+      ${footer}
+      <span class="rf-brand">${name}</span>
+    </div>`;
 }
 
 // ===== ACTIONS =====

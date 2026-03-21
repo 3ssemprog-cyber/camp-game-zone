@@ -305,7 +305,7 @@
   <div class="rcpt-box" id="rcpt-content"></div>
   <div class="rcpt-btns">
     <button onclick="document.getElementById('rcpt-view').style.display='none'" style="padding:8px 20px;background:var(--bg3);color:var(--text2);border:0.5px solid var(--border);border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px">رجوع</button>
-    <button onclick="window.print()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700">طباعة</button>
+    <button onclick="thermalPrint()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700">طباعة</button>
   </div>
 </div>
 
@@ -1273,6 +1273,73 @@ setInterval(()=>{
   });
   renderTables();
 },1000);
+
+window.thermalPrint=function(){
+  const box=document.getElementById('rcpt-content');
+  if(!box)return;
+  const html=`<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl}
+html,body{width:72mm;margin:0;padding:0;background:#fff}
+@page{size:72mm auto;margin:0}
+body{font-size:13px;font-weight:700;padding:0 2mm}
+/* Header */
+.rh{text-align:center;padding:6px 0;border-bottom:2px dashed #000;margin-bottom:4px}
+.rh-name{font-size:17px;font-weight:900;display:block}
+.rh-sub{font-size:10px;color:#333;display:block;margin-top:2px}
+.rh-type,.rh-badge{font-size:11px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 10px;border-radius:20px;margin-top:4px}
+/* Meta */
+.rm{padding:4px 0;border-bottom:1px dashed #000;margin-bottom:4px}
+.mr{display:flex;justify-content:space-between;font-size:11px;padding:1px 0;font-weight:700}
+.mr span:last-child{font-weight:900}
+/* Gaming */
+.rsec-game{background:#e8e8e8;padding:5px 0;border-bottom:2px dashed #000;margin-bottom:4px}
+.rsec-game-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #aaa}
+/* Drinks */
+.rsec-drinks{padding:4px 0;border-bottom:2px dashed #000;margin-bottom:4px}
+div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 0!important;border-bottom:1px solid #ddd!important}
+div[style*="grid-template-columns"] span:first-child{flex:1;text-align:right}
+div[style*="grid-template-columns"] span:nth-child(2){width:25px;text-align:center}
+div[style*="grid-template-columns"] span:last-child{width:55px;text-align:center;font-weight:900}
+/* Total */
+.rtot{display:flex;justify-content:space-between;font-size:16px;font-weight:900;border-top:3px solid #000;border-bottom:3px solid #000;padding:6px 0;margin:4px 0}
+.rtot span{color:#000!important;font-weight:900!important}
+/* Payment */
+.rp{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px dashed #000;font-weight:700}
+/* Sections */
+.rsec{padding:4px 0;border-bottom:1px dashed #000;margin-bottom:2px}
+.rsec-t{font-size:10px;font-weight:900;margin-bottom:3px;border-bottom:1px solid #ccc;padding-bottom:2px}
+.rrow{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;font-weight:700}
+.rrow.bold{font-weight:900}
+.rrow.ok{color:#1a6a2a}
+.rrow.err{color:#a00}
+/* Footer */
+.rf{text-align:center;padding:6px 0;font-size:10px;color:#333;line-height:1.8;font-weight:700}
+.rf-brand{font-size:13px;font-weight:900;color:#000;display:block}
+.rf-dots{letter-spacing:3px;display:block}
+/* Notes */
+div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-style:italic;font-weight:700;font-size:10px}
+/* Discount */
+div[style*="padding:3px 8px"]{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#555;font-weight:700}
+/* All text black */
+*{color:#000!important}
+</style>
+</head>
+<body>${box.innerHTML}</body>
+</html>`;
+
+  const w=window.open('','_blank','width=340,height=700');
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.onload=function(){
+    setTimeout(function(){w.focus();w.print();},500);
+  };
+};
 
 window.doPrint=function(){
   const box=document.getElementById('rcpt-content');

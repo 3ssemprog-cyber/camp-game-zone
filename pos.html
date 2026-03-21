@@ -124,21 +124,8 @@
 .rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:3px}
 .rcpt-btns{display:flex;gap:8px}
 @media print{
-  @page{
-    margin:0;
-    size:80mm auto;
-  }
-  html{
-    width:80mm!important;
-    margin:0!important;
-    padding:0!important;
-  }
-  body{
-    width:80mm!important;
-    margin:0!important;
-    padding:0!important;
-    background:#fff!important;
-  }
+  @page{margin:0;size:80mm auto}
+  html,body{width:80mm;margin:0;padding:0;background:#fff}
   body>*{display:none!important}
   .rcpt-overlay{
     display:flex!important;
@@ -147,15 +134,12 @@
     background:#fff!important;
     padding:0!important;
     margin:0!important;
-    justify-content:flex-start!important;
-    align-items:flex-start!important;
     flex-direction:column!important;
+    align-items:flex-start!important;
   }
   .rcpt-btns{display:none!important}
   .rcpt-box{
     width:80mm!important;
-    max-width:80mm!important;
-    min-width:0!important;
     font-size:12px!important;
     font-weight:700!important;
     margin:0!important;
@@ -163,10 +147,24 @@
     background:#fff!important;
     box-shadow:none!important;
     direction:rtl!important;
-    overflow:visible!important;
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
   }
+  .rcpt-box *{font-weight:700!important;color:#000!important}
+  .rcpt-box .rh-name{font-size:16px!important;font-weight:900!important}
+  .rcpt-box .rtot{font-size:15px!important;font-weight:900!important;border-top:2px solid #000!important;border-bottom:2px solid #000!important}
+  .rcpt-box .rh-type,.rcpt-box .rh-badge{border:1.5px solid #000!important}
+  .rcpt-box .mr span:first-child{color:#333!important}
+  .rcpt-box .rsec-game{background:#e8e8e8!important;-webkit-print-color-adjust:exact!important}
+  .rcpt-box .rsec-game-title{font-size:10px!important;font-weight:900!important}
+  div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 0!important;border-bottom:1px solid #ddd!important}
+  div[style*="grid-template-columns"] span:first-child{flex:1!important;text-align:right!important}
+  div[style*="grid-template-columns"] span:nth-child(2){width:28px!important;text-align:center!important}
+  div[style*="grid-template-columns"] span:last-child{width:58px!important;text-align:left!important;font-weight:900!important}
+  div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-weight:700!important}
+  span[style*="direction:ltr"]{direction:rtl!important;text-align:center!important}
+  .rcpt-btns{display:none!important}
+}
   .rcpt-box *{
     font-weight:700!important;
     color:#000!important;
@@ -302,11 +300,11 @@
 
 <!-- Receipt Overlay -->
 <div id="rcpt-view" class="rcpt-overlay">
-  <div class="rcpt-box" id="rcpt-content"></div>
-  <div class="rcpt-btns">
-    <button onclick="document.getElementById('rcpt-view').style.display='none'" style="padding:8px 20px;background:var(--bg3);color:var(--text2);border:0.5px solid var(--border);border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px">رجوع</button>
-    <button onclick="thermalPrint()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700">طباعة</button>
+  <div class="rcpt-btns" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:flex;gap:8px">
+    <button onclick="document.getElementById('rcpt-view').style.display='none'" style="padding:10px 24px;background:#1E293B;color:#94A3B8;border:0.5px solid #334155;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">رجوع</button>
+    <button onclick="window.print()" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">🖨 طباعة</button>
   </div>
+  <div class="rcpt-box" id="rcpt-content" style="margin-bottom:70px"></div>
 </div>
 
 <script type="module">
@@ -621,44 +619,8 @@ function buildReceipt(tname, sessions, orderItems, total, payMethod, isBar=false
 }
 
 function showReceipt(html){
-  const CSS=`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
-@page{size:302px auto;margin:0;padding:0}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html{width:302px;margin:0;padding:0;background:#fff;overflow:visible}
-body{width:302px;margin:0;padding:0;background:#fff;font-size:12px;font-weight:700;overflow:visible}
-.rh{text-align:center;padding:8px 4px 6px;border-bottom:2px dashed #000;margin-bottom:3px}
-.rh-name{font-size:16px;font-weight:900;display:block}
-.rh-sub{font-size:10px;color:#333;display:block;margin-top:2px;font-weight:700}
-.rh-type,.rh-badge{font-size:11px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 10px;border-radius:20px;margin-top:4px}
-.rm{padding:4px 6px;border-bottom:1px dashed #999;margin-bottom:3px}
-.mr{display:flex;justify-content:space-between;font-size:11px;padding:1px 0;font-weight:700}
-.mr span:last-child{font-weight:900}
-.rsec-game{background:#e8e8e8;padding:5px 6px;border-bottom:2px dashed #999;margin-bottom:3px}
-.rsec-game-title{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #bbb}
-.rsec-drinks{padding:4px 6px;border-bottom:2px dashed #999;margin-bottom:3px}
-.rsec{padding:4px 6px;border-bottom:1px dashed #999;margin-bottom:2px}
-.rsec-t{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;border-bottom:1px solid #ccc;padding-bottom:2px}
-.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;font-weight:700}
-.rrow.bold{font-weight:900}
-.rrow.ok{color:#1a6a2a}
-.rrow.err{color:#a00}
-.rtot{display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:6px 6px;margin:3px 0}
-.rp{display:flex;justify-content:space-between;font-size:11px;padding:3px 6px;border-bottom:1px dashed #999;font-weight:700}
-.rf{text-align:center;padding:6px 4px;font-size:10px;color:#333;line-height:1.8;font-weight:700}
-.rf-brand{font-size:13px;font-weight:900;color:#000;display:block;margin-top:2px}
-.rf-dots{letter-spacing:3px;display:block;margin-bottom:3px}
-div[style*="grid-template-columns"]{display:flex!important;justify-content:space-between!important;font-size:12px!important;font-weight:700!important;padding:2px 6px!important;border-bottom:1px solid #ddd!important}
-div[style*="grid-template-columns"] span:first-child{flex:1!important;text-align:right!important}
-div[style*="grid-template-columns"] span:nth-child(2){width:30px!important;text-align:center!important}
-div[style*="grid-template-columns"] span:last-child{width:60px!important;text-align:left!important;font-weight:900!important}
-div[style*="b45309"],div[style*="font-style:italic"]{color:#444!important;font-style:italic!important;font-size:10px!important;font-weight:700!important}
-div[style*="padding:3px 8px"]{display:flex!important;justify-content:space-between!important;font-size:11px!important;padding:2px 6px!important;font-weight:700!important}
-*{color:#000!important}`;
-
-  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no,left=0,top=0');
-  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${CSS}</style></head><body>${html}</body></html>`);
-  w.document.close();
-  w.onload=function(){w.focus();w.print();};
+  document.getElementById('rcpt-content').innerHTML=html;
+  document.getElementById('rcpt-view').style.display='flex';
 }
 
 // ===== ACTIONS =====

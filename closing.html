@@ -13,64 +13,96 @@
 .tab.act{background:#1E3A8A;color:#fff;border-color:var(--accent)}
 .page{display:none;flex-direction:column;gap:10px}
 .page.act{display:flex}
-.shift-badge{padding:12px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;background:#1E3A8A;border:0.5px solid var(--accent)}
+.shift-badge{padding:12px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+.sh-m{background:#1E3A8A;border:0.5px solid var(--accent)}
+.sh-e{background:#2E1065;border:0.5px solid var(--purple)}
 .sh-title{font-size:15px;font-weight:700;color:#fff}
 .sh-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px}
+.sh-clock{font-size:13px;font-weight:600;color:rgba(255,255,255,0.9)}
 .kards{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .kard{background:var(--bg3);border-radius:10px;padding:10px;text-align:center}
 .kl{font-size:10px;color:var(--text3);margin-bottom:3px}
 .kv{font-size:15px;font-weight:700;color:var(--text1)}
-.kv.g{color:#6EE7B7}.kv.r{color:#FCA5A5}.kv.b{color:#93C5FD}.kv.y{color:#FCD34D}
+.kv.g{color:#6EE7B7}.kv.r{color:#FCA5A5}.kv.b{color:#93C5FD}
 .exp-row{display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:9px;font-size:12px}
-.actual-inp{width:100%;padding:12px;border:0.5px solid var(--border);border-radius:10px;font-size:24px;font-weight:700;text-align:center;background:var(--bg);color:var(--text1);direction:ltr;font-family:'Cairo',sans-serif}
-.actual-inp:focus{outline:none;border-color:var(--accent)}
-.diff-ok{padding:9px 12px;background:var(--green-bg);border:0.5px solid var(--green);border-radius:9px;display:flex;justify-content:space-between;font-size:13px;font-weight:700}
-.diff-err{padding:9px 12px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:9px;display:flex;justify-content:space-between;font-size:13px;font-weight:700}
 .close-btn{width:100%;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;margin-top:4px}
-.btn-blue{background:var(--accent);color:#fff}
-.btn-green{background:var(--green);color:#fff}
-.warn-bar{padding:9px 12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D;display:flex;align-items:center;gap:7px}
-.shift-sum{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px}
-.ss-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:5px;border-bottom:0.5px solid var(--border)}
-.ss-name{font-size:13px;font-weight:700;color:var(--text1)}
-.ss-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);padding:2px 0}
-.emp-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:0.5px solid var(--border);border-radius:9px;background:var(--bg3)}
-.att-btns{display:flex;gap:4px}
-.ab{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'Cairo',sans-serif}
-.ab.P{background:var(--green-bg);border-color:var(--green);color:#6EE7B7}
-.ab.A{background:var(--red-bg);border-color:var(--red);color:#FCA5A5}
+.btn-m{background:var(--accent);color:#fff}
+.btn-e{background:var(--purple);color:#fff}
+.day-shift{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px}
+.ds-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;padding-bottom:6px;border-bottom:0.5px solid var(--border)}
+.ds-name{font-size:13px;font-weight:700;color:var(--text1)}
+.ds-net{font-size:13px;font-weight:700;color:#6EE7B7}
+.ds-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);padding:2px 0}
 .total-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#1E3A8A;border:0.5px solid var(--accent);border-radius:12px}
-/* رسيت */
+.emp-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:0.5px solid var(--border);border-radius:9px;background:var(--bg3)}
+.emp-row.P{background:#064E3B;border-color:var(--green)}
+.ab{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'Cairo',sans-serif}
+.ab.P{background:#064E3B;border-color:var(--green);color:#6EE7B7}
+.ab.A{background:var(--red-bg);border-color:var(--red);color:#FCA5A5}
 .rcpt-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:16px}
 .rcpt-box{background:#fff;width:260px;font-size:12px;color:#000;font-family:'Cairo',sans-serif}
 .rcpt-box *{color:#000;font-family:'Cairo',sans-serif}
-.rh{padding:12px 10px 8px;text-align:center;border-bottom:2px dashed #000}
-.rh-name{font-size:16px;font-weight:900}
-.rh-sub{font-size:9px;color:#444;margin-top:2px;font-weight:700}
-.rh-type{font-size:11px;font-weight:900;margin-top:5px;border:1.5px solid #000;display:inline-block;padding:1px 12px;border-radius:20px}
-.rm{padding:7px 10px;border-bottom:1px dashed #999}
-.mr{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;font-weight:700}
-.mr span:first-child{color:#444}
-.rsec{padding:6px 10px;border-bottom:1px dashed #999}
-.rsec-t{font-size:9px;font-weight:900;color:#222;letter-spacing:.4px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #ccc}
-.rrow{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;font-weight:700}
-.rrow.bold{font-weight:900}
-.rrow.ok{color:#1a7a3c}
-.rrow.err{color:#c00}
-.rtot{padding:9px 10px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;margin:2px 0}
-.rf{padding:8px 10px;text-align:center;font-size:10px;color:#444;line-height:1.8;font-weight:700}
-.rf-brand{font-size:12px;font-weight:900;color:#000;margin-top:2px}
+.rh{padding:14px 12px 10px;text-align:center;border-bottom:2px dashed #000}
+.rh-name{font-size:17px;font-weight:900}
+.rh-sub{font-size:9px;color:#555;margin-top:2px}
+.rh-type{font-size:11px;font-weight:700;margin-top:5px;border:1px solid #000;display:inline-block;padding:1px 12px;border-radius:20px}
+.rm{padding:8px 12px;border-bottom:1px dashed #999}
+.mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+.mr span:first-child{color:#555}
+.mr span:last-child{font-weight:700}
+.rsec{padding:8px 12px;border-bottom:1px dashed #999}
+.rsec-t{font-size:10px;font-weight:700;color:#555;letter-spacing:.5px;margin-bottom:5px;border-bottom:1px solid #eee;padding-bottom:3px}
+.rrow{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
+.rrow.bold{font-weight:700}
+.rtot{padding:10px 12px;border-bottom:2px dashed #000;display:flex;justify-content:space-between;font-size:14px;font-weight:900}
+.rf{padding:10px 12px;text-align:center;font-size:10px;color:#555;line-height:1.8}
+.rf-brand{font-size:13px;font-weight:900;color:#000;margin-top:3px}
 .rcpt-btns{display:flex;gap:8px}
 @media print{
-  @page{margin:0;size:80mm auto}
-  html,body{width:79mm;margin:0;padding:0;background:#fff}
+  @page{
+    margin:0;
+    size:79mm auto;
+  }
+  html,body{
+    width:79mm;
+    margin:0;
+    padding:0;
+    background:#fff;
+  }
   body>*{display:none!important}
-  .rcpt-overlay{display:block!important;position:static!important;width:79mm!important;background:#fff!important;padding:0!important;margin:0!important}
+  .rcpt-overlay{
+    display:block!important;
+    position:static!important;
+    width:79mm!important;
+    background:#fff!important;
+    padding:0!important;
+    margin:0!important;
+  }
   .rcpt-btns{display:none!important}
-  .rcpt-box{width:79mm!important;font-size:12px!important;font-weight:700!important;margin:0!important;padding:0!important;background:#fff!important;direction:rtl!important}
-  .rcpt-box *{font-weight:700!important;color:#000!important}
-  .rcpt-box .rh-name{font-size:16px!important;font-weight:900!important}
-  .rcpt-box .rtot{font-size:15px!important;font-weight:900!important}
+  .rcpt-box{
+    width:79mm!important;
+    max-width:79mm!important;
+    min-width:79mm!important;
+    font-size:11px!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    box-shadow:none!important;
+    direction:rtl!important;
+    overflow:hidden!important;
+  }
+  .rcpt-box .rh,
+  .rcpt-box .rm,
+  .rcpt-box .ri,
+  .rcpt-box .rt,
+  .rcpt-box .rp,
+  .rcpt-box .rf,
+  .rcpt-box .rsec,
+  .rcpt-box .rtot{
+    padding-left:3mm!important;
+    padding-right:3mm!important;
+    width:73mm!important;
+  }
 }
 </style>
 </head>
@@ -86,38 +118,42 @@
 
 <div class="main">
   <div class="tabs">
-    <div class="tab act" id="tab-shift" onclick="document.dispatchEvent(new CustomEvent('showtab',{detail:'shift'}))">تقفيل الشيفت</div>
-    <div class="tab" id="tab-day" onclick="document.dispatchEvent(new CustomEvent('showtab',{detail:'day'}))">تقفيل اليوم</div>
+    <div class="tab act" id="tab-shift" onclick="showTab('shift')">تقفيل الشيفت</div>
+    <div class="tab" id="tab-day" onclick="showTab('day')">تقفيل اليوم</div>
   </div>
   <div class="page act" id="p-shift"><div style="text-align:center;padding:30px;color:var(--text3)">جاري التحميل...</div></div>
   <div class="page" id="p-day"></div>
 </div>
 
-<!-- receipts printed directly via thermalPrint -->
+<div id="rcpt-view" class="rcpt-overlay">
+  <div class="rcpt-box" id="rcpt-content"></div>
+  <div class="rcpt-btns">
+    <button onclick="closeReceipt()" style="padding:8px 20px;background:var(--bg3);color:var(--text2);border:0.5px solid var(--border);border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif">رجوع</button>
+    <button onclick="thermalPrint(document.getElementById('rcpt-content').innerHTML)" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700">طباعة</button>
+  </div>
+</div>
 
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
-  collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, serverTimestamp, query, where } from './firebase.js';
+  collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, serverTimestamp } from './firebase.js';
 
 const nowT = () => new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
 const dateStr = () => new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const todayKey = () => new Date().toISOString().split('T')[0];
 const monthKey = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
 
-let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[];
-let currentUser='', isAdm=false, actualCash=0, currentUserPerms={};
+let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[], currentUser='';
 
-document.addEventListener('showtab', e => showTab(e.detail));
-
+// ===== TABS =====
 window.showTab = function(t) {
   ['shift','day'].forEach(n => {
     document.getElementById('tab-'+n).classList.toggle('act', n===t);
     document.getElementById('p-'+n).classList.toggle('act', n===t);
   });
-  if(t==='day') renderDay();
+  if (t==='day') renderDay();
 };
 
-// ===== LOAD =====
+// ===== LOAD CURRENT SHIFT =====
 async function loadCurrentShift() {
   SHIFT = null;
   try {
@@ -125,244 +161,482 @@ async function loadCurrentShift() {
     const today = todayKey();
     const all = [];
     snap.forEach(d => all.push({id:d.id,...d.data()}));
+    // شيفت مفتوح من اليوم
     const todayOpen = all.find(s => s.status==='open' && s.dayKey===today);
+    // شيفت مفتوح من يوم قديم
     const anyOpen = all.find(s => s.status==='open');
-    SHIFT = todayOpen || anyOpen || null;
-  } catch(e) {}
+    if (todayOpen) {
+      SHIFT = todayOpen;
+    } else if (anyOpen) {
+      // متغيرش الـ dayKey — خليه بتاريخ الأصلي عشان متضيعش المبيعات
+      SHIFT = anyOpen;
+    }
+  } catch(e) { console.log('loadCurrentShift err:', e); }
 }
 
+// ===== LOAD SHIFT DATA =====
 async function loadShiftData() {
-  if(!SHIFT) return;
+  if (!SHIFT) return;
+  const sk = SHIFT.shiftKey;
   try {
-    const snap = await getDoc(doc(db,'shift_totals',SHIFT.shiftKey));
-    if(snap.exists()){ DATA.cash=snap.data().cash||0; DATA.elec=snap.data().elec||0; }
-    else { DATA.cash=0; DATA.elec=0; }
+    const snap = await getDoc(doc(db,'shift_totals',sk));
+    if (snap.exists()) {
+      DATA.cash = snap.data().cash || 0;
+      DATA.elec = snap.data().elec || 0;
+    } else {
+      DATA.cash = 0;
+      DATA.elec = 0;
+    }
   } catch(e) { DATA.cash=0; DATA.elec=0; }
   try {
     const snap = await getDocs(collection(db,'daily_expenses'));
-    DATA.exps=[];
-    snap.forEach(d=>{ if(d.data().shiftKey===SHIFT.shiftKey) DATA.exps.push(d.data()); });
+    DATA.exps = [];
+    snap.forEach(d => {
+      if (d.data().shiftKey === sk) DATA.exps.push(d.data());
+    });
   } catch(e) { DATA.exps=[]; }
 }
 
+// ===== LOAD CLOSED SHIFTS =====
 async function loadClosedShifts() {
   try {
     const snap = await getDocs(collection(db,'shifts'));
-    CLOSED_SHIFTS=[];
+    CLOSED_SHIFTS = [];
+    const today = todayKey();
     snap.forEach(d => {
-      const s=d.data();
-      // جيب كل الشيفتات المقفلة اللي لسه محتاجة تقفيل يوم (بغض النظر عن التاريخ)
-      if(s.status==='closed' && !s.dayClosedAt)
+      const s = d.data();
+      // Only show closed shifts from today that haven't been day-closed yet
+      if (s.status==='closed' && s.dayKey===today && !s.dayClosedAt)
         CLOSED_SHIFTS.push({id:d.id,...s});
     });
-    CLOSED_SHIFTS.sort((a,b)=>a.startTime>b.startTime?1:-1);
+    CLOSED_SHIFTS.sort((a,b) => a.type==='صبح' ? -1 : 1);
   } catch(e) { CLOSED_SHIFTS=[]; }
 }
 
+// ===== LOAD EMPS =====
 async function loadEmps() {
   try {
     const snap = await getDocs(collection(db,'employees'));
-    EMPS=[];
+    EMPS = [];
     snap.forEach(d => EMPS.push({id:d.id,...d.data(),present:false}));
   } catch(e) { EMPS=[]; }
 }
 
-const totExp = () => DATA.exps.reduce((s,e)=>s+(e.amt||0),0);
+const totExp = () => DATA.exps.reduce((s,e) => s+(e.amt||0), 0);
 const totInc = () => DATA.cash + DATA.elec;
-const expected = () => DATA.cash - totExp(); // المفروض في الإيد = نقدي - مصاريف
+const netShift = () => totInc() - totExp();
 
 // ===== RENDER SHIFT =====
 function renderShift() {
   const p = document.getElementById('p-shift');
-  if(!SHIFT){
-    p.innerHTML=`<div style="text-align:center;padding:30px">
+  if (!SHIFT) {
+    p.innerHTML = `<div style="text-align:center;padding:30px">
       <div style="font-size:36px;margin-bottom:12px">✓</div>
       <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">مفيش شيفت مفتوح</div>
       <div style="font-size:12px;color:var(--text3)">كل الشيفتات اتقفلت</div>
     </div>`;
     return;
   }
-
+  const isMorn = SHIFT.type === 'صبح';
   const isOldShift = SHIFT.dayKey !== todayKey();
-  const canCloseShift   = isAdm || (currentUserPerms?.['close.save']===true);
-  const canSeeSales     = isAdm || (currentUserPerms?.['close.see_sales']===true);
-  const canActualCash   = isAdm || (currentUserPerms?.['close.actual_cash']===true);
-  const canSeeDiff      = isAdm || (currentUserPerms?.['close.see_diff']===true);
-  const canAttend       = isAdm || (currentUserPerms?.['close.attend']===true);
-  const expAmt = totExp();
-  const expRows = DATA.exps.length
-    ? DATA.exps.map(e=>`<div class="exp-row"><span style="color:var(--text2)">${e.cat||e.name||'—'}</span><span style="font-weight:700;color:#FCA5A5">${fmt(e.amt)}</span></div>`).join('')
-    : '<div style="text-align:center;font-size:12px;color:var(--text3);padding:6px">لا يوجد مصاريف</div>';
-
-  // الأدمن أو من عنده صلاحية يشوف المبيعات
-  const adminSection = canSeeSales ? `
-    <div class="sec-lbl">المبيعات</div>
-    <div class="kards">
-      <div class="kard"><div class="kl">نقدي</div><div class="kv g">${fmt(DATA.cash)}</div></div>
-      <div class="kard"><div class="kl">إلكتروني</div><div class="kv b">${fmt(DATA.elec)}</div></div>
-      <div class="kard"><div class="kl">مصاريف</div><div class="kv r">${fmt(expAmt)}</div></div>
-      <div class="kard"><div class="kl">المفروض في الإيد</div><div class="kv y">${fmt(expected())}</div></div>
-    </div>` : '';
-
-  p.innerHTML=`
-    ${isOldShift?`<div class="warn-bar"><div class="notif-dot"></div>⚠ الشيفت ده من يوم ${SHIFT.startDate||SHIFT.dayKey} — سيبته مفتوح من قديم!</div>`:''}
-    <div class="shift-badge">
+  p.innerHTML = `
+    ${isOldShift ? `
+    <div style="padding:10px 14px;background:#450A0A;border:0.5px solid var(--red);border-radius:10px;font-size:12px;color:#FCA5A5;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 1s infinite"></div>
+      <span>⚠ الشيفت ده من يوم <strong>${SHIFT.startDate||SHIFT.dayKey}</strong> — سيبته مفتوح من يوم قديم! قفله دلوقتي عشان التقارير تتسجل صح</span>
+    </div>` : ''}
+    <div class="shift-badge ${isMorn?'sh-m':'sh-e'}">
       <div>
-        <div class="sh-title">شيفت ${SHIFT.type||'—'}</div>
+        <div class="sh-title">شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}</div>
         <div class="sh-sub">بدأ ${SHIFT.startTime||''} — ${SHIFT.startDate||''}</div>
       </div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.8)" id="live-clk"></div>
+      <div class="sh-clock" id="live-clk"></div>
     </div>
-    ${adminSection}
-    <div class="sec-lbl">المصاريف</div>
+    <div class="kards">
+      <div class="kard"><div class="kl">نقدي</div><div class="kv b">${fmt(DATA.cash)}</div></div>
+      <div class="kard"><div class="kl">دفع إلكتروني</div><div class="kv b">${fmt(DATA.elec)}</div></div>
+      <div class="kard"><div class="kl">مصاريف الشيفت</div><div class="kv r">${fmt(totExp())}</div></div>
+      <div class="kard"><div class="kl">صافي الشيفت</div><div class="kv g">${fmt(netShift())}</div></div>
+    </div>
     <div class="card">
-      <div class="card-body" style="gap:6px">${expRows}</div>
+      <div class="card-head">تفاصيل المصاريف</div>
+      <div class="card-body">
+        ${DATA.exps.length
+          ? DATA.exps.map(e=>`<div class="exp-row"><span style="color:var(--text2)">${e.cat}</span><span style="font-weight:700;color:#FCA5A5">${fmt(e.amt)}</span></div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد مصاريف</div>'}
+      </div>
     </div>
-    ${canActualCash ? `
-    <div class="sec-lbl">الخزينة الفعلية في الإيد</div>
-    <input class="actual-inp" id="actual-inp" type="text" inputmode="decimal" placeholder="0.00"
-      oninput="calcDiff(this.value)" onchange="calcDiff(this.value)">
-    <div id="diff-box"></div>` : ''}
-    ${isAdm?'':``}
-    <div style="padding:8px 10px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
-      بعد التقفيل — شيفت جديد هيفتح تلقائي
+    <div style="padding:9px 12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
+      بعد التقفيل — شيفت ${isMorn?'المسا 🌙':'الصبح 🌅 للغد'} هيفتح تلقائي
     </div>
-    ${canCloseShift
-      ? `<button class="close-btn btn-blue" onclick="closeShift()">تقفيل الشيفت</button>`
-      : `<div style="padding:9px 12px;background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;font-size:12px;color:var(--text3);text-align:center">ليس لديك صلاحية تقفيل الشيفت</div>`
-    }`;
+    <button class="close-btn ${isMorn?'btn-m':'btn-e'}" onclick="closeShift()">
+      تقفيل شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}
+    </button>`;
 }
 
-window.calcDiff = function(v){
-  const val = parseFloat(v.replace(',','.')||0);
-  actualCash = val;
-  const box = document.getElementById('diff-box');
-  if(!box) return;
-  // بس الأدمن أو من عنده صلاحية يشوف الفرق
-  const canDiff = isAdm || (currentUserPerms?.['close.see_diff']===true);
-  if(!canDiff){ box.innerHTML=''; return; }
-  const exp = expected();
-  const diff = val - exp;
-  if(!v){ box.innerHTML=''; return; }
-  if(Math.abs(diff)<0.01){
-    box.innerHTML=`<div class="diff-ok"><span style="color:#6EE7B7">✓ تمام — الخزينة صح</span><span style="color:#6EE7B7;font-weight:900">${fmt(val)}</span></div>`;
-  } else if(diff>0){
-    box.innerHTML=`<div class="diff-ok"><span style="color:#6EE7B7">زيادة</span><span style="color:#6EE7B7;font-weight:900">+ ${fmt(diff)}</span></div>`;
-  } else {
-    box.innerHTML=`<div class="diff-err"><span style="color:#FCA5A5">عجز</span><span style="color:#FCA5A5;font-weight:900">− ${fmt(Math.abs(diff))}</span></div>`;
-  }
+// ===== RENDER DAY =====
+function renderDay() {
+  const p = document.getElementById('p-day');
+  const totalCash = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.cash||0), 0);
+  const totalElec = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.elec||0), 0);
+  const totalExp  = CLOSED_SHIFTS.reduce((s,sh) => s+(sh.totalExp||0), 0);
+  const totalInc  = totalCash + totalElec;
+  const netDay    = totalInc - totalExp;
+
+  p.innerHTML = `
+    <div class="card">
+      <div class="card-head">الشيفتات المقفلة اليوم (${CLOSED_SHIFTS.length})</div>
+      <div class="card-body">
+        ${CLOSED_SHIFTS.length
+          ? CLOSED_SHIFTS.map(sh=>`
+            <div class="day-shift">
+              <div class="ds-head">
+                <span class="ds-name">شيفت ${sh.type} ${sh.type==='صبح'?'🌅':'🌙'}</span>
+                <span class="ds-net">${fmt(sh.netShift||0)} صافي</span>
+              </div>
+              <div class="ds-row"><span>نقدي</span><span>${fmt(sh.cash||0)}</span></div>
+              <div class="ds-row"><span>دفع إلكتروني</span><span>${fmt(sh.elec||0)}</span></div>
+              <div class="ds-row"><span>مصاريف</span><span>${fmt(sh.totalExp||0)}</span></div>
+              <div class="ds-row"><span>قُفِّل بواسطة</span><span>${sh.closedBy||'—'}</span></div>
+              <div class="ds-row"><span>وقت التقفيل</span><span>${sh.endTime||'—'}</span></div>
+            </div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3);padding:10px">لا يوجد شيفتات مقفلة اليوم</div>'}
+      </div>
+    </div>
+    <div class="kards">
+      <div class="kard"><div class="kl">نقدي اليوم</div><div class="kv b">${fmt(totalCash)}</div></div>
+      <div class="kard"><div class="kl">إلكتروني اليوم</div><div class="kv b">${fmt(totalElec)}</div></div>
+      <div class="kard"><div class="kl">مصاريف اليوم</div><div class="kv r">${fmt(totalExp)}</div></div>
+      <div class="kard"><div class="kl">إجمالي الإيرادات</div><div class="kv">${fmt(totalInc)}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">حضور وغياب اليوم</div>
+      <div class="card-body">
+        ${EMPS.length
+          ? EMPS.map((e,i)=>`
+            <div class="emp-row ${e.present?'P':''}" id="er${i}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#1E3A8A;color:#93C5FD;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${e.name?.substring(0,2)}</div>
+                <div><div style="font-size:12px;font-weight:600;color:var(--text1)">${e.name}</div><div style="font-size:10px;color:var(--text3)">${e.role}</div></div>
+              </div>
+              <div style="display:flex;gap:4px">
+                <div class="ab ${e.present?'P':''}" onclick="setAtt(${i},true)">حاضر</div>
+                <div class="ab ${!e.present?'A':''}" onclick="setAtt(${i},false)">غائب</div>
+              </div>
+            </div>`).join('')
+          : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد موظفين</div>'}
+      </div>
+    </div>
+    <div class="total-bar">
+      <span style="font-size:13px;font-weight:700;color:#93C5FD">صافي اليوم</span>
+      <span style="font-size:20px;font-weight:700;color:#fff">${fmt(netDay)}</span>
+    </div>
+    ${CLOSED_SHIFTS.length > 0 ? `
+    <button class="close-btn btn-m" onclick="closeDayAndPrint(${totalCash},${totalElec},${totalExp},${totalInc},${netDay})">
+      تقفيل اليوم وطباعة الرسيت
+    </button>` : '<div style="text-align:center;padding:14px;color:var(--text3);font-size:12px">لا يوجد شيفتات مقفلة اليوم بعد</div>'}`;
+}
+
+window.setAtt = function(i, v) {
+  EMPS[i].present = v;
+  document.getElementById('er'+i).className = 'emp-row '+(v?'P':'');
+  document.querySelectorAll('#er'+i+' .ab').forEach((b,j) => {
+    b.className = 'ab '+(j===0&&v?'P':j===1&&!v?'A':'');
+  });
 };
 
 // ===== CLOSE SHIFT =====
-let _closingShift=false;
 window.closeShift = async function() {
-  if(!SHIFT) return;
-  if(_closingShift) return;
-  const canClose = isAdm || (currentUserPerms?.['close.save']===true);
-  if(!canClose) return alert('ليس لديك صلاحية تقفيل الشيفت');
-  _closingShift=true;
-  const btn=document.querySelector('.close-btn.btn-blue');
-  if(btn){btn.textContent='جاري التقفيل...';btn.style.opacity='0.6';btn.disabled=true;}
-  try{
-  const actual = parseFloat(document.getElementById('actual-inp')?.value?.replace(',','.')||0);
-  if(!actual && actual!==0) return alert('اكتب الخزينة الفعلية في الإيد');
-
-  // تحقق من الطاولات المفتوحة — تنبيه بس مش منع
-  let openTables = [];
+  if (!SHIFT) return;
   try {
     const snap = await getDocs(collection(db,'tables'));
-    snap.forEach(d=>{ if(d.data().busy) openTables.push(d.data().name); });
-  } catch(e){}
+    const open = [];
+    snap.forEach(d => { if(d.data().busy) open.push(d.data().name); });
+    if (open.length) { alert('⚠ في طاولات مفتوحة:\n'+open.join('\n')+'\n\nقفل الطاولات الأول'); return; }
+  } catch(e) {}
 
-  if(openTables.length){
-    if(!confirm(`تنبيه: في ${openTables.length} طاولة مفتوحة (${openTables.join('، ')}) — مش محسوبة في الشيفت ده.\nكمل التقفيل؟`)) return;
-  }
-
-  const exp = expected();
-  const diff = actual - exp;
-  const cash = DATA.cash, elec = DATA.elec, exps = totExp(), net = totInc() - exps;
-
+  const isMorn = SHIFT.type === 'صبح';
   try {
-    await updateDoc(doc(db,'shifts',SHIFT.id),{
+    await updateDoc(doc(db,'shifts',SHIFT.id), {
       status:'closed', endTime:nowT(), endDate:dateStr(),
-      cash, elec, totalIncome:totInc(), totalExp:exps, netShift:net,
-      actualCash:actual, cashDiff:diff, closedBy:currentUser
+      cash:DATA.cash, elec:DATA.elec,
+      totalIncome:totInc(), totalExp:totExp(), netShift:netShift(),
+      closedBy:currentUser
     });
-  } catch(e){}
+  } catch(e) {}
 
-  // حفظ في daily_closing
   try {
     const dk = SHIFT.dayKey || todayKey();
     const ref = doc(db,'daily_closing',dk);
     const snap = await getDoc(ref);
-    const shiftData = {
-      type:SHIFT.type||'—', cash, elec, net, totalExp:exps,
-      actualCash:actual, cashDiff:diff,
-      closedBy:currentUser, time:nowT(),
-      exps: DATA.exps.map(e=>({cat:e.cat||e.name||'—',amt:e.amt||0}))
-    };
-    if(snap.exists()){
-      const prev=snap.data();
-      await updateDoc(ref,{
-        cash:(prev.cash||0)+cash, elec:(prev.elec||0)+elec,
+    if (snap.exists()) {
+      const prev = snap.data();
+      await updateDoc(ref, {
+        cash:(prev.cash||0)+DATA.cash, elec:(prev.elec||0)+DATA.elec,
         totalIncome:(prev.totalIncome||0)+totInc(),
-        totalExp:(prev.totalExp||0)+exps,
-        netDay:(prev.netDay||0)+net,
-        shifts:[...(prev.shifts||[]), shiftData]
+        totalExp:(prev.totalExp||0)+totExp(),
+        netDay:(prev.netDay||0)+netShift(),
+        shifts:[...(prev.shifts||[]), {type:SHIFT.type,cash:DATA.cash,elec:DATA.elec,net:netShift(),closedBy:currentUser,time:nowT()}]
       });
     } else {
-      await setDoc(ref,{
+      await setDoc(ref, {
         date:SHIFT.startDate||dateStr(), dayKey:dk, monthKey:monthKey(),
-        cash, elec, totalIncome:totInc(), totalExp:exps, netDay:net,
-        shifts:[shiftData], timestamp:serverTimestamp()
+        cash:DATA.cash, elec:DATA.elec,
+        totalIncome:totInc(), totalExp:totExp(), netDay:netShift(),
+        shifts:[{type:SHIFT.type,cash:DATA.cash,elec:DATA.elec,net:netShift(),closedBy:currentUser,time:nowT()}],
+        timestamp:serverTimestamp()
       });
     }
-  } catch(e){}
+  } catch(e) {}
 
-  // أرشفة المصاريف
+  // Archive expenses of this shift
   try {
     const expSnap = await getDocs(collection(db,'daily_expenses'));
-    for(const d of expSnap.docs){
-      if(d.data().shiftKey===SHIFT.shiftKey)
-        await updateDoc(doc(db,'daily_expenses',d.id),{archived:true});
+    for (const d of expSnap.docs) {
+      if (d.data().shiftKey === SHIFT.shiftKey) {
+        await updateDoc(doc(db,'daily_expenses',d.id), {archived:true});
+      }
     }
-  } catch(e){}
+  } catch(e) {}
+  await logTransaction('تقفيل شيفت '+SHIFT.type, fmt(netShift())+' صافي', 'close');
+  showShiftReceipt();
 
-  await logTransaction('تقفيل شيفت '+(SHIFT.type||''), fmt(net)+' صافي', 'close');
-
-  // رسيت الشيفت
-  showShiftReceipt(cash, elec, exps, net, actual, diff, DATA.exps);
-  }catch(err){
-    alert('حصل خطأ أثناء التقفيل — حاول تاني');
-    console.error(err);
-    const btn=document.querySelector('.close-btn.btn-blue');
-    if(btn){btn.textContent='تقفيل الشيفت';btn.style.opacity='1';btn.disabled=false;}
-  }finally{
-    _closingShift=false;
-  }
-
-  // فتح شيفت جديد
+  // Create next shift
+  const nextType = isMorn ? 'مسا' : 'صبح';
   const nextDayKey = todayKey();
-  const nextShiftKey = nextDayKey+'_'+Date.now();
-  const nextType = SHIFT.type==='صبح'?'مسا':'صبح';
+  const nextShiftKey = nextDayKey+'_'+nextType;
   try {
-    await addDoc(collection(db,'shifts'),{
+    await addDoc(collection(db,'shifts'), {
       type:nextType, status:'open',
       dayKey:nextDayKey, shiftKey:nextShiftKey,
       startTime:nowT(), startDate:dateStr(),
       timestamp:serverTimestamp()
     });
-    await setDoc(doc(db,'shift_totals',nextShiftKey),{
+    await setDoc(doc(db,'shift_totals',nextShiftKey), {
       cash:0, elec:0, total:0, date:dateStr(), dayKey:nextDayKey, shiftKey:nextShiftKey
     });
-  } catch(e){}
+  } catch(e) {}
 };
 
 // ===== SHIFT RECEIPT =====
-function showShiftReceipt(cash, elec, exps, net, actual, diff, expsList){
-  const html = buildShiftReceiptHTML(
-    cash, elec, exps, net, actual, diff, expsList,
-    SHIFT?.type||'—', SHIFT?.startTime||'—', SHIFT?.startDate||'—', currentUser
-  );
-  thermalPrint(html);
+function showShiftReceipt() {
+  document.getElementById('rcpt-content').innerHTML = `
+    <div class="rh">
+      <div class="rh-name">Camp Game Zone</div>
+      <div class="rh-sub">كافيه وبلايستيشن</div>
+      <div class="rh-type">تقفيل شيفت ${SHIFT.type}</div>
+    </div>
+    <div class="rm">
+      <div class="mr"><span>الكاشير</span><span>${currentUser}</span></div>
+      <div class="mr"><span>التاريخ</span><span>${SHIFT.startDate||dateStr()}</span></div>
+      <div class="mr"><span>بداية الشيفت</span><span>${SHIFT.startTime||'—'}</span></div>
+      <div class="mr"><span>نهاية الشيفت</span><span>${nowT()}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">الإيرادات</div>
+      <div class="rrow"><span>نقدي</span><span>${fmt(DATA.cash)}</span></div>
+      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(DATA.elec)}</span></div>
+      <div class="rrow bold"><span>إجمالي</span><span>${fmt(totInc())}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">المصاريف</div>
+      ${DATA.exps.length
+        ? DATA.exps.map(e=>`<div class="rrow"><span>${e.cat||e.name||'—'}</span><span>${fmt(e.amt)}</span></div>`).join('')
+          + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(totExp())}</span></div>`
+        : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>'}
+    </div>
+    <div class="rtot"><span>صافي الشيفت</span><span>${fmt(netShift())}</span></div>
+    <div class="rf">
+      <div>- - - - - - - - - - - -</div>
+      شكراً لزيارتكم
+      <div class="rf-brand">Camp Game Zone</div>
+    </div>`;
+  document.getElementById('rcpt-view').style.display = 'flex';
 }
+
+// ===== DAY RECEIPT =====
+window.closeDayAndPrint = async function(cash, elec, exp, inc, net) {
+  const firstShift = [...CLOSED_SHIFTS].sort((a,b)=>a.type==='صبح'?-1:1)[0];
+  const dk = firstShift?.dayKey || todayKey();
+  try {
+    const ref = doc(db,'daily_closing',dk);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        date:firstShift?.startDate||dateStr(), dayKey:dk, monthKey:monthKey(),
+        cash, elec, totalIncome:inc, totalExp:exp, netDay:net,
+        shifts:CLOSED_SHIFTS.map(sh=>({type:sh.type,cash:sh.cash||0,elec:sh.elec||0,net:sh.netShift||0,closedBy:sh.closedBy||'',time:sh.endTime||''})),
+        closedBy:currentUser, closedAt:nowT(), timestamp:serverTimestamp()
+      });
+    } else {
+      await updateDoc(ref, {
+        cash, elec, totalIncome:inc, totalExp:exp, netDay:net,
+        shifts:CLOSED_SHIFTS.map(sh=>({type:sh.type,cash:sh.cash||0,elec:sh.elec||0,net:sh.netShift||0,closedBy:sh.closedBy||'',time:sh.endTime||''})),
+        closedBy:currentUser, closedAt:nowT()
+      });
+    }
+    await logTransaction('تقفيل اليوم', fmt(net)+' صافي', 'close');
+  } catch(e) { console.log('closeDay err:',e); }
+
+  // Mark all closed shifts as day-closed + reset totals
+  try {
+    for (const sh of CLOSED_SHIFTS) {
+      await updateDoc(doc(db,'shifts',sh.id), {dayClosedAt: nowT()});
+      if (sh.shiftKey) {
+        await setDoc(doc(db,'shift_totals',sh.shiftKey), {
+          cash:0, elec:0, total:0, archived:true,
+          dayKey:sh.dayKey, shiftKey:sh.shiftKey
+        });
+      }
+    }
+  } catch(e) {}
+
+  await showDayReceipt(cash, elec, exp, inc, net);
+};
+
+async function showDayReceipt(cash, elec, exp, inc, net) {
+  const present = EMPS.filter(e => e.present);
+  const absent  = EMPS.filter(e => !e.present);
+  const firstShift = [...CLOSED_SHIFTS].sort((a,b)=>a.type==='صبح'?-1:1)[0];
+  const dk = firstShift?.dayKey || todayKey();
+
+  // جيب بنود المصاريف اليومية من Firebase
+  let allExps = [];
+  try {
+    const snap = await getDocs(collection(db,'daily_expenses'));
+    snap.forEach(d => {
+      const data = d.data();
+      if(data.dayKey === dk) allExps.push(data);
+    });
+  } catch(e) {}
+
+  const expsHTML = allExps.length
+    ? allExps.map(e => `<div class="rrow"><span>${e.cat||e.name||'—'}</span><span>${fmt(e.amt)}</span></div>`).join('')
+      + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(exp)}</span></div>`
+    : `<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>`;
+
+  thermalPrint(`
+    <div class="rh">
+      <div class="rh-name">Camp Game Zone</div>
+      <div class="rh-sub">كافيه وبلايستيشن</div>
+      <div class="rh-type">تقفيل اليوم</div>
+    </div>
+    <div class="rm">
+      <div class="mr"><span>التاريخ</span><span>${firstShift?.startDate||dateStr()}</span></div>
+      <div class="mr"><span>الوقت</span><span>${nowT()}</span></div>
+      <div class="mr"><span>بواسطة</span><span>${currentUser}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">الإيرادات</div>
+      <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
+      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
+      <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">المصاريف</div>
+      ${expsHTML}
+    </div>
+    <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
+    <div class="rsec">
+      <div class="rsec-t">الحاضرين</div>
+      ${present.map(e=>`<div class="rrow"><span>${e.name}</span><span>✓</span></div>`).join('')}
+      ${absent.map(e=>`<div class="rrow"><span style="color:#999">${e.name}</span><span style="color:#999">غ</span></div>`).join('')}
+    </div>
+    <div class="rf">
+      <div>- - - - - - - - - - -</div>
+      شكراً لزيارتكم
+      <div class="rf-brand">Camp Game Zone</div>
+    </div>`;
+  saveAttendance();
+}
+
+window.printDayReceipt = async function(cash, elec, exp, inc, net) {
+  await showDayReceipt(cash, elec, exp, inc, net);
+};
+
+async function saveAttendance() {
+  for (const emp of EMPS.filter(e => e.present)) {
+    try { await updateDoc(doc(db,'employees',emp.id), {days:(emp.days||0)+1}); } catch(e) {}
+  }
+}
+
+window.closeReceipt = async function() {
+  document.getElementById('rcpt-view').style.display = 'none';
+  window.location.reload();
+};
+
+// ===== INIT =====
+async function init() {
+  await loadCurrentShift();
+  if (!SHIFT) {
+    const ndk = todayKey();
+    const nsk = ndk+'_صبح';
+    try {
+      await addDoc(collection(db,'shifts'), {
+        type:'صبح', status:'open',
+        dayKey:ndk, shiftKey:nsk,
+        startTime:nowT(), startDate:dateStr(),
+        timestamp:serverTimestamp()
+      });
+      await setDoc(doc(db,'shift_totals',nsk), {
+        cash:0, elec:0, total:0, date:dateStr(), dayKey:ndk, shiftKey:nsk
+      });
+      await loadCurrentShift();
+    } catch(e) { console.log('create first shift err:',e); }
+  }
+  await loadShiftData();
+  await loadClosedShifts();
+  await loadEmps();
+  renderShift();
+  renderDay();
+}
+
+setInterval(() => {
+  const c = document.getElementById('clock');
+  if(c) c.textContent = new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+  const lc = document.getElementById('live-clk');
+  if(lc) lc.textContent = new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}, 1000);
+
+// thermal print - same as POS
+window.thermalPrint=function(html){
+  const CSS=[
+    "@import url(\"https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap\");",
+    "@page{size:302px auto;margin:0}",
+    "*{box-sizing:border-box;margin:0;padding:0;font-family:Cairo,sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}",
+    "html,body{width:302px;margin:0;padding:0;background:#fff;font-size:11px;font-weight:700}",
+    ".rh{text-align:center;padding:9px 4px 7px;border-bottom:2px dashed #000}",
+    ".rh-name{font-size:15px;font-weight:900;display:block}",
+    ".rh-sub{font-size:9px;color:#444;display:block;margin-top:2px;font-weight:700}",
+    ".rh-badge,.rh-type{font-size:9px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px}",
+    ".rm{padding:5px 6px;border-bottom:1px dashed #000}",
+    ".mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0;font-weight:700}",
+    ".mr span:first-child{color:#555}.mr span:last-child{font-weight:900}",
+    ".rsec{padding:4px 0;border-bottom:1px dashed #000}",
+    ".rsec-t{font-size:8px;font-weight:900;color:#333;padding:0 6px 2px;border-bottom:1px solid #ccc;margin-bottom:3px;letter-spacing:.4px}",
+    ".rrow{display:flex;justify-content:space-between;font-size:10px;padding:2px 6px;font-weight:700}",
+    ".rrow.bold{font-weight:900}",
+    ".rtot{display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:6px 6px}",
+    ".rp{display:flex;justify-content:space-between;font-size:10px;padding:3px 6px;border-bottom:1px dashed #000;font-weight:700}",
+    ".rf{text-align:center;padding:7px 4px;font-size:10px;color:#444;line-height:1.8;font-weight:700}",
+    ".rf-dots{letter-spacing:3px;display:block;margin-bottom:2px}",
+    ".rf-brand{font-size:12px;font-weight:900;color:#000;display:block}"
+  ].join('');
+  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+  if(!w)return;
+  const doc=['<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>',CSS,'<\/style><\/head><body>',html,'<\/body><\/html>'].join('');
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+  w.onload=function(){w.focus();w.print();};
+};
+
+requireAuth(async(user,userData) => {
+  const isAdm = user.uid === ADMIN_UID;
+  currentUser = isAdm ? 'Admin' : (userData?.name||user.email);
+  document.getElementById('uname').textContent = currentUser;
+  await init();
+});
+</script>
+</body>
+</html>

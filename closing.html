@@ -150,7 +150,7 @@ window.showTab = function(t) {
     document.getElementById('tab-'+n).classList.toggle('act', n===t);
     document.getElementById('p-'+n).classList.toggle('act', n===t);
   });
-  if (t==='day') renderDay();
+  if (t==='day' && typeof renderDay === 'function') renderDay();
 };
 
 // ===== LOAD CURRENT SHIFT =====
@@ -539,8 +539,8 @@ async function showDayReceipt(cash, elec, exp, inc, net) {
     <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
     <div class="rsec">
       <div class="rsec-t">الحاضرين</div>
-      ${present.map(e=>`<div class="rrow"><span>${e.name}</span><span>&#10003;</span></div>`).join("")}
-      ${absent.map(e=>`<div class="rrow"><span style="color:#999">${e.name}</span><span style="color:#999">&#1594;</span></div>`).join("")}
+      ${present.map(e=>"<div class=\"rrow\"><span>" + e.name + "</span><span>&#10003;</span></div>").join("")}
+      ${absent.map(e=>"<div class=\"rrow\"><span style=\"color:#999\">" + e.name + "</span><span style=\"color:#999\">\u063A</span></div>").join("")}
     </div>
     <div class="rf">
       <div>- - - - - - - - - - -</div>

@@ -150,18 +150,41 @@
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
   }
-  /* خلي الخطوط تمتد من أول لآخر */
-  .rcpt-box .rh{padding-left:0!important;padding-right:0!important;margin:0!important}
-  .rcpt-box .rm{padding-left:4px!important;padding-right:4px!important;margin:0!important}
-  .rcpt-box .rsec-game{padding-left:4px!important;padding-right:4px!important;margin:0!important;border-bottom:2px dashed #000!important}
-  .rcpt-box .rsec-drinks{padding-left:4px!important;padding-right:4px!important;margin:0!important;border-bottom:2px dashed #000!important}
-  .rcpt-box .rtot{padding-left:4px!important;padding-right:4px!important;margin:0!important;border-top:2px solid #000!important;border-bottom:2px solid #000!important}
-  .rcpt-box .rp{padding-left:4px!important;padding-right:4px!important;margin:0!important}
-  .rcpt-box .rf{padding-left:0!important;padding-right:0!important;margin:0!important}
-  /* الخط الفاصل بعد الهيدر */
-  .rcpt-box .rh{border-bottom:2px dashed #000!important}
-  /* الخط بعد الميتا */
-  .rcpt-box .rm{border-bottom:1px dashed #000!important}
+  /* خلي كل السكشنز بدون padding جانبي عشان الخطوط توصل للحافة */
+  .rcpt-box .rh,
+  .rcpt-box .rm,
+  .rcpt-box .rsec-game,
+  .rcpt-box .rsec-drinks,
+  .rcpt-box .rtot,
+  .rcpt-box .rp,
+  .rcpt-box .rf,
+  .rcpt-box .rsec,
+  .rcpt-box div[style*="padding"]{
+    padding-left:0!important;
+    padding-right:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    width:100%!important;
+  }
+  /* الخطوط الفاصلة */
+  .rcpt-box .rh{border-bottom:2px dashed #000!important;padding-bottom:6px!important}
+  .rcpt-box .rm{border-bottom:1px dashed #000!important;padding-top:4px!important;padding-bottom:4px!important}
+  .rcpt-box .rsec-game{border-bottom:2px dashed #000!important;padding-top:5px!important;padding-bottom:5px!important}
+  .rcpt-box .rsec-drinks{border-bottom:2px dashed #000!important;padding-top:4px!important;padding-bottom:4px!important}
+  .rcpt-box .rtot{border-top:2px solid #000!important;border-bottom:2px solid #000!important;padding-top:6px!important;padding-bottom:6px!important}
+  .rcpt-box .rp{border-bottom:1px dashed #000!important;padding-top:3px!important;padding-bottom:3px!important}
+  /* محتوى داخلي يحتاج padding بسيط */
+  .rcpt-box .rm .mr,
+  .rcpt-box .rsec-game .game-row,
+  .rcpt-box .rsec-game .rsec-game-title,
+  .rcpt-box .rsec-drinks .dhead,
+  .rcpt-box .rsec-drinks .drow,
+  .rcpt-box .rtot,
+  .rcpt-box .rp,
+  .rcpt-box .rf{
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
   /* reset كل الـ inline font sizes */
   .rcpt-box *{
     font-size:13px!important;

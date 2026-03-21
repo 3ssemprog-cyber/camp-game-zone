@@ -324,7 +324,7 @@ async function loadTables(){
   try{
     const snap=await getDocs(collection(db,'tables'));
     TABLES=[];
-    snap.forEach(d=>{const data=d.data();TABLES.push({id:d.id,n:data.name,busy:data.busy||false,openAt:data.openAt||null,order:data.order||[],sessions:data.sessions||[]});});
+    snap.forEach(d=>{const data=d.data();TABLES.push({id:d.id,n:data.name,busy:data.busy||false,openAt:data.openAt||null,order:data.order||[],sessions:data.sessions||[],catType:data.catType||''});});
   }catch(e){ TABLES=[]; }
 }
 
@@ -389,7 +389,23 @@ function renderTables(){
     const d=document.createElement('div');
     d.className='tc '+(t.busy?'busy':'free')+(sel&&sel.id===t.id?' sel':'');
     d.innerHTML=`<div class="tn">${t.n}</div>`;
-    d.onclick=()=>{sel=t;cat=CATS[0];picked=null;resetPick();renderAll();};
+    d.onclick=()=>{
+      sel=t;
+      // لو الطاولة عندها نوع محدد — اختاره تلقائي
+      if(t.catType && TC[Object.keys(TC).find(k=>TC[k].id===t.catType)]){
+        cat=Object.keys(TC).find(k=>TC[k].id===t.catType);
+      } else if(t.catType){
+        // دور على الاسم في TC
+        const tcEntry=Object.values(TC).find(v=>v.id===t.catType);
+        if(tcEntry) cat=tcEntry.label;
+        else cat=CATS[0];
+      } else {
+        // طاولة عادية — روح لأول تصنيف مش لعبة
+        const firstNonGame=CATS.find(c=>!TC[c]);
+        cat = firstNonGame || CATS[0];
+      }
+      picked=null;resetPick();renderAll();
+    };
     g.appendChild(d);
   });
 }

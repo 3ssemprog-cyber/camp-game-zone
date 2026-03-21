@@ -104,15 +104,20 @@
     <div class="card">
       <div class="card-head">إضافة طاولة / غرفة</div>
       <div class="card-body">
-        <div style="display:flex;gap:8px">
-          <div style="flex:1"><div class="fl">اسم الطاولة</div><input class="finp" id="t-name" placeholder="مثلاً: غرفة 1"></div>
-          <div style="display:flex;align-items:flex-end"><button class="btn-primary" onclick="addTable()">+ إضافة</button></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div class="fl">اسم الطاولة</div><input class="finp" id="t-name" placeholder="مثلاً: غرفة 1"></div>
+          <div><div class="fl">النوع</div>
+            <select class="fsel" id="t-type">
+              <option value="">عادية (مشاريب بس)</option>
+            </select>
+          </div>
         </div>
+        <button class="btn-primary-full" onclick="addTable()">+ إضافة طاولة</button>
       </div>
     </div>
     <div class="tbl-wrap">
       <table class="dtbl" style="width:100%;border-collapse:collapse;table-layout:fixed">
-        <thead><tr><th>اسم الطاولة</th><th style="width:70px">حذف</th></tr></thead>
+        <thead><tr><th>اسم الطاولة</th><th style="width:120px">النوع</th><th style="width:100px">تغيير النوع</th><th style="width:60px">حذف</th></tr></thead>
         <tbody id="t-body"></tbody>
       </table>
     </div>
@@ -352,16 +357,35 @@ async function loadTables(){
 }
 function renderTables(){
   document.getElementById('t-body').innerHTML=TABLES.length
-    ?TABLES.map(t=>`<tr><td style="font-weight:600">${t.name}</td><td><div class="del-btn" onclick="delTable('${t.id}')">حذف</div></td></tr>`).join('')
-    :'<tr><td colspan="2" style="text-align:center;padding:14px;color:var(--text3)">لا يوجد طاولات</td></tr>';
+    ?TABLES.map(t=>{
+      const typeName=t.catType?TIMER_CATS.find(c=>c.id===t.catType)?.name||t.catType:'عادية';
+      const typeOpts=`<option value="">عادية</option>`+TIMER_CATS.map(c=>`<option value="${c.id}" ${t.catType===c.id?'selected':''}>${c.name}</option>`).join('');
+      return`<tr>
+        <td style="font-weight:600">${t.name}</td>
+        <td><span class="badge ${t.catType?'badge-blue':'badge-gray'}">${typeName}</span></td>
+        <td><select class="fsel-sm" onchange="changeTableType('${t.id}',this.value)" style="font-size:11px;padding:4px 8px">${typeOpts}</select></td>
+        <td><div class="del-btn" onclick="delTable('${t.id}')">حذف</div></td>
+      </tr>`;
+    }).join('')
+    :'<tr><td colspan="4" style="text-align:center;padding:14px;color:var(--text3)">لا يوجد طاولات</td></tr>';
 }
 window.addTable=async function(){
   const name=document.getElementById('t-name').value.trim();
+  const catType=document.getElementById('t-type').value||'';
   if(!name)return alert('اكتب اسم الطاولة');
   try{
-    const ref=await addDoc(collection(db,'tables'),{name,busy:false,openAt:null,order:[],sessions:[],timestamp:serverTimestamp()});
-    TABLES.push({id:ref.id,name,busy:false,order:[],sessions:[]});
+    const ref=await addDoc(collection(db,'tables'),{name,catType,busy:false,openAt:null,order:[],sessions:[],timestamp:serverTimestamp()});
+    TABLES.push({id:ref.id,name,catType,busy:false,order:[],sessions:[]});
     document.getElementById('t-name').value='';
+    renderTables();
+  }catch(e){alert('حصل خطأ');}
+};
+
+window.changeTableType=async function(id,catType){
+  const t=TABLES.find(x=>x.id===id);if(!t)return;
+  t.catType=catType;
+  try{
+    await updateDoc(doc(db,'tables',id),{catType});
     renderTables();
   }catch(e){alert('حصل خطأ');}
 };
@@ -495,6 +519,15 @@ requireAuth(async(user,userData)=>{
   document.getElementById('uname').textContent='Admin';
   await Promise.all([loadUsers(),loadTables(),loadTimerCats(),loadCats()]);
   renderUsers();renderTables();renderTimerCats();
+  // املأ dropdown نوع الطاولة بالتصنيفات
+  const tsel=document.getElementById('t-type');
+  if(tsel){
+    TIMER_CATS.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id; o.textContent=c.name;
+      tsel.appendChild(o);
+    });
+  }
   renderTags(DCATS,'d-cats-wrap','delDCat');
   renderTags(MCATS,'m-cats-wrap','delMCat');
 });

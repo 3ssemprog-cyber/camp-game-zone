@@ -344,7 +344,7 @@ div[style*="padding:3px 8px"]{display:flex!important;justify-content:space-betwe
   window.printSalaryRcpt=function(){
     const box=document.getElementById('sal-rcpt');
     if(!box)return;
-    doThermalPrint(buildPrintHTML(box.innerHTML));
+    thermalPrint(box.innerHTML);
   };
 }
 
@@ -446,6 +446,57 @@ window.delEmp = async function(id, name){
 };
 
 window.closeOvl = function(){ document.getElementById('ovl').style.display='none'; };
+
+window.thermalPrint=function(html){
+  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+  if(!w)return;
+  const css=[
+    "@import url(\"https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap\");",
+    "@page{size:302px auto;margin:0}",
+    "*{box-sizing:border-box;margin:0;padding:0;font-family:Cairo,sans-serif;color:#000;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}",
+    "html,body{width:302px;margin:0;padding:0;background:#fff;font-size:11px;font-weight:700}",
+    ".rh{text-align:center;padding:9px 4px 7px;border-bottom:2px dashed #000}",
+    ".rh-name{font-size:15px;font-weight:900;display:block}",
+    ".rh-sub{font-size:9px;color:#444;display:block;margin-top:2px;font-weight:700}",
+    ".rh-badge,.rh-type{font-size:9px;font-weight:900;border:1.5px solid #000;display:inline-block;padding:1px 8px;border-radius:20px;margin-top:3px}",
+    ".rm{padding:5px 6px;border-bottom:1px dashed #000}",
+    ".mr{display:flex;justify-content:space-between;font-size:10px;padding:1px 0;font-weight:700}",
+    ".mr span:first-child{color:#555}.mr span:last-child{font-weight:900}",
+    ".rgames{background:#ebebeb;padding:5px 0;border-bottom:2px dashed #000}",
+    ".rgames-t{font-size:8px;font-weight:900;color:#333;letter-spacing:.4px;border-bottom:1px solid #ccc;padding:0 6px 2px;margin-bottom:3px}",
+    ".rgame-row{display:flex;justify-content:space-between;font-size:11px;font-weight:700;padding:2px 6px}",
+    ".rgame-dur{font-size:9px;color:#555;margin-top:1px;font-weight:700}",
+    ".rdrinks{padding:4px 0;border-bottom:2px dashed #000}",
+    ".rd-head{display:grid;font-size:8px;color:#555;font-weight:900;padding:0 6px 2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center}",
+    ".rd-head span:first-child{text-align:right}",
+    ".rd-row{display:grid;font-size:11px;padding:2px 6px;border-bottom:1px solid #eee;text-align:center;font-weight:700}",
+    ".rd-row span:first-child{text-align:right}.rd-row span:last-child{font-weight:900}",
+    ".rd-note{font-size:8px;color:#777;font-style:italic;margin-top:1px;text-align:right;font-weight:700}",
+    ".rdisc{display:flex;justify-content:space-between;padding:2px 6px;font-size:10px;border-bottom:1px dashed #000;color:#555;font-weight:700}",
+    ".rtot{display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:2px solid #000;border-bottom:2px solid #000;padding:6px 6px}",
+    ".rp{display:flex;justify-content:space-between;font-size:10px;padding:3px 6px;border-bottom:1px dashed #000;font-weight:700}",
+    ".rbar-items{padding:5px 0;border-bottom:2px dashed #000}",
+    ".rbar-t{font-size:8px;font-weight:900;color:#333;letter-spacing:.4px;border-bottom:1px solid #ccc;padding:0 6px 2px;margin-bottom:4px}",
+    ".rbar-row{display:flex;justify-content:space-between;padding:3px 6px;border-bottom:1px solid #eee;font-size:11px;font-weight:700}",
+    ".rbar-note{font-size:8px;color:#777;font-style:italic;margin-top:1px;font-weight:700}",
+    ".rf{text-align:center;padding:7px 4px;font-size:10px;color:#444;line-height:1.8;font-weight:700}",
+    ".rf-dots{letter-spacing:3px;display:block;margin-bottom:2px}",
+    ".rf-brand{font-size:12px;font-weight:900;color:#000;display:block}",
+    ".ri-head{display:grid;grid-template-columns:1fr 20px;font-size:9px;color:#555;font-weight:900;padding:0 6px 2px;border-bottom:1px solid #ccc;margin-bottom:2px;text-align:center}",
+    ".ri-head span:first-child{text-align:right}",
+    ".ri-row{display:grid;grid-template-columns:1fr 20px;font-size:11px;padding:3px 6px;border-bottom:1px solid #eee;font-weight:700;text-align:center}",
+    ".ri-row span:first-child{text-align:right}.ri-row span:last-child{font-weight:900}",
+    ".banner{padding:4px 6px;text-align:center;font-size:9px;font-weight:900;border-bottom:1px dashed #000}"
+  ].join('');
+  const doc=['<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>',css,'<\/style><\/head><body>',html,'<\/body><\/html>'].join('');
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+  w.onload=function(){w.focus();w.print();};
+};
+window.showReceipt=function(html){
+  thermalPrint(html);
+};
 
 requireAuth(async(user,userData)=>{
   isAdm = user.uid===ADMIN_UID;

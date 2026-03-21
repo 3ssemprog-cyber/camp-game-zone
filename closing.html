@@ -628,17 +628,11 @@ setInterval(()=>{
 
 
 function doThermalPrint(htmlContent){
-  const old=document.getElementById('thermal-iframe');
-  if(old)old.remove();
-  const iframe=document.createElement('iframe');
-  iframe.id='thermal-iframe';
-  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
-  document.body.appendChild(iframe);
-  const doc=iframe.contentWindow.document;
-  doc.open();
-  doc.write(htmlContent);
-  doc.close();
-  iframe.onload=function(){setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();},400);};
+  const w=window.open('','_blank','width=302,height=700,scrollbars=no,toolbar=no,menubar=no,location=no,status=no,left=0,top=0');
+  w.document.open();
+  w.document.write(htmlContent);
+  w.document.close();
+  w.onload=function(){w.focus();w.print();};
 }
 function buildPrintHTML(bodyContent){
   const parts=[

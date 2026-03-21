@@ -1143,8 +1143,16 @@ window.doTrf=function(type){
 };
 
 // ===== RETURN =====
-window.openReturn=function(){
-  if(!canReturn)return alert('ليس لديك صلاحية تقفيل المرتجعات');
+window.openReturn=async function(){
+  // تأكد من الصلاحية مباشرة من Firebase
+  try{
+    const userDoc=await getDoc(doc(db,'users',auth.currentUser?.uid));
+    const perms=userDoc.exists()?userDoc.data().permissions||{}:{};
+    const allowed=auth.currentUser?.uid===ADMIN_UID||perms['pos.return']===true;
+    if(!allowed)return alert('ليس لديك صلاحية تقفيل المرتجعات');
+  }catch(e){
+    if(!canReturn)return alert('ليس لديك صلاحية تقفيل المرتجعات');
+  }
   if(!sel||!sel.busy)return alert('اختار طاولة شغالة وفيها أصناف');
   const items=(sel.order||[]).filter(i=>!i.cm);
   if(!items.length)return alert('لا يوجد أصناف مرتجعة');

@@ -228,6 +228,9 @@ const netShift = () => totInc() - totExp();
 
 // ===== RENDER SHIFT =====
 function renderShift() {
+  const canCloseShift = isAdm || currentUserPerms['close.save']===true;
+  const canSeeSales   = isAdm || currentUserPerms['close.see_sales']===true;
+  const canActualCash = isAdm || currentUserPerms['close.actual_cash']===true;
   const p = document.getElementById('p-shift');
   if (!SHIFT) {
     p.innerHTML = `<div style="text-align:center;padding:30px">
@@ -269,9 +272,14 @@ function renderShift() {
     <div style="padding:9px 12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:9px;font-size:11px;color:#FCD34D">
       بعد التقفيل — شيفت ${isMorn?'المسا 🌙':'الصبح 🌅 للغد'} هيفتح تلقائي
     </div>
-    <button class="close-btn ${isMorn?'btn-m':'btn-e'}" onclick="closeShift()">
-      تقفيل شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}
-    </button>`;
+    ${canActualCash ? `
+    <div class="sec-lbl">الخزينة الفعلية في الإيد</div>
+    <input class="actual-inp" id="actual-inp" type="text" inputmode="decimal" placeholder="0.00"
+      oninput="calcDiff(this.value)" onchange="calcDiff(this.value)">
+    <div id="diff-box"></div>` : ''}
+    ${canCloseShift
+      ? `<button class="close-btn ${isMorn?'btn-m':'btn-e'}" onclick="closeShift()">تقفيل شيفت ${SHIFT.type} ${isMorn?'🌅':'🌙'}</button>`
+      : `<div style="padding:10px;text-align:center;color:var(--text3);font-size:12px;background:var(--bg3);border-radius:9px">ليس لديك صلاحية تقفيل الشيفت</div>`}`;
 }
 
 // ===== RENDER DAY =====
@@ -345,9 +353,34 @@ window.setAtt = function(i, v) {
   });
 };
 
+window.calcDiff = function(v){
+  actualCash = parseFloat(v.replace(',','.')||0);
+  const box = document.getElementById('diff-box');
+  if(!box) return;
+  const canDiff = isAdm || currentUserPerms['close.see_diff']===true;
+  if(!canDiff){ box.innerHTML=''; return; }
+  const exp = DATA.cash - totExp();
+  const diff = actualCash - exp;
+  if(!v.trim()){ box.innerHTML=''; return; }
+  if(Math.abs(diff)<0.01){
+    box.innerHTML='<div class="diff-ok"><span style="color:#6EE7B7">✓ الخزينة صح</span></div>';
+  } else if(diff>0){
+    box.innerHTML='<div class="diff-ok"><span style="color:#6EE7B7">زيادة + '+diff.toFixed(2)+' ج</span></div>';
+  } else {
+    box.innerHTML='<div class="diff-err"><span style="color:#FCA5A5">عجز − '+Math.abs(diff).toFixed(2)+' ج</span></div>';
+  }
+};
+
 // ===== CLOSE SHIFT =====
+let _closingShift=false;
 window.closeShift = async function() {
   if (!SHIFT) return;
+  if(_closingShift) return;
+  const canClose = isAdm || currentUserPerms['close.save']===true;
+  if(!canClose) return alert('ليس لديك صلاحية تقفيل الشيفت');
+  _closingShift=true;
+  const btn=document.querySelector('.close-btn');
+  if(btn){btn.textContent='جاري التقفيل...';btn.style.opacity='0.6';btn.disabled=true;}
   try {
     const snap = await getDocs(collection(db,'tables'));
     const open = [];
@@ -357,10 +390,13 @@ window.closeShift = async function() {
 
   const isMorn = SHIFT.type === 'صبح';
   try {
+    const actual = actualCash||0;
+    const diff   = actual - (DATA.cash - totExp());
     await updateDoc(doc(db,'shifts',SHIFT.id), {
       status:'closed', endTime:nowT(), endDate:dateStr(),
       cash:DATA.cash, elec:DATA.elec,
       totalIncome:totInc(), totalExp:totExp(), netShift:netShift(),
+      actualCash:actual, cashDiff:diff,
       closedBy:currentUser
     });
   } catch(e) {}
@@ -400,6 +436,7 @@ window.closeShift = async function() {
   } catch(e) {}
   await logTransaction('تقفيل شيفت '+SHIFT.type, fmt(netShift())+' صافي', 'close');
   showShiftReceipt();
+  _closingShift=false;
 
   // Create next shift
   const nextType = isMorn ? 'مسا' : 'صبح';
@@ -638,8 +675,19 @@ window.thermalPrint=function(html){
 };
 
 requireAuth(async(user,userData) => {
-  const isAdm = user.uid === ADMIN_UID;
+  isAdm = user.uid === ADMIN_UID;
   currentUser = isAdm ? 'Admin' : (userData?.name||user.email);
+  currentUserPerms = userData?.permissions || {};
+
+  const canViewShift = isAdm || currentUserPerms['close.view_shift']===true;
+  const canViewDay   = isAdm || currentUserPerms['close.view_day']===true;
+  if(!canViewShift && !canViewDay){
+    document.getElementById('p-shift').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">ليس لديك صلاحية عرض التقفيل</div>';
+    return;
+  }
+  if(!canViewShift) document.getElementById('tab-shift').style.display='none';
+  if(!canViewDay)   document.getElementById('tab-day').style.display='none';
+  if(!canViewShift && canViewDay) window.showTab('day');
   document.getElementById('uname').textContent = currentUser;
   await init();
 });

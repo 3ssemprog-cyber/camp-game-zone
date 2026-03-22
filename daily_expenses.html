@@ -118,8 +118,8 @@ async function loadExpenses(){
     EXPS=[];
     snap.forEach(d=>{
       const data=d.data();
-      // Show only expenses belonging to current open shift
-      if(data.shiftKey===currentShiftKey) EXPS.push({id:d.id,...data});
+      // فقط مصاريف الشيفت الحالي + مش مؤرشفة
+      if(data.shiftKey===currentShiftKey && !data.archived) EXPS.push({id:d.id,...data});
     });
     EXPS.sort((a,b)=>((b.timestamp?.seconds||0)-(a.timestamp?.seconds||0)));
   }catch(e){ EXPS=[]; }

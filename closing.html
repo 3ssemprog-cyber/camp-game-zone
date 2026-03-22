@@ -198,7 +198,9 @@ async function loadShiftData() {
     const snap = await getDocs(collection(db,'daily_expenses'));
     DATA.exps = [];
     snap.forEach(d => {
-      if (d.data().shiftKey === sk) DATA.exps.push(d.data());
+      const data = d.data();
+      // فلتر بالشيفت كي + مش مؤرشف
+      if (data.shiftKey === sk && !data.archived) DATA.exps.push(data);
     });
   } catch(e) { DATA.exps=[]; }
 }
@@ -431,17 +433,21 @@ window.closeShift = async function() {
     }
   } catch(e) {}
 
-  // Archive expenses of this shift
+  await logTransaction('تقفيل شيفت '+SHIFT.type, fmt(netShift())+' صافي', 'close');
+
+  // طبع الرسيت الأول قبل الأرشفة عشان المصاريف لسه موجودة
+  showShiftReceipt();
+
+  // Archive expenses of this shift بعد الطباعة
   try {
     const expSnap = await getDocs(collection(db,'daily_expenses'));
     for (const d of expSnap.docs) {
-      if (d.data().shiftKey === SHIFT.shiftKey) {
+      if (d.data().shiftKey === SHIFT.shiftKey && !d.data().archived) {
         await updateDoc(doc(db,'daily_expenses',d.id), {archived:true});
       }
     }
   } catch(e) {}
-  await logTransaction('تقفيل شيفت '+SHIFT.type, fmt(netShift())+' صافي', 'close');
-  showShiftReceipt();
+
   _closingShift=false;
 
   // Create next shift

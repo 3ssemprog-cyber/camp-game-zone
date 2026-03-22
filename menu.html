@@ -141,8 +141,9 @@ const app = initializeApp({
 const db = getFirestore(app);
 
 // ── الطاولة من URL ──────────────────────────────────────
-const tableNum  = new URLSearchParams(location.search).get('table') || '؟';
-const tableName = 'طاولة ' + tableNum;
+const tableParam = new URLSearchParams(location.search).get('table') || '؟';
+const tableNum   = tableParam;
+const tableName  = tableParam.match(/^\d+$/) ? 'طاولة ' + tableParam : tableParam;
 document.getElementById('table-badge').textContent = '🪑 ' + tableName;
 document.title = 'منيو — ' + tableName;
 

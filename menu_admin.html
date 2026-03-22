@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Camp Game Zone — إدارة المنيو</title>
 <link rel="stylesheet" href="theme.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 .main{max-width:960px;margin:0 auto;padding:16px}
 .tb-flex{display:flex;align-items:center;gap:8px}
@@ -66,7 +66,7 @@
 <div class="main">
   <div class="page-tabs">
     <div class="ptab act" onclick="showPg('items',this)">🍽️ أصناف المنيو</div>
-    <div class="ptab" onclick="showPg('barcodes',this)">📊 Barcodes الطاولات</div>
+    <div class="ptab" onclick="showPg('barcodes',this)">📱 QR Codes الطاولات</div>
   </div>
 
   <!-- ===== Items ===== -->
@@ -84,21 +84,20 @@
     </div>
   </div>
 
-  <!-- ===== Barcodes ===== -->
+  <!-- ===== QR Codes ===== -->
   <div class="page" id="page-barcodes">
     <div class="card">
-      <div class="card-head">توليد Barcodes للطاولات</div>
+      <div class="card-head" style="display:flex;align-items:center;justify-content:space-between">
+        <span>📱 QR Codes الطاولات</span>
+        <button class="print-btn" onclick="window.print()">🖨️ طباعة الكل</button>
+      </div>
       <div class="card-body">
-        <div class="bc-setup">
-          <label>عدد الطاولات:</label>
-          <input class="num-inp" type="number" id="tcount" value="10" min="1" max="60">
-          <button class="gen-btn" onclick="genBC()">🔄 توليد</button>
-          <button class="print-btn" onclick="window.print()">🖨️ طباعة الكل</button>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px" id="url-hint"></div>
+        <div style="font-size:11px;color:var(--text3)">QR Code لكل طاولة — الزبون يمسحه يفتح المنيو مباشرة</div>
       </div>
     </div>
-    <div class="bc-grid" id="bc-grid"></div>
+    <div class="bc-grid" id="bc-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3)">جاري تحميل الطاولات...</div>
+    </div>
   </div>
 </div>
 
@@ -189,36 +188,46 @@ window.save = async id => {
   } catch(e) { alert('حصل خطأ'); }
 };
 
-// ── Barcodes ─────────────────────────────────────────────
-window.genBC = function() {
-  const n = parseInt(document.getElementById('tcount').value)||10;
-  document.getElementById('url-hint').textContent =
-    'مثال: ' + BASE + '?table=1';
-
+// ── QR Codes من الطاولات المسجلة ─────────────────────────
+async function loadQRCodes() {
   const grid = document.getElementById('bc-grid');
-  grid.innerHTML = '';
+  try {
+    const snap = await getDocs(collection(db, 'tables'));
+    const tables = [];
+    snap.forEach(d => tables.push({ id: d.id, ...d.data() }));
+    tables.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
 
-  for (let i = 1; i <= n; i++) {
-    const url = BASE + '?table=' + i;
-    const div = document.createElement('div');
-    div.className = 'bc-card';
-    div.id = 'bc-'+i;
-    div.innerHTML =
-      `<div class="bc-label">🪑 طاولة ${i}</div>`+
-      `<svg id="svg-${i}"></svg>`+
-      `<div class="bc-sub">Camp Game Zone — امسح للطلب</div>`;
-    grid.appendChild(div);
-    setTimeout(() => {
-      try {
-        JsBarcode('#svg-'+i, url, {
-          format:'CODE128', width:1.5, height:55,
-          displayValue:false, margin:4,
-          lineColor:'#000', background:'#fff'
-        });
-      } catch(e){}
-    }, 0);
+    if (!tables.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">لا يوجد طاولات مسجلة — اضيف طاولات من الإعدادات أول</div>';
+      return;
+    }
+
+    grid.innerHTML = tables.map(t =>
+      `<div class="bc-card" id="bc-${t.id}">
+        <div class="bc-label">🪑 ${t.name}</div>
+        <div id="qr-${t.id}" style="display:flex;justify-content:center;margin:8px 0"></div>
+        <div class="bc-sub">امسح لفتح المنيو</div>
+        <div class="bc-sub" style="font-size:9px;color:#999;margin-top:3px;word-break:break-all">${BASE}?table=${encodeURIComponent(t.name)}</div>
+      </div>`
+    ).join('');
+
+    // رسم QR لكل طاولة
+    tables.forEach(t => {
+      const url = BASE + '?table=' + encodeURIComponent(t.name);
+      new QRCode(document.getElementById('qr-' + t.id), {
+        text:          url,
+        width:         150,
+        height:        150,
+        colorDark:     '#000000',
+        colorLight:    '#ffffff',
+        correctLevel:  QRCode.CorrectLevel.M,
+      });
+    });
+
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--red);text-align:center;padding:20px">حصل خطأ في تحميل الطاولات</div>';
   }
-};
+}
 
 function toast(msg) {
   const t = document.createElement('div');
@@ -234,7 +243,7 @@ requireAuth(async (user) => {
   if (user.uid !== ADMIN_UID) { window.location.href='dashboard.html'; return; }
   document.getElementById('uname').textContent = 'Admin';
   await loadItems();
-  genBC();
+  await loadQRCodes();
 });
 </script>
 </body>

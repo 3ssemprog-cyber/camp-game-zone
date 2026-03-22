@@ -106,128 +106,135 @@
 </div>
 
 <script>
+// stub - runs before module loads
 window.showPg = function(p, el) {
-  document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('act'); });
-  document.querySelectorAll('.ptab').forEach(function(x){ x.classList.remove('act'); });
-  var page = document.getElementById('page-'+p);
-  if(page) page.classList.add('act');
-  if(el) el.classList.add('act');
+  document.querySelectorAll('.page').forEach(function(x) { x.classList.remove('act'); });
+  document.querySelectorAll('.ptab').forEach(function(x) { x.classList.remove('act'); });
+  var pg = document.getElementById('page-'+p);
+  if (pg) pg.classList.add('act');
+  if (el) el.classList.add('act');
 };
 window.toggleF = function(id) {
   var f = document.getElementById('f-'+id);
-  if(f){ f.classList.toggle('open'); }
+  if (f) f.classList.toggle('open');
 };
-window.save = function(id) {};
-window.saveQR = function(cardId, name) {};
+window._imgErr = function(el, id) {
+  el.style.display = 'none';
+  var ph = document.getElementById('ph-'+id);
+  if (ph) ph.style.display = 'flex';
+};
 </script>
 <script type="module">
-import { db, auth, ADMIN_UID, requireAuth,
-  collection, getDocs, doc, setDoc }
+import { db, auth, ADMIN_UID, requireAuth, collection, getDocs, doc, setDoc }
   from './firebase.js';
 
-const BASE = window.location.origin +
-  window.location.pathname.replace('menu_admin.html','') + 'menu.html';
+var BASE = window.location.origin
+  + window.location.pathname.replace('menu_admin.html','')
+  + 'menu.html';
 
-// ── Load items ───────────────────────────────────────────
+// ── Load items ────────────────────────────────────────────
 async function loadItems() {
   try {
-    const mSnap = await getDocs(collection(db,'menu_items'));
-    const ex = {};
+    var mSnap = await getDocs(collection(db,'menu_items'));
+    var ex = {};
     mSnap.forEach(function(d) { ex[d.id] = d.data(); });
 
-    const snap = await getDocs(collection(db,'inventory'));
-    const list = [];
+    var snap = await getDocs(collection(db,'inventory'));
+    var list = [];
     snap.forEach(function(d) {
-      const data = d.data();
+      var data = d.data();
       if (!data.forSale) return;
       list.push({
-        id:   d.id,
-        name: data.name,
+        id:    d.id,
+        name:  data.name  || '',
         price: data.salePrice || 0,
-        cat:  data.cat || 'اخرى',
-        img:  (ex[d.id] || {}).img  || '',
-        desc: (ex[d.id] || {}).desc || ''
+        cat:   data.cat   || 'اخرى',
+        img:   (ex[d.id]||{}).img  || '',
+        desc:  (ex[d.id]||{}).desc || ''
       });
     });
 
-    const grid = document.getElementById('items-grid');
+    var grid = document.getElementById('items-grid');
     if (!list.length) {
       grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);grid-column:1/-1">لا يوجد اصناف للبيع</div>';
       return;
     }
     grid.innerHTML = list.map(iCard).join('');
   } catch(e) {
-    document.getElementById('items-grid').innerHTML = '<div style="color:var(--red)">حصل خطا</div>';
+    document.getElementById('items-grid').innerHTML = '<div style="color:var(--red)">حصل خطا في التحميل</div>';
   }
 }
 
 function iCard(it) {
-  const img = it.img
-    ? '<img class="iadm-img" id="pimg-'+it.id+'" src="'+it.img+'" onerror="this.outerHTML='<div class=\"iadm-ph\" id=\"pimg-'+it.id+'\">🍽️</div>'">'
-    : '<div class="iadm-ph" id="pimg-'+it.id+'">🍽️</div>';
+  var imgPart = it.img
+    ? '<img class="iadm-img" src="' + it.img + '" id="pimg-' + it.id + '" onerror="_imgErr(this,\'' + it.id + '\')">'
+      + '<div class="iadm-ph" id="ph-' + it.id + '" style="display:none">🍽️</div>'
+    : '<div class="iadm-ph" id="ph-' + it.id + '">🍽️</div>';
+
   return '<div class="iadm">'
-    + img
+    + imgPart
     + '<div class="iadm-body">'
-    + '<div class="iadm-name">'+it.name+'</div>'
-    + '<div class="iadm-cat">'+it.cat+'</div>'
-    + '<div class="iadm-price">'+it.price+' ج</div>'
-    + '<div class="img-btn" onclick="toggleF(''+it.id+'')">📷 تعديل الصورة والوصف</div>'
+    + '<div class="iadm-name">' + it.name + '</div>'
+    + '<div class="iadm-cat">'  + it.cat  + '</div>'
+    + '<div class="iadm-price">' + it.price + ' ج</div>'
+    + '<div class="img-btn" onclick="toggleF(\'' + it.id + '\')">📷 تعديل الصورة والوصف</div>'
     + '</div>'
-    + '<div class="img-form" id="f-'+it.id+'">'
-    + '<input class="url-inp" id="u-'+it.id+'" placeholder="URL الصورة..." value="'+it.img+'" onkeydown="if(event.key==='Enter')save(''+it.id+'')">'
-    + '<textarea class="desc-area" id="d-'+it.id+'" rows="2" placeholder="وصف قصير...">'+it.desc+'</textarea>'
-    + '<button class="save-btn" onclick="save(''+it.id+'')">💾 حفظ</button>'
+    + '<div class="img-form" id="f-' + it.id + '">'
+    + '<input class="url-inp" id="u-' + it.id + '" placeholder="URL الصورة..." value="' + it.img + '">'
+    + '<textarea class="desc-area" id="d-' + it.id + '" rows="2" placeholder="وصف قصير...">' + it.desc + '</textarea>'
+    + '<button class="save-btn" onclick="save(\'' + it.id + '\')">💾 حفظ</button>'
     + '</div>'
     + '</div>';
 }
 
-window.toggleF = function(id) {
-  const f = document.getElementById('f-'+id);
-  if (f) f.classList.toggle('open');
-};
-
 window.save = async function(id) {
-  const urlEl  = document.getElementById('u-'+id);
-  const descEl = document.getElementById('d-'+id);
-  const url  = urlEl  ? urlEl.value.trim()  : '';
-  const desc = descEl ? descEl.value.trim() : '';
+  var urlEl  = document.getElementById('u-'+id);
+  var descEl = document.getElementById('d-'+id);
+  var url    = urlEl  ? urlEl.value.trim()  : '';
+  var desc   = descEl ? descEl.value.trim() : '';
   try {
     await setDoc(doc(db,'menu_items',id), {img:url, desc:desc}, {merge:true});
     if (url) {
-      const prev = document.getElementById('pimg-'+id);
-      if (prev) prev.outerHTML = '<img class="iadm-img" id="pimg-'+id+'" src="'+url+'">';
+      var prev = document.getElementById('pimg-'+id);
+      if (prev) prev.src = url;
+      var ph = document.getElementById('ph-'+id);
+      if (ph) ph.style.display = 'none';
+      if (prev) prev.style.display = 'block';
     }
-    const f = document.getElementById('f-'+id);
+    var f = document.getElementById('f-'+id);
     if (f) f.classList.remove('open');
     toast('تم الحفظ');
   } catch(e) { alert('حصل خطا'); }
 };
 
-// ── QR Codes ─────────────────────────────────────────────
+// ── QR Codes ──────────────────────────────────────────────
 async function loadQRCodes() {
-  const grid = document.getElementById('bc-grid');
+  var grid = document.getElementById('bc-grid');
   try {
-    const snap = await getDocs(collection(db,'tables'));
-    const tables = [];
-    snap.forEach(function(d) { tables.push(Object.assign({id:d.id}, d.data())); });
+    var snap = await getDocs(collection(db,'tables'));
+    var tables = [];
+    snap.forEach(function(d) {
+      var data = d.data();
+      tables.push({id: d.id, name: data.name || d.id});
+    });
     tables.sort(function(a,b) { return (a.name||'').localeCompare(b.name||'','ar'); });
 
     if (!tables.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">لا يوجد طاولات مسجلة</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">لا يوجد طاولات — اضفها من الاعدادات</div>';
       return;
     }
 
     grid.innerHTML = tables.map(function(t) {
-      return '<div class="bc-card" id="bc-'+t.id+'">'
-        + '<div class="bc-name">'+t.name+'</div>'
-        + '<div class="bc-qr" id="qr-'+t.id+'"></div>'
+      return '<div class="bc-card" id="bc-' + t.id + '">'
+        + '<div class="bc-name">' + t.name + '</div>'
+        + '<div class="bc-qr" id="qr-' + t.id + '"></div>'
         + '<div class="bc-scanme">Scan Me</div>'
-        + '<button class="bc-save" onclick="saveQR('bc-'+t.id+'',''+t.name.replace(/'/g,"\\'")+'')" >💾 حفظ كصورة</button>'
+        + '<button class="bc-save" onclick="saveQR(\'bc-' + t.id + '\',' + '\'' + t.name + '\')">💾 حفظ كصورة</button>'
         + '</div>';
     }).join('');
 
     tables.forEach(function(t) {
-      const url = BASE + '?table=' + encodeURIComponent(t.name);
+      var url = BASE + '?table=' + encodeURIComponent(t.name);
       new QRCode(document.getElementById('qr-'+t.id), {
         text:         url,
         width:        150,
@@ -237,26 +244,19 @@ async function loadQRCodes() {
         correctLevel: QRCode.CorrectLevel.M
       });
     });
-
   } catch(e) {
     grid.innerHTML = '<div style="grid-column:1/-1;color:var(--red);text-align:center;padding:20px">حصل خطا في تحميل الطاولات</div>';
   }
 }
 
-// ── Save QR as image ──────────────────────────────────────
 window.saveQR = async function(cardId, name) {
-  const card = document.getElementById(cardId);
+  var card = document.getElementById(cardId);
   if (!card) return;
-  const btn = card.querySelector('.bc-save');
+  var btn = card.querySelector('.bc-save');
   if (btn) btn.style.display = 'none';
   try {
-    const canvas = await html2canvas(card, {
-      backgroundColor: '#ffffff',
-      scale: 3,
-      useCORS: true,
-      allowTaint: true
-    });
-    const link = document.createElement('a');
+    var canvas = await html2canvas(card, {backgroundColor:'#ffffff', scale:3, useCORS:true});
+    var link = document.createElement('a');
     link.download = 'QR-' + name + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
@@ -267,11 +267,12 @@ window.saveQR = async function(cardId, name) {
   }
 };
 
-// ── Toast ─────────────────────────────────────────────────
 function toast(msg) {
-  const t = document.createElement('div');
+  var t = document.createElement('div');
   t.textContent = msg;
-  t.style.cssText = 'position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#064E3B;border:0.5px solid #10B981;border-radius:10px;padding:9px 18px;font-size:12px;font-weight:700;color:#6EE7B7;z-index:999';
+  t.style.cssText = 'position:fixed;top:76px;left:50%;transform:translateX(-50%);'
+    + 'background:#064E3B;border:0.5px solid #10B981;border-radius:10px;'
+    + 'padding:9px 18px;font-size:12px;font-weight:700;color:#6EE7B7;z-index:999';
   document.body.appendChild(t);
   setTimeout(function() { t.remove(); }, 2200);
 }

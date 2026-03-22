@@ -228,35 +228,52 @@ window.exportDay=async function(dayKey,dateLabel){
     });
     exps.forEach(e=>{ totalExps+=parseFloat(e.amt||0); });
 
-    // بناء CSV بشكل منظم
     const r=(v)=>parseFloat(v||0).toFixed(2);
+    const clean=(v)=>{ const s=String(v||'').replace(/"/g,'""'); return s.includes(',')||s.includes('\n')||s.includes('"')?`"${s}"`:s; };
+    const line=(...cols)=>cols.map(clean).join(',')+'\n';
+
     let csv = '\uFEFF';
 
-    // عنوان
-    csv += `تقرير يوم ${dateLabel}\n`;
-    csv += `\n`;
+    // ── العنوان ──
+    csv += line(`تقرير يوم ${dateLabel}`);
+    csv += line('وقت الطباعة', new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}));
+    csv += '\n';
 
-    // سكشن المبيعات
-    csv += `المبيعات\n`;
-    csv += `الطاولة,الأصناف,نقدي,إلكتروني,الإجمالي,الوقت\n`;
-    sessions.forEach(s=>{
-      const items=(s.items||[]).map(i=>`${i.n||''} x${i.q||1}`).join(' | ');
-      const sessItems=(s.sessions||[]).map(ss=>`${ss.cat||''} ${ss.dur?Math.round(ss.dur/60000)+'د':''}`).join(' | ');
-      const allItems=[sessItems,items].filter(Boolean).join(' | ');
-      csv += `${s.table||''},${allItems},"${r(s.cashAmt)}","${r(s.elecAmt)}","${r(s.total)}",${s.time||''}\n`;
-    });
-    csv += `إجمالي المبيعات,,${r(totalCash)},${r(totalElec)},${r(totalSales)},\n`;
-    csv += `\n`;
+    // ── الملخص السريع أولاً ──
+    csv += line('📊 الملخص السريع');
+    csv += line('البند','المبلغ (ج)');
+    csv += line('إجمالي المبيعات (نقدي)', r(totalCash));
+    csv += line('إجمالي المبيعات (إلكتروني)', r(totalElec));
+    csv += line('إجمالي المبيعات', r(totalSales));
+    csv += line('إجمالي المصاريف', r(totalExps));
+    csv += line('✅ صافي اليوم', r(totalSales - totalExps));
+    csv += '\n';
 
-    // سكشن المصاريف
-    csv += `المصاريف اليومية\n`;
-    csv += `التصنيف,المبلغ,الوقت,ملاحظة\n`;
-    exps.forEach(e=>{ csv += `${e.cat||''},${r(e.amt)},${e.time||''},${e.note||''}\n`; });
-    csv += `إجمالي المصاريف,${r(totalExps)},,,\n`;
-    csv += `\n`;
+    // ── تفاصيل المبيعات ──
+    csv += line('📋 تفاصيل المبيعات');
+    csv += line('الطاولة','الأصناف','نقدي (ج)','إلكتروني (ج)','الإجمالي (ج)','الوقت');
+    if (sessions.length) {
+      sessions.forEach(s=>{
+        const items=(s.items||[]).map(i=>`${i.n||''} x${i.q||1}`).join(' | ');
+        const sessItems=(s.sessions||[]).map(ss=>`${ss.cat||''} ${ss.dur?Math.round(ss.dur/60000)+'د':''}`).join(' | ');
+        const allItems=[sessItems,items].filter(Boolean).join(' | ');
+        csv += line(s.table||'—', allItems||'—', r(s.cashAmt), r(s.elecAmt), r(s.total), s.time||'—');
+      });
+      csv += line('الإجمالي','', r(totalCash), r(totalElec), r(totalSales),'');
+    } else {
+      csv += line('—','لا يوجد مبيعات','—','—','—','—');
+    }
+    csv += '\n';
 
-    // صافي اليوم
-    csv += `صافي اليوم,${r(totalSales-totalExps)}\n`;
+    // ── تفاصيل المصاريف ──
+    csv += line('💸 تفاصيل المصاريف');
+    csv += line('البند','المبلغ (ج)','الوقت','ملاحظة');
+    if (exps.length) {
+      exps.forEach(e=>{ csv += line(e.cat||'—', r(e.amt), e.time||'—', e.note||'—'); });
+      csv += line('الإجمالي', r(totalExps),'','');
+    } else {
+      csv += line('—','لا يوجد مصاريف','—','—');
+    }
 
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);

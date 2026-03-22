@@ -468,6 +468,27 @@ function showShiftReceipt() {
       + '<div class="rrow bold"><span>إجمالي المصاريف</span><span>'+fmt(totExp())+'</span></div>'
     : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>';
 
+  const expected = DATA.cash - totExp();
+  const actual   = actualCash || 0;
+  const diff     = actual - expected;
+  const hasDiff  = actual > 0;
+
+  const diffRow = !hasDiff ? '' :
+    Math.abs(diff) < 0.01
+      ? '<div class="rrow" style="color:#1a7a3c;font-weight:900"><span>الخزينة صح</span><span>✓</span></div>'
+      : diff > 0
+        ? '<div class="rrow bold" style="color:#1a7a3c"><span>زيادة</span><span>+ '+fmt(diff)+'</span></div>'
+        : '<div class="rrow bold" style="color:#c00"><span>عجز</span><span>− '+fmt(Math.abs(diff))+'</span></div>';
+
+  const vaultSection = !hasDiff ? '' : [
+    '<div class="rsec">',
+      '<div class="rsec-t">الخزينة</div>',
+      '<div class="rrow"><span>المفروض في الإيد</span><span>'+fmt(expected)+'</span></div>',
+      '<div class="rrow"><span>الفعلي في الإيد</span><span>'+fmt(actual)+'</span></div>',
+      diffRow,
+    '</div>'
+  ].join('');
+
   const html = [
     '<div class="rh">',
       '<div class="rh-name">Camp Game Zone</div>',
@@ -491,6 +512,7 @@ function showShiftReceipt() {
       expsRows,
     '</div>',
     '<div class="rtot"><span>صافي الشيفت</span><span>'+fmt(netShift())+'</span></div>',
+    vaultSection,
     '<div class="rf">',
       '<div class="rf-dots">. . . . . . . . .</div>',
       'شكراً لزيارتكم',

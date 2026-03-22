@@ -129,6 +129,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text1);min-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyBtdqDQMiEnElUykFb2Tmoe_xB43kgf9O4",
@@ -138,7 +139,8 @@ const app = initializeApp({
   messagingSenderId:"232147913506",
   appId:"1:232147913506:web:735c0fd763cb8ab0a7b37b"
 });
-const db = getFirestore(app);
+const db   = getFirestore(app);
+const auth = getAuth(app);
 
 // ── الطاولة من URL ──────────────────────────────────────
 const tableParam = new URLSearchParams(location.search).get('table') || '؟';
@@ -311,7 +313,28 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-load();
+// تسجيل دخول تلقائي مجهول ثم تحميل المنيو
+async function start() {
+  try {
+    if (!auth.currentUser) {
+      await signInAnonymously(auth);
+    }
+    await load();
+  } catch(e) {
+    console.error('auth/load error:', e);
+    // لو Anonymous Auth مش مفعل — جرب بدون auth
+    if (e.code === 'auth/operation-not-allowed') {
+      // Anonymous auth مش مفعل في Firebase Console
+      document.getElementById('content').innerHTML =
+        '<div class="empty">⚠️ يرجى تفعيل Anonymous Authentication<br>في Firebase Console</div>';
+    } else {
+      // جرب يحمل بدون auth (لو الـ rules تسمح)
+      await load();
+    }
+  }
+}
+
+start();
 </script>
 </body>
 </html>

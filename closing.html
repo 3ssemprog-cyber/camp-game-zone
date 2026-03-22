@@ -143,6 +143,7 @@ const todayKey = () => new Date().toISOString().split('T')[0];
 const monthKey = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
 
 let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[], currentUser='';
+let isAdm=false, currentUserPerms={}, actualCash=0;
 
 // ===== TABS =====
 window.showTab = function(t) {

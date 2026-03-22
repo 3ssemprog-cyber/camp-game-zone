@@ -155,17 +155,27 @@ let ALL  = [], CATS = [], selCat = '', CART = [], cartOpen = false;
 // ── Load ────────────────────────────────────────────────
 async function load() {
   try {
+    // جيب التصنيفات المخفية
+    var hiddenCats = [];
+    try {
+      const settSnap = await getDocs(collection(db, 'menu_settings'));
+      settSnap.forEach(d => {
+        if (d.id === 'hidden_cats') hiddenCats = d.data().cats || [];
+      });
+    } catch(e) {}
+
     // جيب بيانات الصور والوصف من menu_items
     const menuSnap = await getDocs(collection(db, 'menu_items'));
     const extras   = {};
     menuSnap.forEach(d => { extras[d.id] = d.data(); });
 
-    // جيب الأصناف اللي forSale=true
+    // جيب الأصناف اللي forSale=true وتصنيفها مش مخفي
     const snap = await getDocs(collection(db, 'inventory'));
     ALL = [];
     snap.forEach(d => {
       const data = d.data();
       if (!data.forSale) return;
+      if (hiddenCats.indexOf(data.cat) !== -1) return; // مخفي
       const ex = extras[d.id] || {};
       ALL.push({
         id:    d.id,

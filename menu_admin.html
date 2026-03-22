@@ -70,6 +70,7 @@
 <div class="main">
   <div class="page-tabs">
     <div class="ptab act" onclick="showPg('items',this)">🍽️ أصناف المنيو</div>
+    <div class="ptab" onclick="showPg('cats',this)">🏷️ التصنيفات</div>
     <div class="ptab" onclick="showPg('barcodes',this)">📱 QR Codes الطاولات</div>
   </div>
 
@@ -83,6 +84,19 @@
         </div>
         <div class="items-grid" id="items-grid">
           <div style="text-align:center;padding:30px;color:var(--text3);grid-column:1/-1">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Cats ===== -->
+  <div class="page" id="page-cats">
+    <div class="card">
+      <div class="card-head">🏷️ التصنيفات — اختار اللي تخفيه من المنيو</div>
+      <div class="card-body">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px">التصنيفات المخفية مش هتظهر للزبون في المنيو</div>
+        <div id="cats-list" style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-align:center;padding:20px;color:var(--text3)">جاري التحميل...</div>
         </div>
       </div>
     </div>
@@ -207,6 +221,62 @@ window.save = async function(id) {
   } catch(e) { alert('حصل خطا'); }
 };
 
+// ── Cats visibility ───────────────────────────────────────
+var HIDDEN_CATS = [];
+
+async function loadCats() {
+  try {
+    // جيب التصنيفات المخفية الحالية
+    var settSnap = await getDocs(collection(db,'menu_settings'));
+    settSnap.forEach(function(d) {
+      if (d.id === 'hidden_cats') HIDDEN_CATS = d.data().cats || [];
+    });
+
+    // جيب كل التصنيفات من المخزن
+    var snap = await getDocs(collection(db,'inventory'));
+    var catSet = new Set();
+    snap.forEach(function(d) {
+      var data = d.data();
+      if (data.cat) catSet.add(data.cat);
+    });
+    var cats = Array.from(catSet).sort(function(a,b){ return a.localeCompare(b,'ar'); });
+
+    var list = document.getElementById('cats-list');
+    if (!cats.length) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">لا يوجد تصنيفات</div>';
+      return;
+    }
+
+    list.innerHTML = cats.map(function(c) {
+      var hidden = HIDDEN_CATS.indexOf(c) !== -1;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:10px;border:0.5px solid ' + (hidden ? 'var(--red)' : 'var(--green)') + '">'
+        + '<div style="display:flex;align-items:center;gap:8px">'
+        + '<div style="width:10px;height:10px;border-radius:50%;background:' + (hidden ? 'var(--red)' : 'var(--green)') + '"></div>'
+        + '<span style="font-size:13px;font-weight:700;color:var(--text1)">' + c + '</span>'
+        + '</div>'
+        + '<div style="display:flex;align-items:center;gap:8px">'
+        + '<span style="font-size:11px;color:' + (hidden ? '#FCA5A5' : '#6EE7B7') + '">' + (hidden ? 'مخفي من المنيو' : 'ظاهر في المنيو') + '</span>'
+        + '<button onclick="toggleCat(\'' + c + '\')" style="padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:\'Cairo\',sans-serif;border:0.5px solid ' + (hidden ? 'var(--green)' : 'var(--red)') + ';background:' + (hidden ? 'var(--green-bg)' : 'var(--red-bg)') + ';color:' + (hidden ? '#6EE7B7' : '#FCA5A5') + '">'
+        + (hidden ? '✓ إظهار' : '✕ إخفاء') + '</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('cats-list').innerHTML = '<div style="color:var(--red)">حصل خطا</div>';
+  }
+}
+
+window.toggleCat = async function(cat) {
+  var idx = HIDDEN_CATS.indexOf(cat);
+  if (idx === -1) HIDDEN_CATS.push(cat);
+  else HIDDEN_CATS.splice(idx, 1);
+  try {
+    await setDoc(doc(db,'menu_settings','hidden_cats'), {cats: HIDDEN_CATS}, {merge:true});
+    await loadCats();
+    toast((idx === -1 ? 'تم إخفاء ' : 'تم إظهار ') + cat);
+  } catch(e) { alert('حصل خطا'); }
+};
+
 // ── QR Codes ──────────────────────────────────────────────
 async function loadQRCodes() {
   var grid = document.getElementById('bc-grid');
@@ -255,34 +325,70 @@ window.saveQR = async function(cardId, name) {
   var btn = card.querySelector('.bc-save');
   if (btn) btn.style.display = 'none';
 
-  // نضمن تحميل الـ font قبل الـ screenshot
-  try { await document.fonts.ready; } catch(e) {}
-
   try {
-    var canvas = await html2canvas(card, {
-      backgroundColor: '#ffffff',
-      scale: 3,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      onclone: function(clonedDoc) {
-        var el = clonedDoc.getElementById(cardId);
-        if (el) {
-          el.style.fontFamily = "'Cairo', Arial, sans-serif";
-          el.style.direction  = 'rtl';
-          // force redraw
-          el.querySelectorAll('*').forEach(function(n) {
-            n.style.fontFamily = "'Cairo', Arial, sans-serif";
-          });
-        }
-      }
-    });
+    // جيب الـ QR image من الـ card
+    var qrImg = card.querySelector('img');
+    var qrCanvas = card.querySelector('canvas');
+
+    var W = 400, H = 480;
+    var canvas = document.createElement('canvas');
+    canvas.width  = W;
+    canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // خلفية بيضاء
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // border خفيف
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.roundRect(4, 4, W-8, H-8, 20);
+    ctx.stroke();
+
+    // اسم الطاولة فوق
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.direction = 'rtl';
+    ctx.fillText(name, W/2, 60);
+
+    // QR Code في النص
+    var qrSize = 260;
+    var qrX = (W - qrSize) / 2;
+    var qrY = 80;
+
+    if (qrCanvas) {
+      ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+    } else if (qrImg) {
+      await new Promise(function(res) {
+        var i = new Image();
+        i.crossOrigin = 'anonymous';
+        i.onload = function() { ctx.drawImage(i, qrX, qrY, qrSize, qrSize); res(); };
+        i.onerror = res;
+        i.src = qrImg.src;
+      });
+    }
+
+    // Scan Me من تحت
+    ctx.fillStyle = '#444444';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.direction = 'ltr';
+    ctx.fillText('Scan Me', W/2, qrY + qrSize + 50);
+
+    // Camp Game Zone
+    ctx.fillStyle = '#888888';
+    ctx.font = '16px Arial, sans-serif';
+    ctx.fillText('Camp Game Zone', W/2, qrY + qrSize + 80);
+
+    // حفظ
     var link = document.createElement('a');
     link.download = 'QR-' + name + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+
   } catch(e) {
-    alert('حصل خطا في الحفظ');
+    alert('حصل خطا: ' + e.message);
   } finally {
     if (btn) btn.style.display = 'block';
   }
@@ -302,6 +408,7 @@ requireAuth(async function(user) {
   if (user.uid !== ADMIN_UID) { window.location.href = 'dashboard.html'; return; }
   document.getElementById('uname').textContent = 'Admin';
   await loadItems();
+  await loadCats();
   await loadQRCodes();
 });
 </script>

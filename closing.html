@@ -118,8 +118,8 @@
 
 <div class="main">
   <div class="tabs">
-    <div class="tab act" id="tab-shift" onclick="showTab('shift')">تقفيل الشيفت</div>
-    <div class="tab" id="tab-day" onclick="showTab('day')">تقفيل اليوم</div>
+    <div class="tab act" id="tab-shift" onclick="window.showTab('shift')">تقفيل الشيفت</div>
+    <div class="tab" id="tab-day" onclick="window.showTab('day')">تقفيل اليوم</div>
   </div>
   <div class="page act" id="p-shift"><div style="text-align:center;padding:30px;color:var(--text3)">جاري التحميل...</div></div>
   <div class="page" id="p-day"></div>
@@ -540,7 +540,7 @@ async function showDayReceipt(cash, elec, exp, inc, net) {
     <div class="rsec">
       <div class="rsec-t">الحاضرين</div>
       ${present.map(e=>`<div class="rrow"><span>${e.name}</span><span>✓</span></div>`).join('')}
-      ${absent.map(e=>`<div class="rrow"><span style="color:#999">${e.name}</span><span style="color:#999">غ</span></div>`).join('')}
+      ${absent.map(e=>'<div class="rrow"><span style="color:#aaa">'+e.name+'</span><span style="color:#aaa">غ</span></div>').join('')}
     </div>
     <div class="rf">
       <div>- - - - - - - - - - -</div>

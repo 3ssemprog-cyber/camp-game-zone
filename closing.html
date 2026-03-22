@@ -133,17 +133,6 @@
   </div>
 </div>
 
-<script>
-// showTab stub - يشتغل قبل الـ module يتحمل
-window.showTab = function(t) {
-  ['shift','day'].forEach(function(n) {
-    var tab = document.getElementById('tab-'+n);
-    var page = document.getElementById('p-'+n);
-    if(tab) tab.classList.toggle('act', n===t);
-    if(page) page.classList.toggle('act', n===t);
-  });
-};
-</script>
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
   collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, serverTimestamp } from './firebase.js';
@@ -158,10 +147,8 @@ let SHIFT=null, DATA={cash:0,elec:0,exps:[]}, EMPS=[], CLOSED_SHIFTS=[], current
 // ===== TABS =====
 window.showTab = function(t) {
   ['shift','day'].forEach(n => {
-    const tab = document.getElementById('tab-'+n);
-    const page = document.getElementById('p-'+n);
-    if(tab) tab.classList.toggle('act', n===t);
-    if(page) page.classList.toggle('act', n===t);
+    document.getElementById('tab-'+n).classList.toggle('act', n===t);
+    document.getElementById('p-'+n).classList.toggle('act', n===t);
   });
   if (t==='day') renderDay();
 };
@@ -275,7 +262,7 @@ function renderShift() {
       <div class="card-head">تفاصيل المصاريف</div>
       <div class="card-body">
         ${DATA.exps.length
-          ? DATA.exps.map(e=>'<div class="exp-row"><span style="color:var(--text2)">'+e.cat+'</span><span style="font-weight:700;color:#FCA5A5">'+fmt(e.amt)+'</span></div>').join('')
+          ? DATA.exps.map(e=>`<div class="exp-row"><span style="color:var(--text2)">${e.cat}</span><span style="font-weight:700;color:#FCA5A5">${fmt(e.amt)}</span></div>`).join('')
           : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد مصاريف</div>'}
       </div>
     </div>
@@ -301,17 +288,18 @@ function renderDay() {
       <div class="card-head">الشيفتات المقفلة اليوم (${CLOSED_SHIFTS.length})</div>
       <div class="card-body">
         ${CLOSED_SHIFTS.length
-          ? CLOSED_SHIFTS.map(sh=>'<div class="day-shift">'
-            +'<div class="ds-head">'
-            +'<span class="ds-name">شيفت '+sh.type+' '+(sh.type==='صبح'?'🌅':'🌙')+'</span>'
-            +'<span class="ds-net">'+fmt(sh.netShift||0)+' صافي</span>'
-            +'</div>'
-            +'<div class="ds-row"><span>نقدي</span><span>'+fmt(sh.cash||0)+'</span></div>'
-            +'<div class="ds-row"><span>دفع إلكتروني</span><span>'+fmt(sh.elec||0)+'</span></div>'
-            +'<div class="ds-row"><span>مصاريف</span><span>'+fmt(sh.totalExp||0)+'</span></div>'
-            +'<div class="ds-row"><span>قُفِّل بواسطة</span><span>'+(sh.closedBy||'—')+'</span></div>'
-            +'<div class="ds-row"><span>وقت التقفيل</span><span>'+(sh.endTime||'—')+'</span></div>'
-            +'</div>').join('')
+          ? CLOSED_SHIFTS.map(sh=>`
+            <div class="day-shift">
+              <div class="ds-head">
+                <span class="ds-name">شيفت ${sh.type} ${sh.type==='صبح'?'🌅':'🌙'}</span>
+                <span class="ds-net">${fmt(sh.netShift||0)} صافي</span>
+              </div>
+              <div class="ds-row"><span>نقدي</span><span>${fmt(sh.cash||0)}</span></div>
+              <div class="ds-row"><span>دفع إلكتروني</span><span>${fmt(sh.elec||0)}</span></div>
+              <div class="ds-row"><span>مصاريف</span><span>${fmt(sh.totalExp||0)}</span></div>
+              <div class="ds-row"><span>قُفِّل بواسطة</span><span>${sh.closedBy||'—'}</span></div>
+              <div class="ds-row"><span>وقت التقفيل</span><span>${sh.endTime||'—'}</span></div>
+            </div>`).join('')
           : '<div style="text-align:center;font-size:12px;color:var(--text3);padding:10px">لا يوجد شيفتات مقفلة اليوم</div>'}
       </div>
     </div>
@@ -325,16 +313,17 @@ function renderDay() {
       <div class="card-head">حضور وغياب اليوم</div>
       <div class="card-body">
         ${EMPS.length
-          ? EMPS.map((e,i)=>'<div class="emp-row '+(e.present?'P':'')+'" id="er'+i+'">'
-            +'<div style="display:flex;align-items:center;gap:8px">'
-            +'<div style="width:30px;height:30px;border-radius:50%;background:#1E3A8A;color:#93C5FD;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">'+(e.name?e.name.substring(0,2):'')+'</div>'
-            +'<div><div style="font-size:12px;font-weight:600;color:var(--text1)">'+e.name+'</div><div style="font-size:10px;color:var(--text3)">'+e.role+'</div></div>'
-            +'</div>'
-            +'<div style="display:flex;gap:4px">'
-            +'<div class="ab '+(e.present?'P':'')+'" onclick="setAtt('+i+',true)">حاضر</div>'
-            +'<div class="ab '+(!e.present?'A':'')+'" onclick="setAtt('+i+',false)">غائب</div>'
-            +'</div>'
-            +'</div>').join('')
+          ? EMPS.map((e,i)=>`
+            <div class="emp-row ${e.present?'P':''}" id="er${i}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:30px;height:30px;border-radius:50%;background:#1E3A8A;color:#93C5FD;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${e.name?.substring(0,2)}</div>
+                <div><div style="font-size:12px;font-weight:600;color:var(--text1)">${e.name}</div><div style="font-size:10px;color:var(--text3)">${e.role}</div></div>
+              </div>
+              <div style="display:flex;gap:4px">
+                <div class="ab ${e.present?'P':''}" onclick="setAtt(${i},true)">حاضر</div>
+                <div class="ab ${!e.present?'A':''}" onclick="setAtt(${i},false)">غائب</div>
+              </div>
+            </div>`).join('')
           : '<div style="text-align:center;font-size:12px;color:var(--text3)">لا يوجد موظفين</div>'}
       </div>
     </div>
@@ -452,7 +441,7 @@ function showShiftReceipt() {
     <div class="rsec">
       <div class="rsec-t">المصاريف</div>
       ${DATA.exps.length
-        ? DATA.exps.map(e=>'<div class="rrow"><span>'+(e.cat||e.name||'—')+'</span><span>'+fmt(e.amt)+'</span></div>').join('')
+        ? DATA.exps.map(e=>`<div class="rrow"><span>${e.cat||e.name||'—'}</span><span>${fmt(e.amt)}</span></div>`).join('')
           + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(totExp())}</span></div>`
         : '<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>'}
     </div>
@@ -526,39 +515,39 @@ async function showDayReceipt(cash, elec, exp, inc, net) {
       + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(exp)}</span></div>`
     : `<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>`;
 
-  thermalPrint(
-    '<div class="rh">'
-    +'<div class="rh-name">Camp Game Zone</div>'
-    +'<div class="rh-sub">كافيه وبلايستيشن</div>'
-    +'<div class="rh-type">تقفيل اليوم</div>'
-    +'</div>'
-    +'<div class="rm">'
-    +'<div class="mr"><span>التاريخ</span><span>'+(firstShift?.startDate||dateStr())+'</span></div>'
-    +'<div class="mr"><span>الوقت</span><span>'+nowT()+'</span></div>'
-    +'<div class="mr"><span>بواسطة</span><span>'+currentUser+'</span></div>'
-    +'</div>'
-    +'<div class="rsec">'
-    +'<div class="rsec-t">الإيرادات</div>'
-    +'<div class="rrow"><span>نقدي</span><span>'+fmt(cash)+'</span></div>'
-    +'<div class="rrow"><span>دفع إلكتروني</span><span>'+fmt(elec)+'</span></div>'
-    +'<div class="rrow bold"><span>إجمالي</span><span>'+fmt(inc)+'</span></div>'
-    +'</div>'
-    +'<div class="rsec">'
-    +'<div class="rsec-t">المصاريف</div>'
-    +expsHTML
-    +'</div>'
-    +'<div class="rtot"><span>صافي اليوم</span><span>'+fmt(net)+'</span></div>'
-    +'<div class="rsec">'
-    +'<div class="rsec-t">الحاضرين</div>'
-    +present.map(function(e){return '<div class="rrow"><span>'+e.name+'</span><span>&#10003;</span></div>';}).join('')
-    +absent.map(function(e){return '<div class="rrow"><span style="color:#999">'+e.name+'</span><span style="color:#999">غ</span></div>';}).join('')
-    +'</div>'
-    +'<div class="rf">'
-    +'<div>- - - - - - - - - - -</div>'
-    +'شكراً لزيارتكم'
-    +'<div class="rf-brand">Camp Game Zone</div>'
-    +'</div>'
-  );  saveAttendance();
+  thermalPrint(`
+    <div class="rh">
+      <div class="rh-name">Camp Game Zone</div>
+      <div class="rh-sub">كافيه وبلايستيشن</div>
+      <div class="rh-type">تقفيل اليوم</div>
+    </div>
+    <div class="rm">
+      <div class="mr"><span>التاريخ</span><span>${firstShift?.startDate||dateStr()}</span></div>
+      <div class="mr"><span>الوقت</span><span>${nowT()}</span></div>
+      <div class="mr"><span>بواسطة</span><span>${currentUser}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">الإيرادات</div>
+      <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
+      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
+      <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
+    </div>
+    <div class="rsec">
+      <div class="rsec-t">المصاريف</div>
+      ${expsHTML}
+    </div>
+    <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
+    <div class="rsec">
+      <div class="rsec-t">الحاضرين</div>
+      ${present.map(e=>`<div class="rrow"><span>${e.name}</span><span>✓</span></div>`).join('')}
+      ${absent.map(e=>`<div class="rrow"><span style="color:#999">${e.name}</span><span style="color:#999">غ</span></div>`).join('')}
+    </div>
+    <div class="rf">
+      <div>- - - - - - - - - - -</div>
+      شكراً لزيارتكم
+      <div class="rf-brand">Camp Game Zone</div>
+    </div>`;
+  saveAttendance();
 }
 
 window.printDayReceipt = async function(cash, elec, exp, inc, net) {

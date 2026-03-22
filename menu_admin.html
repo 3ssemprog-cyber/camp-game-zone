@@ -6,6 +6,7 @@
 <title>Camp Game Zone — إدارة المنيو</title>
 <link rel="stylesheet" href="theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 .main{max-width:960px;margin:0 auto;padding:16px}
 .tb-flex{display:flex;align-items:center;gap:8px}
@@ -38,10 +39,13 @@
 .num-inp{width:70px;padding:7px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text1);font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;text-align:center}
 .gen-btn{padding:8px 18px;background:var(--accent);border:none;border-radius:9px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}
 .print-btn{padding:8px 16px;background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif}
-.bc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
-.bc-card{background:#fff;border-radius:12px;padding:14px;text-align:center}
-.bc-label{font-size:13px;font-weight:900;color:#000;margin-bottom:8px;font-family:'Cairo',sans-serif}
-.bc-sub{font-size:10px;color:#666;margin-top:6px;font-family:'Cairo',sans-serif}
+.bc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.bc-card{background:#fff;border-radius:16px;padding:18px 14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.bc-name{font-size:15px;font-weight:900;color:#000;margin-bottom:10px;font-family:'Cairo',sans-serif;letter-spacing:.3px}
+.bc-qr{display:flex;justify-content:center;align-items:center}
+.bc-scanme{font-size:12px;font-weight:700;color:#555;margin-top:10px;font-family:'Arial',sans-serif;letter-spacing:1px}
+.bc-save{margin-top:10px;padding:6px 16px;background:#1E3A8A;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;width:100%}
+.bc-save:hover{opacity:.85}
 
 @media print{
   .topbar,.page-tabs,#page-items,.bc-setup,.card-head{display:none!important}
@@ -204,10 +208,10 @@ async function loadQRCodes() {
 
     grid.innerHTML = tables.map(t =>
       `<div class="bc-card" id="bc-${t.id}">
-        <div class="bc-label">🪑 ${t.name}</div>
-        <div id="qr-${t.id}" style="display:flex;justify-content:center;margin:8px 0"></div>
-        <div class="bc-sub">امسح لفتح المنيو</div>
-        <div class="bc-sub" style="font-size:9px;color:#999;margin-top:3px;word-break:break-all">${BASE}?table=${encodeURIComponent(t.name)}</div>
+        <div class="bc-name">${t.name}</div>
+        <div class="bc-qr" id="qr-${t.id}"></div>
+        <div class="bc-scanme">Scan Me</div>
+        <button class="bc-save" onclick="saveQR('bc-${t.id}','${t.name}')">💾 حفظ كصورة</button>
       </div>`
     ).join('');
 
@@ -229,7 +233,30 @@ async function loadQRCodes() {
   }
 }
 
-function toast(msg) {
+// ── حفظ QR كصورة ──────────────────────────────────────────
+window.saveQR = async function(cardId, name) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  // إخفاء زرار الحفظ مؤقتاً عشان ميبانش في الصورة
+  const btn = card.querySelector('.bc-save');
+  if (btn) btn.style.display = 'none';
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#ffffff',
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+    });
+    const link = document.createElement('a');
+    link.download = 'QR-' + name + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    alert('حصل خطأ في الحفظ');
+  } finally {
+    if (btn) btn.style.display = 'block';
+  }
+};
   const t = document.createElement('div');
   t.textContent = msg;
   t.style.cssText = 'position:fixed;top:76px;left:50%;transform:translateX(-50%);'+

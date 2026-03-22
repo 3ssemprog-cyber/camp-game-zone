@@ -526,39 +526,39 @@ async function showDayReceipt(cash, elec, exp, inc, net) {
       + `<div class="rrow bold"><span>إجمالي المصاريف</span><span>${fmt(exp)}</span></div>`
     : `<div class="rrow"><span>لا يوجد مصاريف</span><span>—</span></div>`;
 
-  thermalPrint(`
-    <div class="rh">
-      <div class="rh-name">Camp Game Zone</div>
-      <div class="rh-sub">كافيه وبلايستيشن</div>
-      <div class="rh-type">تقفيل اليوم</div>
-    </div>
-    <div class="rm">
-      <div class="mr"><span>التاريخ</span><span>${firstShift?.startDate||dateStr()}</span></div>
-      <div class="mr"><span>الوقت</span><span>${nowT()}</span></div>
-      <div class="mr"><span>بواسطة</span><span>${currentUser}</span></div>
-    </div>
-    <div class="rsec">
-      <div class="rsec-t">الإيرادات</div>
-      <div class="rrow"><span>نقدي</span><span>${fmt(cash)}</span></div>
-      <div class="rrow"><span>دفع إلكتروني</span><span>${fmt(elec)}</span></div>
-      <div class="rrow bold"><span>إجمالي</span><span>${fmt(inc)}</span></div>
-    </div>
-    <div class="rsec">
-      <div class="rsec-t">المصاريف</div>
-      ${expsHTML}
-    </div>
-    <div class="rtot"><span>صافي اليوم</span><span>${fmt(net)}</span></div>
-    <div class="rsec">
-      <div class="rsec-t">الحاضرين</div>
-      ${present.map(e=>'<div class="rrow"><span>'+e.name+'</span><span>✓</span></div>').join('')}
-      ${absent.map(e=>'<div class="rrow"><span style="color:#999">'+e.name+'</span><span style="color:#999">غ</span></div>').join('')}
-    </div>
-    <div class="rf">
-      <div>- - - - - - - - - - -</div>
-      شكراً لزيارتكم
-      <div class="rf-brand">Camp Game Zone</div>
-    </div>`;
-  saveAttendance();
+  thermalPrint(
+    '<div class="rh">'
+    +'<div class="rh-name">Camp Game Zone</div>'
+    +'<div class="rh-sub">كافيه وبلايستيشن</div>'
+    +'<div class="rh-type">تقفيل اليوم</div>'
+    +'</div>'
+    +'<div class="rm">'
+    +'<div class="mr"><span>التاريخ</span><span>'+(firstShift?.startDate||dateStr())+'</span></div>'
+    +'<div class="mr"><span>الوقت</span><span>'+nowT()+'</span></div>'
+    +'<div class="mr"><span>بواسطة</span><span>'+currentUser+'</span></div>'
+    +'</div>'
+    +'<div class="rsec">'
+    +'<div class="rsec-t">الإيرادات</div>'
+    +'<div class="rrow"><span>نقدي</span><span>'+fmt(cash)+'</span></div>'
+    +'<div class="rrow"><span>دفع إلكتروني</span><span>'+fmt(elec)+'</span></div>'
+    +'<div class="rrow bold"><span>إجمالي</span><span>'+fmt(inc)+'</span></div>'
+    +'</div>'
+    +'<div class="rsec">'
+    +'<div class="rsec-t">المصاريف</div>'
+    +expsHTML
+    +'</div>'
+    +'<div class="rtot"><span>صافي اليوم</span><span>'+fmt(net)+'</span></div>'
+    +'<div class="rsec">'
+    +'<div class="rsec-t">الحاضرين</div>'
+    +present.map(function(e){return '<div class="rrow"><span>'+e.name+'</span><span>&#10003;</span></div>';}).join('')
+    +absent.map(function(e){return '<div class="rrow"><span style="color:#999">'+e.name+'</span><span style="color:#999">غ</span></div>';}).join('')
+    +'</div>'
+    +'<div class="rf">'
+    +'<div>- - - - - - - - - - -</div>'
+    +'شكراً لزيارتكم'
+    +'<div class="rf-brand">Camp Game Zone</div>'
+    +'</div>'
+  );  saveAttendance();
 }
 
 window.printDayReceipt = async function(cash, elec, exp, inc, net) {

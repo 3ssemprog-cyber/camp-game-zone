@@ -128,132 +128,125 @@ import { db, auth, ADMIN_UID, requireAuth,
 const BASE = window.location.origin +
   window.location.pathname.replace('menu_admin.html','') + 'menu.html';
 
-// ── Tabs ─────────────────────────────────────────────────
-window.showPg = function(p, el) {
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('act'));
-  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('act'));
-  document.getElementById('page-'+p).classList.add('act');
-  el.classList.add('act');
-};
-
 // ── Load items ───────────────────────────────────────────
 async function loadItems() {
   try {
     const mSnap = await getDocs(collection(db,'menu_items'));
     const ex = {};
-    mSnap.forEach(d => ex[d.id] = d.data());
+    mSnap.forEach(function(d) { ex[d.id] = d.data(); });
 
     const snap = await getDocs(collection(db,'inventory'));
     const list = [];
-    snap.forEach(d => {
+    snap.forEach(function(d) {
       const data = d.data();
       if (!data.forSale) return;
-      list.push({ id:d.id, name:data.name, price:data.salePrice||0, cat:data.cat||'أخرى',
-        img:(ex[d.id]||{}).img||'', desc:(ex[d.id]||{}).desc||'' });
+      list.push({
+        id:   d.id,
+        name: data.name,
+        price: data.salePrice || 0,
+        cat:  data.cat || 'اخرى',
+        img:  (ex[d.id] || {}).img  || '',
+        desc: (ex[d.id] || {}).desc || ''
+      });
     });
 
     const grid = document.getElementById('items-grid');
     if (!list.length) {
-      grid.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3);grid-column:1/-1">لا يوجد أصناف للبيع</div>';
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);grid-column:1/-1">لا يوجد اصناف للبيع</div>';
       return;
     }
     grid.innerHTML = list.map(iCard).join('');
   } catch(e) {
-    document.getElementById('items-grid').innerHTML='<div style="color:var(--red)">حصل خطأ</div>';
+    document.getElementById('items-grid').innerHTML = '<div style="color:var(--red)">حصل خطا</div>';
   }
 }
 
 function iCard(it) {
   const img = it.img
-    ? `<img class="iadm-img" id="pimg-${it.id}" src="${it.img}"
-         onerror="this.outerHTML='<div class=\\"iadm-ph\\" id=\\"pimg-${it.id}\\">🍽️</div>'">`
-    : `<div class="iadm-ph" id="pimg-${it.id}">🍽️</div>`;
-  return `
-  <div class="iadm">
-    ${img}
-    <div class="iadm-body">
-      <div class="iadm-name">${it.name}</div>
-      <div class="iadm-cat">${it.cat}</div>
-      <div class="iadm-price">${it.price} ج</div>
-      <div class="img-btn" onclick="toggleF('${it.id}')">📷 تعديل الصورة والوصف</div>
-    </div>
-    <div class="img-form" id="f-${it.id}">
-      <input class="url-inp" id="u-${it.id}" placeholder="URL الصورة..." value="${it.img}"
-        onkeydown="if(event.key==='Enter')save('${it.id}')">
-      <textarea class="desc-area" id="d-${it.id}" rows="2"
-        placeholder="وصف قصير (اختياري)...">${it.desc}</textarea>
-      <button class="save-btn" onclick="save('${it.id}')">💾 حفظ</button>
-    </div>
-  </div>`;
+    ? '<img class="iadm-img" id="pimg-'+it.id+'" src="'+it.img+'" onerror="this.outerHTML='<div class=\"iadm-ph\" id=\"pimg-'+it.id+'\">🍽️</div>'">'
+    : '<div class="iadm-ph" id="pimg-'+it.id+'">🍽️</div>';
+  return '<div class="iadm">'
+    + img
+    + '<div class="iadm-body">'
+    + '<div class="iadm-name">'+it.name+'</div>'
+    + '<div class="iadm-cat">'+it.cat+'</div>'
+    + '<div class="iadm-price">'+it.price+' ج</div>'
+    + '<div class="img-btn" onclick="toggleF(''+it.id+'')">📷 تعديل الصورة والوصف</div>'
+    + '</div>'
+    + '<div class="img-form" id="f-'+it.id+'">'
+    + '<input class="url-inp" id="u-'+it.id+'" placeholder="URL الصورة..." value="'+it.img+'" onkeydown="if(event.key==='Enter')save(''+it.id+'')">'
+    + '<textarea class="desc-area" id="d-'+it.id+'" rows="2" placeholder="وصف قصير...">'+it.desc+'</textarea>'
+    + '<button class="save-btn" onclick="save(''+it.id+'')">💾 حفظ</button>'
+    + '</div>'
+    + '</div>';
 }
 
-window.toggleF = id => {
+window.toggleF = function(id) {
   const f = document.getElementById('f-'+id);
-  f.classList.toggle('open');
-  if (f.classList.contains('open')) document.getElementById('u-'+id).focus();
+  if (f) f.classList.toggle('open');
 };
 
-window.save = async id => {
-  const url  = (document.getElementById('u-'+id)?.value || '').trim();
-  const desc = (document.getElementById('d-'+id)?.value || '').trim();
+window.save = async function(id) {
+  const urlEl  = document.getElementById('u-'+id);
+  const descEl = document.getElementById('d-'+id);
+  const url  = urlEl  ? urlEl.value.trim()  : '';
+  const desc = descEl ? descEl.value.trim() : '';
   try {
-    await setDoc(doc(db,'menu_items',id), {img:url,desc}, {merge:true});
+    await setDoc(doc(db,'menu_items',id), {img:url, desc:desc}, {merge:true});
     if (url) {
       const prev = document.getElementById('pimg-'+id);
-      if (prev) prev.outerHTML = `<img class="iadm-img" id="pimg-${id}" src="${url}">`;
+      if (prev) prev.outerHTML = '<img class="iadm-img" id="pimg-'+id+'" src="'+url+'">';
     }
-    document.getElementById('f-'+id).classList.remove('open');
-    toast('✓ تم الحفظ');
-  } catch(e) { alert('حصل خطأ'); }
+    const f = document.getElementById('f-'+id);
+    if (f) f.classList.remove('open');
+    toast('تم الحفظ');
+  } catch(e) { alert('حصل خطا'); }
 };
 
-// ── QR Codes من الطاولات المسجلة ─────────────────────────
+// ── QR Codes ─────────────────────────────────────────────
 async function loadQRCodes() {
   const grid = document.getElementById('bc-grid');
   try {
-    const snap = await getDocs(collection(db, 'tables'));
+    const snap = await getDocs(collection(db,'tables'));
     const tables = [];
-    snap.forEach(d => tables.push({ id: d.id, ...d.data() }));
-    tables.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
+    snap.forEach(function(d) { tables.push(Object.assign({id:d.id}, d.data())); });
+    tables.sort(function(a,b) { return (a.name||'').localeCompare(b.name||'','ar'); });
 
     if (!tables.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">لا يوجد طاولات مسجلة — اضيف طاولات من الإعدادات أول</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">لا يوجد طاولات مسجلة</div>';
       return;
     }
 
-    grid.innerHTML = tables.map(t => {
-      const safeName = t.name.replace(/'/g, "\\'");
+    grid.innerHTML = tables.map(function(t) {
       return '<div class="bc-card" id="bc-'+t.id+'">'
-        +'<div class="bc-name">'+t.name+'</div>'
-        +'<div class="bc-qr" id="qr-'+t.id+'"></div>'
-        +'<div class="bc-scanme">Scan Me</div>'
-        +'<button class="bc-save" onclick="saveQR(\'bc-'+t.id+'\',\''+safeName+'\')">💾 حفظ كصورة</button>'
-        +'</div>';
+        + '<div class="bc-name">'+t.name+'</div>'
+        + '<div class="bc-qr" id="qr-'+t.id+'"></div>'
+        + '<div class="bc-scanme">Scan Me</div>'
+        + '<button class="bc-save" onclick="saveQR('bc-'+t.id+'',''+t.name.replace(/'/g,"\\'")+'')" >💾 حفظ كصورة</button>'
+        + '</div>';
     }).join('');
 
-    // رسم QR لكل طاولة
-    tables.forEach(t => {
+    tables.forEach(function(t) {
       const url = BASE + '?table=' + encodeURIComponent(t.name);
-      new QRCode(document.getElementById('qr-' + t.id), {
-        text:          url,
-        width:         150,
-        height:        150,
-        colorDark:     '#000000',
-        colorLight:    '#ffffff',
-        correctLevel:  QRCode.CorrectLevel.M,
+      new QRCode(document.getElementById('qr-'+t.id), {
+        text:         url,
+        width:        150,
+        height:       150,
+        colorDark:    '#000000',
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
       });
     });
 
   } catch(e) {
-    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--red);text-align:center;padding:20px">حصل خطأ في تحميل الطاولات</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--red);text-align:center;padding:20px">حصل خطا في تحميل الطاولات</div>';
   }
 }
 
-// ── حفظ QR كصورة ──────────────────────────────────────────
+// ── Save QR as image ──────────────────────────────────────
 window.saveQR = async function(cardId, name) {
   const card = document.getElementById(cardId);
   if (!card) return;
-  // إخفاء زرار الحفظ مؤقتاً عشان ميبانش في الصورة
   const btn = card.querySelector('.bc-save');
   if (btn) btn.style.display = 'none';
   try {
@@ -261,29 +254,30 @@ window.saveQR = async function(cardId, name) {
       backgroundColor: '#ffffff',
       scale: 3,
       useCORS: true,
-      allowTaint: true,
+      allowTaint: true
     });
     const link = document.createElement('a');
     link.download = 'QR-' + name + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch(e) {
-    alert('حصل خطأ في الحفظ');
+    alert('حصل خطا في الحفظ');
   } finally {
     if (btn) btn.style.display = 'block';
   }
 };
+
+// ── Toast ─────────────────────────────────────────────────
+function toast(msg) {
   const t = document.createElement('div');
   t.textContent = msg;
-  t.style.cssText = 'position:fixed;top:76px;left:50%;transform:translateX(-50%);'+
-    'background:#064E3B;border:0.5px solid #10B981;border-radius:10px;'+
-    'padding:9px 18px;font-size:12px;font-weight:700;color:#6EE7B7;z-index:999';
+  t.style.cssText = 'position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#064E3B;border:0.5px solid #10B981;border-radius:10px;padding:9px 18px;font-size:12px;font-weight:700;color:#6EE7B7;z-index:999';
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2200);
+  setTimeout(function() { t.remove(); }, 2200);
 }
 
-requireAuth(async (user) => {
-  if (user.uid !== ADMIN_UID) { window.location.href='dashboard.html'; return; }
+requireAuth(async function(user) {
+  if (user.uid !== ADMIN_UID) { window.location.href = 'dashboard.html'; return; }
   document.getElementById('uname').textContent = 'Admin';
   await loadItems();
   await loadQRCodes();

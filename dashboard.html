@@ -58,6 +58,7 @@
 import { auth, db, ADMIN_UID, requireAuth, signOut, collection, getDocs } from './firebase.js';
 
 const SECTIONS = [
+  {id:'orders',   name:'الطلبات الواردة',    desc:'طلبات المنيو',        icon:'🛎',  page:'orders.html',         perm:'pos.view'},
   {id:'pos',      name:'نقطة البيع',        desc:'البيع والطاولات',      icon:'🖥',  page:'pos.html',            perm:'pos.view'},
   {id:'emp',      name:'الموظفين',           desc:'مرتبات وسحوبات',      icon:'👥',  page:'employees.html',      perm:'emp.view'},
   {id:'daily_exp',name:'المصاريف اليومية',   desc:'مصاريف النهارده',     icon:'💸',  page:'daily_expenses.html', perm:'exp.view_daily'},
@@ -66,7 +67,8 @@ const SECTIONS = [
   {id:'rep',      name:'التقارير',           desc:'شهري وسنوي',          icon:'📊',  page:'reports.html',        perm:'rep.view'},
   {id:'close',    name:'التقفيل',            desc:'الشيفتات واليوم',      icon:'🔒',  page:'closing.html',        perm:'close.view_shift'},
   {id:'trans',    name:'المعاملات',          desc:'سجل الأكشن',          icon:'📋',  page:'transactions.html',   perm:'trans.view'},
-  {id:'rcpteditor',name:'محرر الرسيت',    desc:'تخصيص شكل الرسيتات', icon:'🖨',  page:'receipt_editor.html',     perm:'admin_only'},
+  {id:'menu_admin',name:'إدارة المنيو',      desc:'أصناف وصور وباركود',  icon:'🍽️', page:'menu_admin.html',     perm:'admin_only'},
+  {id:'rcpteditor',name:'محرر الرسيت',      desc:'تخصيص شكل الرسيتات', icon:'🖨',  page:'receipt_editor.html', perm:'admin_only'},
   {id:'settings', name:'الإعدادات',          desc:'مستخدمين وطاولات',    icon:'⚙️', page:'settings.html',       perm:'settings.admin'},
 ];
 

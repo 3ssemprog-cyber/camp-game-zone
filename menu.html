@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Camp Game Zone — المنيو</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0B1120;--bg2:#131D2E;--bg3:#1A2640;
+  --border:#1E3050;--text1:#F0F6FF;--text2:#7A9CC0;--text3:#3D5878;
+  --accent:#3B82F6;--green:#10B981;--amber:#F59E0B;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text1);min-height:100vh;direction:rtl}
+
+.header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#1E3A8A,#3B82F6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
+.brand{font-size:15px;font-weight:700}
+.table-badge{background:#1E3A8A;border:0.5px solid var(--accent);border-radius:20px;padding:4px 12px;font-size:12px;color:#93C5FD;font-weight:700}
+
+.cats{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;scrollbar-width:none;background:var(--bg2);border-bottom:0.5px solid var(--border)}
+.cats::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:'Cairo',sans-serif;transition:all .15s}
+.cat-btn.act{background:#1E3A8A;border-color:var(--accent);color:#fff}
+
+.items{padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding-bottom:170px}
+@media(min-width:460px){.items{grid-template-columns:repeat(3,1fr)}}
+
+.item-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.item-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--bg3);display:block}
+.item-img-ph{width:100%;aspect-ratio:4/3;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:36px}
+.item-info{padding:9px 10px;flex:1;display:flex;flex-direction:column}
+.item-name{font-size:12px;font-weight:700;color:var(--text1);line-height:1.3;margin-bottom:2px}
+.item-desc{font-size:10px;color:var(--text3);line-height:1.3;margin-bottom:6px;flex:1}
+.item-foot{display:flex;align-items:center;justify-content:space-between}
+.item-price{font-size:14px;font-weight:900;color:var(--accent)}
+.add-btn{padding:5px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}
+
+.note-wrap{padding:0 10px 10px}
+.note-inp{width:100%;padding:6px 9px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text1);font-size:11px;font-family:'Cairo',sans-serif;resize:none;transition:border-color .15s}
+.note-inp:focus{outline:none;border-color:var(--accent)}
+.note-inp::placeholder{color:var(--text3)}
+
+.cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:0.5px solid var(--border);padding:12px 16px 20px;z-index:50;transition:transform .25s}
+.cart-bar.hidden{transform:translateY(110%)}
+.cart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer}
+.cart-title-wrap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.cart-count{background:var(--accent);color:#fff;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700}
+.cart-total{font-size:14px;font-weight:900;color:var(--green)}
+.cart-list{display:none;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;margin-bottom:10px;scrollbar-width:none}
+.cart-list::-webkit-scrollbar{display:none}
+.cart-list.open{display:flex}
+.cart-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:9px}
+.cart-row-info{flex:1;min-width:0}
+.cart-row-name{font-size:12px;font-weight:600;color:var(--text1)}
+.cart-row-note{font-size:10px;color:var(--text3);margin-top:2px}
+.cart-row-price{font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap}
+.rm-btn{width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.15);border:0.5px solid rgba(239,68,68,.3);color:#FCA5A5;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.send-btn{width:100%;padding:13px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}
+.send-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.loading{display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:14px;color:var(--text2)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:13px}
+
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#064E3B;border:0.5px solid var(--green);border-radius:12px;padding:10px 20px;font-size:13px;font-weight:700;color:#6EE7B7;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+.success-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:28px}
+.success-screen.show{display:flex}
+.success-icon{font-size:70px;animation:pop .4s ease-out}
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.15)}100%{transform:scale(1)}}
+.success-title{font-size:22px;font-weight:900}
+.success-sub{font-size:14px;color:var(--text2)}
+.success-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:14px 18px;width:100%;max-width:320px;text-align:right}
+.success-card-title{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text1)}
+.success-card-row{display:flex;justify-content:space-between;padding:5px 0;border-top:0.5px solid var(--border);font-size:12px;color:var(--text2)}
+.success-card-row span:last-child{color:var(--accent);font-weight:700}
+.new-btn{padding:11px 28px;background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-wrap">
+    <div class="logo">C</div>
+    <div>
+      <div class="brand">Camp Game Zone</div>
+      <div style="font-size:10px;color:var(--text3)">كافيه وبلايستيشن</div>
+    </div>
+  </div>
+  <div class="table-badge" id="table-badge">🪑 ...</div>
+</div>
+
+<div class="cats" id="cats"></div>
+<div id="content"><div class="loading"><div class="spinner"></div><span>جاري تحميل المنيو...</span></div></div>
+
+<!-- Cart -->
+<div class="cart-bar hidden" id="cart-bar">
+  <div class="cart-head" onclick="toggleCart()">
+    <div class="cart-title-wrap">🛒 طلبك <span class="cart-count" id="cart-count">0</span></div>
+    <div class="cart-total" id="cart-total">0 ج</div>
+  </div>
+  <div class="cart-list" id="cart-list"></div>
+  <button class="send-btn" id="send-btn" onclick="sendOrder()">أرسل الطلب 🛎</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Success -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">تم إرسال طلبك!</div>
+  <div class="success-sub">الكاشير شايف طلبك دلوقتي 👀</div>
+  <div class="success-card">
+    <div class="success-card-title">تفاصيل الطلب</div>
+    <div id="success-items"></div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0 0;font-size:13px;font-weight:700;color:var(--text1)">
+      <span>الإجمالي</span><span style="color:var(--green)" id="success-total">0 ج</span>
+    </div>
+  </div>
+  <button class="new-btn" onclick="resetAll()">+ طلب جديد</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyBtdqDQMiEnElUykFb2Tmoe_xB43kgf9O4",
+  authDomain:"camp-game-zone-94940.firebaseapp.com",
+  projectId:"camp-game-zone-94940",
+  storageBucket:"camp-game-zone-94940.firebasestorage.app",
+  messagingSenderId:"232147913506",
+  appId:"1:232147913506:web:735c0fd763cb8ab0a7b37b"
+});
+const db = getFirestore(app);
+
+// ── الطاولة من URL ──────────────────────────────────────
+const tableNum  = new URLSearchParams(location.search).get('table') || '؟';
+const tableName = 'طاولة ' + tableNum;
+document.getElementById('table-badge').textContent = '🪑 ' + tableName;
+document.title = 'منيو — ' + tableName;
+
+// ── State ───────────────────────────────────────────────
+let ALL  = [], CATS = [], selCat = '', CART = [], cartOpen = false;
+
+// ── Load ────────────────────────────────────────────────
+async function load() {
+  try {
+    // جيب بيانات الصور والوصف من menu_items
+    const menuSnap = await getDocs(collection(db, 'menu_items'));
+    const extras   = {};
+    menuSnap.forEach(d => { extras[d.id] = d.data(); });
+
+    // جيب الأصناف اللي forSale=true
+    const snap = await getDocs(collection(db, 'inventory'));
+    ALL = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (!data.forSale) return;
+      const ex = extras[d.id] || {};
+      ALL.push({
+        id:    d.id,
+        name:  data.name || '—',
+        price: parseFloat(data.salePrice || 0),
+        cat:   data.cat  || 'أخرى',
+        img:   ex.img    || data.img || '',
+        desc:  ex.desc   || data.desc || '',
+      });
+    });
+
+    CATS   = [...new Set(ALL.map(i => i.cat))];
+    selCat = CATS[0] || '';
+    renderCats();
+    renderItems();
+  } catch(e) {
+    document.getElementById('content').innerHTML =
+      '<div class="empty">⚠️ تعذر تحميل المنيو<br>تحقق من اتصالك بالنت</div>';
+  }
+}
+
+// ── Cats ────────────────────────────────────────────────
+function renderCats() {
+  document.getElementById('cats').innerHTML =
+    CATS.map(c => `<button class="cat-btn${c===selCat?' act':''}" onclick="_cat('${c}')">${c}</button>`).join('');
+}
+window._cat = c => { selCat = c; renderCats(); renderItems(); };
+
+// ── Items ───────────────────────────────────────────────
+function renderItems() {
+  const list = ALL.filter(i => i.cat === selCat);
+  const el   = document.getElementById('content');
+  if (!list.length) { el.innerHTML = '<div class="empty">لا يوجد أصناف</div>'; return; }
+  el.innerHTML = `<div class="items">${list.map(card).join('')}</div>`;
+}
+
+function emoji(cat='') {
+  if (cat.match(/قهوة|كافيه|مشروب|شاي|عصير/)) return '☕';
+  if (cat.match(/بلايستيشن|PS|جيمز|العاب/))   return '🎮';
+  if (cat.match(/أكل|وجبة|طعام|سندوتش/))       return '🍔';
+  return '🍽️';
+}
+
+function card(it) {
+  const img = it.img
+    ? `<img class="item-img" src="${it.img}" alt="${it.name}" loading="lazy"
+         onerror="this.outerHTML='<div class=\\"item-img-ph\\">${emoji(it.cat)}</div>'">`
+    : `<div class="item-img-ph">${emoji(it.cat)}</div>`;
+  return `
+  <div class="item-card">
+    ${img}
+    <div class="item-info">
+      <div class="item-name">${it.name}</div>
+      ${it.desc ? `<div class="item-desc">${it.desc}</div>` : '<div class="item-desc"></div>'}
+      <div class="item-foot">
+        <div class="item-price">${it.price} ج</div>
+        <button class="add-btn" onclick="_add('${it.id}','${it.name}',${it.price},'${it.cat}')">+ أضف</button>
+      </div>
+    </div>
+    <div class="note-wrap" id="nw-${it.id}" style="display:none">
+      <textarea class="note-inp" id="note-${it.id}" rows="2" placeholder="ملاحظة... (زيادة سكر، بدون ثلج...)"></textarea>
+    </div>
+  </div>`;
+}
+
+// ── Cart logic ───────────────────────────────────────────
+window._add = function(id, name, price, cat) {
+  CART.push({ id, name, price, cat, uid: Math.random() });
+  document.getElementById('nw-' + id).style.display = 'block';
+  updateCart();
+  toast('✓ تم إضافة ' + name);
+};
+
+window._rm = function(uid) {
+  CART = CART.filter(i => i.uid !== uid);
+  updateCart();
+  if (!CART.length) { document.getElementById('cart-list').classList.remove('open'); cartOpen = false; }
+};
+
+window.toggleCart = function() {
+  if (!CART.length) return;
+  cartOpen = !cartOpen;
+  document.getElementById('cart-list').classList.toggle('open', cartOpen);
+};
+
+function updateCart() {
+  const bar   = document.getElementById('cart-bar');
+  const total = CART.reduce((s, i) => s + i.price, 0);
+  if (!CART.length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  document.getElementById('cart-count').textContent = CART.length;
+  document.getElementById('cart-total').textContent = total + ' ج';
+  document.getElementById('cart-list').innerHTML = CART.map(i => `
+    <div class="cart-row">
+      <div class="cart-row-info">
+        <div class="cart-row-name">${i.name}</div>
+        <div class="cart-row-note" id="cnote-${i.uid}"></div>
+      </div>
+      <div class="cart-row-price">${i.price} ج</div>
+      <button class="rm-btn" onclick="_rm(${i.uid})">×</button>
+    </div>`).join('');
+}
+
+// ── Send ─────────────────────────────────────────────────
+window.sendOrder = async function() {
+  if (!CART.length) return;
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+  try {
+    // اجمع الملاحظات
+    const items = CART.map(i => {
+      const n = document.getElementById('note-' + i.id);
+      return { id:i.id, name:i.name, price:i.price, cat:i.cat, note: n ? n.value.trim() : '' };
+    });
+    const total = items.reduce((s, i) => s + i.price, 0);
+    await addDoc(collection(db, 'menu_orders'), {
+      table: tableName, tableNum,
+      items, total, status: 'pending',
+      timestamp: serverTimestamp(),
+      time: new Date().toLocaleTimeString('ar-EG', { hour:'2-digit', minute:'2-digit' }),
+      date: new Date().toLocaleDateString('ar-EG'),
+    });
+    // Success screen
+    document.getElementById('success-items').innerHTML =
+      items.map(i => `<div class="success-card-row"><span>${i.name}${i.note ? ' — ' + i.note : ''}</span><span>${i.price} ج</span></div>`).join('');
+    document.getElementById('success-total').textContent = total + ' ج';
+    document.getElementById('success-screen').classList.add('show');
+  } catch(e) {
+    toast('⚠️ حصل خطأ، حاول تاني');
+    btn.disabled = false; btn.textContent = 'أرسل الطلب 🛎';
+  }
+};
+
+window.resetAll = function() {
+  CART = []; cartOpen = false;
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('cart-bar').classList.add('hidden');
+  document.getElementById('cart-list').classList.remove('open');
+  renderItems();
+};
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+load();
+</script>
+</body>
+</html>

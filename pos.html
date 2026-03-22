@@ -59,6 +59,29 @@
 .macts{padding:6px 9px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:0.5px solid var(--border);flex-shrink:0;background:var(--bg2)}
 .abt{padding:6px 3px;border:0.5px solid var(--border);border-radius:9px;font-size:10px;cursor:pointer;text-align:center;background:var(--bg3);color:var(--text2);transition:all .12s;font-family:'Cairo',sans-serif}
 .abt:hover{border-color:var(--accent);color:var(--text1)}
+/* ORDERS PANEL */
+.orders-btn{position:relative;padding:5px 12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:8px;font-size:11px;font-weight:700;color:#FCD34D;cursor:pointer;font-family:'Cairo',sans-serif;display:flex;align-items:center;gap:5px}
+.orders-btn:hover{opacity:.85}
+.orders-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;display:none}
+.orders-panel{position:fixed;top:53px;left:0;width:300px;height:calc(100vh - 53px);background:var(--bg2);border-left:0.5px solid var(--amber);z-index:150;display:none;flex-direction:column;overflow:hidden;box-shadow:-4px 0 20px rgba(0,0,0,.4)}
+.orders-panel.open{display:flex}
+.op-head{padding:10px 14px;background:var(--amber-bg);border-bottom:0.5px solid var(--amber);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.op-title{font-size:13px;font-weight:700;color:#FCD34D}
+.op-close{width:24px;height:24px;border-radius:6px;background:rgba(245,158,11,.2);border:0.5px solid var(--amber);color:#FCD34D;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif}
+.op-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
+.op-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px;overflow:hidden}
+.op-card.new{border-color:var(--amber)}
+.op-card-head{padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.op-table{font-size:12px;font-weight:700;color:var(--text1)}
+.op-time{font-size:10px;color:var(--text3)}
+.op-items{padding:7px 10px;font-size:11px;color:var(--text2)}
+.op-item-row{display:flex;justify-content:space-between;padding:2px 0}
+.op-note{font-size:10px;color:var(--amber);margin-top:1px}
+.op-foot{padding:6px 10px;border-top:0.5px solid var(--border);display:flex;gap:6px;align-items:center;justify-content:space-between}
+.op-total{font-size:12px;font-weight:700;color:var(--text1)}
+.op-accept{padding:5px 12px;background:var(--green-bg);border:0.5px solid var(--green);border-radius:7px;font-size:10px;font-weight:700;color:#6EE7B7;cursor:pointer;font-family:'Cairo',sans-serif}
+.op-done{padding:5px 12px;background:#1E3A8A;border:0.5px solid var(--accent);border-radius:7px;font-size:10px;font-weight:700;color:#93C5FD;cursor:pointer;font-family:'Cairo',sans-serif}
+.op-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:12px}
 /* RIGHT */
 .rcol{width:165px;min-width:165px;padding:8px;display:flex;flex-direction:column;gap:6px;background:var(--bg2);border-right:0.5px solid var(--border);overflow-y:auto}
 .ic2{border:0.5px solid var(--border);border-radius:10px;padding:7px 9px;background:var(--bg3)}
@@ -154,8 +177,22 @@
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <div class="clock" id="clock"></div>
+    <div class="orders-btn" onclick="toggleOrdersPanel()" id="orders-btn">
+      🛎 الطلبات
+      <span class="orders-badge" id="orders-badge">0</span>
+    </div>
     <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
     <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="orders-panel" id="orders-panel">
+  <div class="op-head">
+    <div class="op-title">🛎 الطلبات الواردة</div>
+    <div class="op-close" onclick="toggleOrdersPanel()">×</div>
+  </div>
+  <div class="op-list" id="op-list">
+    <div class="op-empty">لا يوجد طلبات جديدة</div>
   </div>
 </div>
 
@@ -1359,7 +1396,100 @@ requireAuth(async(user,userData)=>{
   await loadRcptConfig();
   if(CATS.length)cat=CATS[0];
   renderAll();
+  // ── تحميل الطلبات ──
+  await loadOrders();
+  setInterval(loadOrders, 8000);
 });
+
+// ===== ORDERS PANEL =====
+let ORDERS=[], panelOpen=false, prevOrderCount=0;
+
+window.toggleOrdersPanel=function(){
+  panelOpen=!panelOpen;
+  document.getElementById('orders-panel').classList.toggle('open',panelOpen);
+  if(panelOpen) renderOrdersPanel();
+};
+
+async function loadOrders(){
+  try{
+    const today=new Date().toLocaleDateString('ar-EG');
+    const snap=await getDocs(collection(db,'menu_orders'));
+    ORDERS=[];
+    snap.forEach(d=>{
+      const data=d.data();
+      if((data.date===today||!data.date)&&data.status!=='done'&&data.status!=='rejected')
+        ORDERS.push({id:d.id,...data});
+    });
+    ORDERS.sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0));
+    const pending=ORDERS.filter(o=>o.status==='pending').length;
+    // badge
+    const badge=document.getElementById('orders-badge');
+    if(pending>0){
+      badge.style.display='flex';
+      badge.textContent=pending;
+      document.getElementById('orders-btn').style.background='var(--amber-bg)';
+    } else {
+      badge.style.display='none';
+    }
+    // صوت لو في طلب جديد
+    if(pending>prevOrderCount&&prevOrderCount>=0) playBeep();
+    prevOrderCount=pending;
+    if(panelOpen) renderOrdersPanel();
+  }catch(e){}
+}
+
+function renderOrdersPanel(){
+  const list=document.getElementById('op-list');
+  if(!ORDERS.length){list.innerHTML='<div class="op-empty">✅ لا يوجد طلبات معلقة</div>';return;}
+  list.innerHTML=ORDERS.map(o=>{
+    const isNew=o.status==='pending';
+    const isAcc=o.status==='accepted';
+    const items=(o.items||[]).map(i=>
+      `<div class="op-item-row">
+        <div><span style="color:var(--text1);font-weight:600">${i.name}</span>${i.note?`<div class="op-note">📝 ${i.note}</div>`:''}</div>
+        <span style="color:var(--accent);font-weight:700">${i.price} ج</span>
+      </div>`).join('');
+    const btns=isNew
+      ?`<button class="op-accept" onclick="opAccept('${o.id}')">✓ قبول</button>`
+      :isAcc
+      ?`<button class="op-done" onclick="opDone('${o.id}')">✅ تم التسليم</button>`
+      :'';
+    return`<div class="op-card${isNew?' new':''}">
+      <div class="op-card-head">
+        <div class="op-table">${isNew?'🆕 ':''} ${o.table}</div>
+        <div class="op-time">${o.time||'—'}</div>
+      </div>
+      <div class="op-items">${items}</div>
+      <div class="op-foot"><div class="op-total">${o.total||0} ج</div>${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+window.opAccept=async function(id){
+  try{
+    await updateDoc(doc(db,'menu_orders',id),{status:'accepted',acceptedTime:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+    await loadOrders();
+  }catch(e){}
+};
+window.opDone=async function(id){
+  try{
+    await updateDoc(doc(db,'menu_orders',id),{status:'done',doneTime:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+    await loadOrders();
+  }catch(e){}
+};
+
+function playBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=f;g.gain.value=0.3;
+      o.start(ctx.currentTime+i*0.15);
+      o.stop(ctx.currentTime+i*0.15+0.12);
+    });
+  }catch(e){}
+}
 </script>
 </body>
 </html>

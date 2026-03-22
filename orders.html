@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Game Zone — الطلبات</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+.main{max-width:900px;margin:0 auto;padding:16px}
+.tb-flex{display:flex;align-items:center;gap:8px}
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.order-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s}
+.order-card.pending{border-color:var(--amber)}
+.order-card.accepted{border-color:var(--green)}
+.order-card.done{opacity:.55}
+.order-card.rejected{opacity:.35}
+.order-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.order-table{font-size:14px;font-weight:700;color:var(--text1);display:flex;align-items:center;gap:6px}
+.order-time{font-size:10px;color:var(--text3)}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sdot.pending{background:var(--amber);animation:pulse 1.2s infinite}
+.sdot.accepted{background:var(--green)}
+.sdot.done,.sdot.rejected{background:var(--text3)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.order-items{padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.oi-row{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:0.5px solid var(--border)}
+.oi-row:last-child{border-bottom:none}
+.oi-name{font-size:12px;font-weight:600;color:var(--text1)}
+.oi-note{font-size:10px;color:var(--amber);margin-top:2px}
+.oi-price{font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap;padding-right:4px}
+.order-foot{padding:9px 14px;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.o-total{font-size:14px;font-weight:700;color:var(--text1)}
+.o-btns{display:flex;gap:6px;align-items:center}
+.btn-accept{padding:6px 14px;background:var(--green-bg);border:0.5px solid var(--green);border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;color:#6EE7B7;font-family:'Cairo',sans-serif}
+.btn-done{padding:6px 14px;background:#1E3A8A;border:0.5px solid var(--accent);border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;color:#93C5FD;font-family:'Cairo',sans-serif}
+.btn-rej{padding:6px 10px;background:var(--red-bg);border:0.5px solid var(--red);border-radius:9px;font-size:11px;cursor:pointer;color:#FCA5A5;font-family:'Cairo',sans-serif}
+.stats-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.scard{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;min-width:90px;text-align:center}
+.scard-num{font-size:20px;font-weight:900;color:var(--text1)}
+.scard-lbl{font-size:10px;color:var(--text3);margin-top:2px}
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.ftab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;font-family:'Cairo',sans-serif}
+.ftab.act{background:#1E3A8A;border-color:var(--accent);color:#fff}
+.new-badge{background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:20px;padding:1px 7px;font-size:9px;color:#FCD34D;font-weight:700}
+.live-dot{display:none;width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.2s infinite}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-flex">
+    <div class="logo">C</div>
+    <div class="app-name">الطلبات الواردة</div>
+    <div class="live-dot" id="live-dot"></div>
+  </div>
+  <div class="tb-flex">
+    <div class="clock" id="clock"></div>
+    <div class="user-chip"><div class="user-dot"></div><span id="uname">...</span></div>
+    <div class="logout-btn" onclick="window.location.href='dashboard.html'">رجوع</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats-bar">
+    <div class="scard"><div class="scard-num" id="s-pend">0</div><div class="scard-lbl">جديد</div></div>
+    <div class="scard"><div class="scard-num" id="s-acc">0</div><div class="scard-lbl">قيد التنفيذ</div></div>
+    <div class="scard"><div class="scard-num" id="s-done">0</div><div class="scard-lbl">تم التسليم</div></div>
+    <div class="scard"><div class="scard-num" id="s-rev" style="color:var(--green)">0 ج</div><div class="scard-lbl">إجمالي اليوم</div></div>
+  </div>
+  <div class="filter-bar">
+    <div class="ftab act" onclick="setF('all',this)">الكل</div>
+    <div class="ftab" onclick="setF('pending',this)">⏳ جديد</div>
+    <div class="ftab" onclick="setF('accepted',this)">🔄 قيد التنفيذ</div>
+    <div class="ftab" onclick="setF('done',this)">✅ تم التسليم</div>
+  </div>
+  <div class="orders-grid" id="grid">
+    <div class="empty-state">جاري التحميل...</div>
+  </div>
+</div>
+
+<script type="module">
+import { db, auth, ADMIN_UID, requireAuth,
+  collection, getDocs, updateDoc, doc, query, orderBy }
+  from './firebase.js';
+
+let ORDERS = [], selF = 'all', prevPending = -1;
+
+async function load() {
+  try {
+    const today = new Date().toLocaleDateString('ar-EG');
+    const snap  = await getDocs(query(collection(db,'menu_orders'), orderBy('timestamp','desc')));
+    ORDERS = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.date === today || !data.date) ORDERS.push({ id: d.id, ...data });
+    });
+    // تنبيه صوت
+    const nowPending = ORDERS.filter(o => o.status === 'pending').length;
+    if (prevPending >= 0 && nowPending > prevPending) playBeep();
+    prevPending = nowPending;
+    document.getElementById('live-dot').style.display = nowPending ? 'inline-block' : 'none';
+    renderStats(); renderGrid();
+  } catch(e) {}
+}
+
+function renderStats() {
+  const p = ORDERS.filter(o=>o.status==='pending').length;
+  const a = ORDERS.filter(o=>o.status==='accepted').length;
+  const d = ORDERS.filter(o=>o.status==='done').length;
+  const r = ORDERS.filter(o=>o.status==='done').reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('s-pend').textContent = p;
+  document.getElementById('s-acc').textContent  = a;
+  document.getElementById('s-done').textContent = d;
+  document.getElementById('s-rev').textContent  = r + ' ج';
+}
+
+function renderGrid() {
+  const list = selF === 'all' ? ORDERS : ORDERS.filter(o=>o.status===selF);
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state">📋 لا يوجد طلبات</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(oCard).join('');
+}
+
+function oCard(o) {
+  const dot   = `<div class="sdot ${o.status}"></div>`;
+  const isNew = o.status === 'pending';
+  const isAcc = o.status === 'accepted';
+  const items = (o.items||[]).map(i=>`
+    <div class="oi-row">
+      <div>
+        <div class="oi-name">${i.name}</div>
+        ${i.note?`<div class="oi-note">📝 ${i.note}</div>`:''}
+      </div>
+      <div class="oi-price">${i.price} ج</div>
+    </div>`).join('');
+  const btns = o.status==='done'
+    ? `<span style="font-size:11px;color:var(--text3)">✅ ${o.doneTime||''}</span>`
+    : o.status==='rejected'
+    ? `<span style="font-size:11px;color:var(--red)">✕ مرفوض</span>`
+    : `${isNew?`<button class="btn-accept" onclick="_accept('${o.id}')">✓ قبول</button>`:''}
+       ${isAcc?`<button class="btn-done" onclick="_done('${o.id}')">✅ تم التسليم</button>`:''}
+       <button class="btn-rej" onclick="_reject('${o.id}')">✕</button>`;
+  return `
+  <div class="order-card ${o.status}">
+    <div class="order-head">
+      <div class="order-table">${dot} ${o.table} ${isNew?'<span class="new-badge">جديد!</span>':''}</div>
+      <div class="order-time">${o.time||'—'}</div>
+    </div>
+    <div class="order-items">${items}</div>
+    <div class="order-foot">
+      <div class="o-total">${o.total||0} ج</div>
+      <div class="o-btns">${btns}</div>
+    </div>
+  </div>`;
+}
+
+window._accept = async id => {
+  await updateDoc(doc(db,'menu_orders',id),{status:'accepted',acceptedTime:nowT()});
+  load();
+};
+window._done = async id => {
+  await updateDoc(doc(db,'menu_orders',id),{status:'done',doneTime:nowT()});
+  load();
+};
+window._reject = async id => {
+  if (!confirm('تأكيد رفض الطلب؟')) return;
+  await updateDoc(doc(db,'menu_orders',id),{status:'rejected'});
+  load();
+};
+window.setF = (f,el) => {
+  selF=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('act'));
+  el.classList.add('act');
+  renderGrid();
+};
+
+const nowT = () => new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [523,659,784].forEach((f,i) => {
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value=f; g.gain.value=0.3;
+      o.start(ctx.currentTime+i*0.15);
+      o.stop(ctx.currentTime+i*0.15+0.12);
+    });
+  } catch(e){}
+}
+
+setInterval(() => {
+  const c=document.getElementById('clock');
+  if(c) c.textContent=new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+},1000);
+
+setInterval(load, 8000);
+
+requireAuth(async(user,userData) => {
+  document.getElementById('uname').textContent =
+    user.uid===ADMIN_UID ? 'Admin' : (userData?.name||user.email);
+  await load();
+});
+</script>
+</body>
+</html>

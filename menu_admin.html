@@ -254,8 +254,29 @@ window.saveQR = async function(cardId, name) {
   if (!card) return;
   var btn = card.querySelector('.bc-save');
   if (btn) btn.style.display = 'none';
+
+  // نضمن تحميل الـ font قبل الـ screenshot
+  try { await document.fonts.ready; } catch(e) {}
+
   try {
-    var canvas = await html2canvas(card, {backgroundColor:'#ffffff', scale:3, useCORS:true});
+    var canvas = await html2canvas(card, {
+      backgroundColor: '#ffffff',
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      onclone: function(clonedDoc) {
+        var el = clonedDoc.getElementById(cardId);
+        if (el) {
+          el.style.fontFamily = "'Cairo', Arial, sans-serif";
+          el.style.direction  = 'rtl';
+          // force redraw
+          el.querySelectorAll('*').forEach(function(n) {
+            n.style.fontFamily = "'Cairo', Arial, sans-serif";
+          });
+        }
+      }
+    });
     var link = document.createElement('a');
     link.download = 'QR-' + name + '.png';
     link.href = canvas.toDataURL('image/png');

@@ -105,6 +105,21 @@
   </div>
 </div>
 
+<script>
+window.showPg = function(p, el) {
+  document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('act'); });
+  document.querySelectorAll('.ptab').forEach(function(x){ x.classList.remove('act'); });
+  var page = document.getElementById('page-'+p);
+  if(page) page.classList.add('act');
+  if(el) el.classList.add('act');
+};
+window.toggleF = function(id) {
+  var f = document.getElementById('f-'+id);
+  if(f){ f.classList.toggle('open'); }
+};
+window.save = function(id) {};
+window.saveQR = function(cardId, name) {};
+</script>
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth,
   collection, getDocs, doc, setDoc }
@@ -206,14 +221,15 @@ async function loadQRCodes() {
       return;
     }
 
-    grid.innerHTML = tables.map(t =>
-      `<div class="bc-card" id="bc-${t.id}">
-        <div class="bc-name">${t.name}</div>
-        <div class="bc-qr" id="qr-${t.id}"></div>
-        <div class="bc-scanme">Scan Me</div>
-        <button class="bc-save" onclick="saveQR('bc-${t.id}','${t.name}')">💾 حفظ كصورة</button>
-      </div>`
-    ).join('');
+    grid.innerHTML = tables.map(t => {
+      const safeName = t.name.replace(/'/g, "\\'");
+      return '<div class="bc-card" id="bc-'+t.id+'">'
+        +'<div class="bc-name">'+t.name+'</div>'
+        +'<div class="bc-qr" id="qr-'+t.id+'"></div>'
+        +'<div class="bc-scanme">Scan Me</div>'
+        +'<button class="bc-save" onclick="saveQR(\'bc-'+t.id+'\',\''+safeName+'\')">💾 حفظ كصورة</button>'
+        +'</div>';
+    }).join('');
 
     // رسم QR لكل طاولة
     tables.forEach(t => {

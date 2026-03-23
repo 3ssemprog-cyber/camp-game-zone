@@ -10,8 +10,8 @@
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL  = 'https://XXXXXXXXXX.supabase.co';   // ← غيّر
-const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';              // ← غيّر
+const SUPABASE_URL  = https://mdjshjzcybyocaszmfjn.supabase.co;   // ← غيّر
+const SUPABASE_ANON = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kanNoanpjeWJ5b2Nhc3ptZmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTMzMzYsImV4cCI6MjA4OTg2OTMzNn0.iYP8euwz5tTQdZWTJqZgneeW0IMhb8p-IM7ewJP-x1U;              // ← غيّر
 const ADMIN_UID     = 'iJA776e48eQtWAhSREA3o1u9WJW2';     // نفس القديم — هيتغير بعد ما تعمل الأدمن على Supabase
 
 export { ADMIN_UID };

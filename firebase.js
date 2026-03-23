@@ -49,11 +49,13 @@ async function signOut(_auth) {
 function onAuthStateChanged(_auth, callback) {
   supabase.auth.onAuthStateChange(async (event, session) => {
     _currentUser = session?.user || null;
+    if (_currentUser) _currentUser.uid = _currentUser.id;
     callback(_currentUser);
   });
   // تحقق فوري من الجلسة الحالية
   supabase.auth.getSession().then(({ data }) => {
     _currentUser = data.session?.user || null;
+    if (_currentUser) _currentUser.uid = _currentUser.id;
     callback(_currentUser);
   });
 }
@@ -66,6 +68,8 @@ function requireAuth(callback) {
     const user = data.session?.user || null;
     if (!user) { window.location.href = 'index.html'; return; }
     _currentUser = user;
+    // إضافة uid للتوافق مع كود Firebase القديم اللي بيستخدم user.uid
+    user.uid = user.id;
     if (user.id === ADMIN_UID) {
       const adminData = { uid: user.id, email: user.email, role: 'أدمن', name: 'Admin', permissions: {} };
       if (callback) callback(user, adminData);

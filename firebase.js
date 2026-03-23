@@ -1,124 +1,236 @@
-// Firebase Configuration - Camp Game Zone
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// ============================================================
+//  Camp Game Zone — Supabase Client
+//  استبدل الملف ده بالـ firebase.js القديم — نفس الـ exports
+//
+//  ⚠️  خطوتين بس قبل الرفع:
+//  1) روح supabase.com وعمل New Project
+//  2) Project Settings → API → انسخ URL و anon key
+//  3) حطهم في السطرين دول:
+// ============================================================
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBtdqDQMiEnElUykFb2Tmoe_xB43kgf9O4",
-  authDomain: "camp-game-zone-94940.firebaseapp.com",
-  projectId: "camp-game-zone-94940",
-  storageBucket: "camp-game-zone-94940.firebasestorage.app",
-  messagingSenderId: "232147913506",
-  appId: "1:232147913506:web:735c0fd763cb8ab0a7b37b",
-  measurementId: "G-Z2RK0WGED7"
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL  = 'https://XXXXXXXXXX.supabase.co';   // ← غيّر
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';              // ← غيّر
+const ADMIN_UID     = 'iJA776e48eQtWAhSREA3o1u9WJW2';     // نفس القديم — هيتغير بعد ما تعمل الأدمن على Supabase
+
+export { ADMIN_UID };
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+export const db       = supabase;
+
+// ─── auth object بنفس شكل Firebase ──────────────────────────
+export const auth = {
+  get currentUser() { return _cu; }
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+let _cu  = null;   // current user
+let _cud = null;   // current user doc (cache)
 
-// Admin UID
-const ADMIN_UID = "iJA776e48eQtWAhSREA3o1u9WJW2";
+supabase.auth.onAuthStateChange((_ev, session) => {
+  _cu  = session?.user ? { uid: session.user.id, email: session.user.email } : null;
+  _cud = null;
+});
 
-// Check if current user is admin
-function isAdmin() {
-  return auth.currentUser && auth.currentUser.uid === ADMIN_UID;
+// ─── Auth functions ──────────────────────────────────────────
+
+export async function signInWithEmailAndPassword(_a, email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
 }
 
-// Get current user data from Firestore
-async function getCurrentUserData() {
-  const user = auth.currentUser;
-  if (!user) return null;
-  if (user.uid === ADMIN_UID) {
-    return { uid: user.uid, email: user.email, role: "أدمن", name: "Admin", permissions: {} };
-  }
-  try {
-    const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) return { uid: user.uid, ...docSnap.data() };
-  } catch (e) {}
-  return null;
+export async function signOut(_a) {
+  _cu = null; _cud = null;
+  await supabase.auth.signOut();
 }
 
-// Check permission for a specific action
-async function hasPermission(permKey) {
-  const user = auth.currentUser;
-  if (!user) return false;
-  if (user.uid === ADMIN_UID) return true;
-  const userData = await getCurrentUserData();
-  if (!userData || !userData.permissions) return false;
-  return userData.permissions[permKey] === true;
-}
-
-// Log transaction
-async function logTransaction(action, detail, section) {
-  try {
-    const user = auth.currentUser;
-    if (!user) return;
-    const isAdmin = user.uid === ADMIN_UID;
-    let userName = "Admin";
-    let userRole = "أدمن";
-    if (!isAdmin) {
-      try {
-        const userData = await getCurrentUserData();
-        userName = userData?.name || user.email || "غير معروف";
-        userRole = userData?.role || "موظف";
-      } catch(e) {}
-    }
-    await addDoc(collection(db, "transactions_log"), {
-      action: String(action||''),
-      detail: String(detail||''),
-      section: String(section||''),
-      user: userName,
-      role: userRole,
-      date: new Date().toLocaleDateString("ar-EG"),
-      timestamp: serverTimestamp(),
-      time: new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })
-    });
-  } catch (e) { console.log("logTransaction error:", e); }
-}
-
-// Format number
-function fmt(n) {
-  return parseFloat(n || 0).toFixed(2) + " ج";
-}
-
-// Get today's date string
-function todayStr() {
-  return new Date().toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-}
-
-// Get current month string
-function monthStr() {
-  return new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long" });
-}
-
-// Require auth - redirect to login if not authenticated
-function requireAuth(callback) {
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-      return;
-    }
-    const userData = await getCurrentUserData();
-    if (callback) callback(user, userData);
+export function onAuthStateChanged(_a, cb) {
+  supabase.auth.getSession().then(({ data }) => {
+    const u = data.session?.user ?? null;
+    _cu = u ? { uid: u.id, email: u.email } : null;
+    cb(_cu);
+  });
+  supabase.auth.onAuthStateChange((_ev, session) => {
+    _cu  = session?.user ? { uid: session.user.id, email: session.user.email } : null;
+    _cud = null;
+    cb(_cu);
   });
 }
 
-export {
-  app, db, auth,
-  ADMIN_UID,
-  isAdmin,
-  getCurrentUserData,
-  hasPermission,
-  logTransaction,
-  fmt,
-  todayStr,
-  monthStr,
-  requireAuth,
-  // Firestore functions
-  doc, getDoc, setDoc, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, query, orderBy, where, serverTimestamp,
-  // Auth functions
-  signInWithEmailAndPassword, signOut, onAuthStateChanged
-};
+// ─── User & Permissions ──────────────────────────────────────
+
+export function isAdmin() {
+  return _cu?.uid === ADMIN_UID;
+}
+
+export async function getCurrentUserData() {
+  if (!_cu) return null;
+  if (_cu.uid === ADMIN_UID)
+    return { uid: ADMIN_UID, email: _cu.email, role: 'أدمن', name: 'Admin', permissions: {} };
+  if (_cud) return _cud;
+  try {
+    const { data } = await supabase.from('users').select('*').eq('uid', _cu.uid).single();
+    _cud = { uid: _cu.uid, ...data };
+    return _cud;
+  } catch { return null; }
+}
+
+export async function hasPermission(permKey) {
+  if (!_cu) return false;
+  if (_cu.uid === ADMIN_UID) return true;
+  const ud = await getCurrentUserData();
+  return ud?.permissions?.[permKey] === true;
+}
+
+export function requireAuth(callback) {
+  supabase.auth.getSession().then(async ({ data }) => {
+    const u = data.session?.user;
+    if (!u) { window.location.href = 'index.html'; return; }
+    _cu = { uid: u.id, email: u.email };
+    const ud = await getCurrentUserData();
+    callback({ uid: u.id, email: u.email }, ud);
+  });
+}
+
+// ─── logTransaction ──────────────────────────────────────────
+
+export async function logTransaction(action, detail, section) {
+  try {
+    if (!_cu) return;
+    let userName = 'Admin', userRole = 'أدمن';
+    if (_cu.uid !== ADMIN_UID) {
+      const ud = await getCurrentUserData();
+      userName = ud?.name || _cu.email || 'غير معروف';
+      userRole = ud?.role || 'موظف';
+    }
+    await supabase.from('transactions_log').insert({
+      action:     String(action  || ''),
+      detail:     String(detail  || ''),
+      section:    String(section || ''),
+      user_name:  userName,
+      role:       userRole,
+      date:       new Date().toLocaleDateString('ar-EG'),
+      time:       new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+      created_at: new Date().toISOString()
+    });
+  } catch (e) { console.log('logTransaction error:', e); }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+export const fmt             = (n) => parseFloat(n || 0).toFixed(2) + ' ج';
+export const serverTimestamp = ()  => new Date().toISOString();
+export const todayStr        = ()  => new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+export const monthStr        = ()  => new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
+
+// ─── Firestore-compatible wrappers ───────────────────────────
+
+export function collection(_db, table, parentId, subTable) {
+  if (subTable) return { _sub: true, table: subTable, parentId };
+  return table;
+}
+
+export function doc(_db, table, id) {
+  return { table, id };
+}
+
+export async function getDoc(ref) {
+  const { data, error } = await supabase.from(ref.table).select('*').eq('id', ref.id).single();
+  return {
+    exists: () => !!data && !error,
+    data:   () => data ?? null,
+    id:     ref.id
+  };
+}
+
+export async function setDoc(ref, data) {
+  const { error } = await supabase
+    .from(ref.table)
+    .upsert({ id: ref.id, ..._clean(data) }, { onConflict: 'id' });
+  if (error) throw error;
+}
+
+export async function addDoc(tableArg, data) {
+  const table = typeof tableArg === 'string' ? tableArg : tableArg?.table || tableArg;
+  const payload = _clean(data);
+  const { data: res, error } = await supabase.from(table).insert(payload).select().single();
+  if (error) throw error;
+  return { id: res.id };
+}
+
+export async function getDocs(tableOrQuery) {
+  let q;
+  if (typeof tableOrQuery === 'string') {
+    q = supabase.from(tableOrQuery).select('*');
+  } else if (tableOrQuery?._isQuery) {
+    q = tableOrQuery._q;
+  } else if (tableOrQuery?._sub) {
+    q = supabase.from(tableOrQuery.table).select('*').eq('parent_id', tableOrQuery.parentId);
+  } else {
+    q = supabase.from(tableOrQuery).select('*');
+  }
+  const { data, error } = await q;
+  if (error) throw error;
+  const docs = (data || []).map(row => ({ id: row.id, data: () => ({ ...row }) }));
+  return { docs, forEach: fn => docs.forEach(fn), size: docs.length, empty: !docs.length };
+}
+
+export async function updateDoc(ref, data) {
+  const { error } = await supabase.from(ref.table).update(_clean(data)).eq('id', ref.id);
+  if (error) throw error;
+}
+
+export async function deleteDoc(ref) {
+  const { error } = await supabase.from(ref.table).delete().eq('id', ref.id);
+  if (error) throw error;
+}
+
+// query builder
+export function query(table, ...cs) {
+  const tbl = typeof table === 'string' ? table : table;
+  let q = supabase.from(tbl).select('*');
+  for (const c of cs) {
+    if (c._t === 'w') {
+      if      (c.op === '==') q = q.eq(c.f, c.v);
+      else if (c.op === '!=') q = q.neq(c.f, c.v);
+      else if (c.op === '>')  q = q.gt(c.f, c.v);
+      else if (c.op === '>=') q = q.gte(c.f, c.v);
+      else if (c.op === '<')  q = q.lt(c.f, c.v);
+      else if (c.op === '<=') q = q.lte(c.f, c.v);
+      else if (c.op === 'in') q = q.in(c.f, c.v);
+    }
+    if (c._t === 'o') q = q.order(c.f, { ascending: c.d !== 'desc' });
+    if (c._t === 'l') q = q.limit(c.v);
+  }
+  return { _isQuery: true, _q: q };
+}
+
+export const where   = (f, op, v) => ({ _t: 'w', f, op, v });
+export const orderBy = (f, d='asc') => ({ _t: 'o', f, d });
+export const limit   = (v) => ({ _t: 'l', v });
+
+// ─── onSnapshot — بديل setInterval بـ Realtime حقيقي ────────
+
+export function onSnapshot(tableOrRef, callback) {
+  const table = typeof tableOrRef === 'string' ? tableOrRef : tableOrRef?.table || tableOrRef;
+  // جيب البيانات أول مرة فوراً
+  getDocs(table).then(snap => callback(snap));
+  // اشترك على التغييرات
+  const ch = supabase.channel('rt:' + table)
+    .on('postgres_changes', { event: '*', schema: 'public', table }, async () => {
+      const snap = await getDocs(table);
+      callback(snap);
+    })
+    .subscribe();
+  return () => supabase.removeChannel(ch);
+}
+
+// ─── Internal ────────────────────────────────────────────────
+
+function _clean(data) {
+  const out = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out;
+}

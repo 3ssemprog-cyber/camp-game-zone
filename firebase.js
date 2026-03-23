@@ -66,6 +66,11 @@ function requireAuth(callback) {
     const user = data.session?.user || null;
     if (!user) { window.location.href = 'index.html'; return; }
     _currentUser = user;
+    if (user.id === ADMIN_UID) {
+      const adminData = { uid: user.id, email: user.email, role: 'أدمن', name: 'Admin', permissions: {} };
+      if (callback) callback(user, adminData);
+      return;
+    }
     const userData = await getCurrentUserData();
     if (callback) callback(user, userData);
   });

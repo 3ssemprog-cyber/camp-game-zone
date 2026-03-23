@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <title>Camp Game Zone — التقارير</title>
 <link rel="stylesheet" href="theme.css">
 <style>
@@ -88,7 +87,7 @@
 
 <script type="module">
 import { db, auth, ADMIN_UID, requireAuth, fmt,
-  collection, getDocs, query, where, orderBy } from './firebase.js';
+  collection, getDocs, getDoc, doc, query, where, orderBy } from './firebase.js';
 
 const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const MAX_MONTH=11; // ديسمبر 2026
@@ -99,6 +98,7 @@ function monthKey(m,y){ return`${y}-${String(m+1).padStart(2,'0')}`; }
 
 async function loadMonth(m,y){
   const mk=monthKey(m,y);
+  const todayKey=new Date().toISOString().split('T')[0];
   let days=[], mExps=[], salaries=0;
 
   // Load daily closings
@@ -107,6 +107,57 @@ async function loadMonth(m,y){
     snap.forEach(d=>days.push(d.data()));
     days.sort((a,b)=>a.dayKey>b.dayKey?1:-1);
   }catch(e){}
+
+  // اليوم الجاري — لو الشهر هو الشهر الحالي وفيه شيفتات مفتوحة أو مقفلة لسه
+  const isCurrentMonth = mk === monthKey(new Date().getMonth(), new Date().getFullYear());
+  const alreadyClosed  = days.some(d => d.dayKey === todayKey);
+
+  if(isCurrentMonth && !alreadyClosed){
+    try{
+      // جيب كل الشيفتات النهارده (مفتوحة ومقفلة لسه ما اتقفلوش كيوم)
+      const shiftsSnap = await getDocs(collection(db,'shifts'));
+      let todayCash=0, todayElec=0;
+      const seenKeys = new Set();
+      shiftsSnap.forEach(d=>{
+        const s=d.data();
+        if(s.dayKey===todayKey && !s.dayClosedAt && s.shiftKey && !seenKeys.has(s.shiftKey)){
+          seenKeys.add(s.shiftKey);
+        }
+      });
+
+      // جيب shift_totals لكل شيفت النهارده
+      for(const sk of seenKeys){
+        try{
+          const st = await getDoc(doc(db,'shift_totals',sk));
+          if(st.exists()){
+            todayCash += st.data().cash||0;
+            todayElec += st.data().elec||0;
+          }
+        }catch(e){}
+      }
+
+      // جيب مصاريف النهارده (مش مؤرشفة)
+      let todayExp=0;
+      try{
+        const expSnap = await getDocs(collection(db,'daily_expenses'));
+        expSnap.forEach(d=>{
+          const data=d.data();
+          if(data.dayKey===todayKey && !data.archived) todayExp+=data.amt||0;
+        });
+      }catch(e){}
+
+      if(todayCash||todayElec||todayExp){
+        days.push({
+          dayKey: todayKey,
+          date: new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
+          cash: todayCash,
+          elec: todayElec,
+          totalExp: todayExp,
+          _live: true
+        });
+      }
+    }catch(e){}
+  }
 
   // Load monthly expenses
   try{
@@ -162,12 +213,15 @@ async function render(){
   document.getElementById('days-body').innerHTML=days.length
     ?days.map(d=>`
       <tr class="${d.dayKey===todayKey?'today-row':''}">
-        <td>${d.date||d.dayKey}${d.dayKey===todayKey?'<span style="font-size:9px;margin-right:4px;color:#93C5FD"> اليوم</span>':''}</td>
+        <td>${d.date||d.dayKey}
+          ${d.dayKey===todayKey&&!d._live?'<span style="font-size:9px;margin-right:4px;color:#93C5FD"> اليوم</span>':''}
+          ${d._live?'<span style="font-size:9px;margin-right:4px;color:#FCD34D;background:#451a03;padding:1px 6px;border-radius:10px"> جاري</span>':''}
+        </td>
         <td style="color:#6EE7B7;font-weight:600">${fmt2(d.cash)}</td>
         <td style="color:#C4B5FD;font-weight:600">${fmt2(d.elec)}</td>
         <td style="color:#FCA5A5">${fmt2(d.totalExp)}</td>
         <td style="font-weight:700">${fmt2((d.cash||0)+(d.elec||0)-(d.totalExp||0))}</td>
-        <td><div class="export-btn" onclick="exportDay('${d.dayKey}','${d.date||d.dayKey}')">📥 XLSX</div></td>
+        <td>${d._live?'<span style="font-size:10px;color:var(--text3)">لسه جاري</span>':`<div class="export-btn" onclick="exportDay('${d.dayKey}','${d.date||d.dayKey}')">Excel</div>`}</td>
       </tr>`).join('')
     :'<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text3)">لا يوجد بيانات لهذا الشهر</td></tr>';
 
@@ -212,153 +266,61 @@ window.changeMonth=function(d){
 
 window.exportDay=async function(dayKey,dateLabel){
   try{
-    // جيب بيانات اليوم من daily_closing (نفس مصدر التقارير)
-    const closingSnap=await getDocs(query(collection(db,'daily_closing'),where('dayKey','==',dayKey)));
-    let closingData=null;
-    closingSnap.forEach(d=>{ closingData=d.data(); });
-
-    // جيب الجلسات من pos_sessions بـ dayKey
-    const snap=await getDocs(query(collection(db,'pos_sessions'),where('dayKey','==',dayKey)));
+    const snap=await getDocs(query(collection(db,'pos_sessions'),where('date','==',dateLabel)));
     const sessions=[];
     snap.forEach(d=>sessions.push(d.data()));
-
-    // لو مفيش جلسات جرب بالـ date
-    if(!sessions.length){
-      const snap2=await getDocs(query(collection(db,'pos_sessions'),where('date','==',dateLabel)));
-      snap2.forEach(d=>sessions.push(d.data()));
-    }
 
     const expSnap=await getDocs(query(collection(db,'daily_expenses'),where('dayKey','==',dayKey)));
     const exps=[];
     expSnap.forEach(d=>exps.push(d.data()));
 
-    // استخدم daily_closing للتوتالات لو موجود — أدق
+    // حساب التوتالات
     let totalCash=0, totalElec=0, totalSales=0, totalExps=0;
-    if(closingData){
-      totalCash  = parseFloat(closingData.cash||0);
-      totalElec  = parseFloat(closingData.elec||0);
-      totalSales = parseFloat(closingData.totalIncome||0) || (totalCash+totalElec);
-      totalExps  = parseFloat(closingData.totalExp||0);
-    } else {
-      sessions.forEach(s=>{
-        totalCash +=parseFloat(s.cashAmt||0);
-        totalElec +=parseFloat(s.elecAmt||0);
-        totalSales+=parseFloat(s.total||0);
-      });
-      exps.forEach(e=>{ totalExps+=parseFloat(e.amt||0); });
-    }
+    sessions.forEach(s=>{
+      totalCash+=parseFloat(s.cashAmt||0);
+      totalElec+=parseFloat(s.elecAmt||0);
+      totalSales+=parseFloat(s.total||0);
+    });
+    exps.forEach(e=>{ totalExps+=parseFloat(e.amt||0); });
 
+    // بناء CSV بشكل منظم
     const r=(v)=>parseFloat(v||0).toFixed(2);
+    let csv = '\uFEFF';
 
-    // ── بناء XLSX بـ SheetJS ──────────────────────────────
-    const wb = XLSX.utils.book_new();
-    const ws_data = [];
+    // عنوان
+    csv += `تقرير يوم ${dateLabel}\n`;
+    csv += `\n`;
 
-    // ألوان
-    const C_TITLE   = {fgColor:{rgb:'1E3A8A'}};  // أزرق داكن
-    const C_SECTION = {fgColor:{rgb:'064E3B'}};  // أخضر داكن
-    const C_HEADER  = {fgColor:{rgb:'263348'}};  // رمادي داكن
-    const C_TOTAL   = {fgColor:{rgb:'1C1917'}};  // بني داكن
-    const C_NET_POS = {fgColor:{rgb:'064E3B'}};  // أخضر
-    const C_NET_NEG = {fgColor:{rgb:'450A0A'}};  // أحمر
+    // سكشن المبيعات
+    csv += `المبيعات\n`;
+    csv += `الطاولة,الأصناف,نقدي,إلكتروني,الإجمالي,الوقت\n`;
+    sessions.forEach(s=>{
+      const items=(s.items||[]).map(i=>`${i.n||''} x${i.q||1}`).join(' | ');
+      const sessItems=(s.sessions||[]).map(ss=>`${ss.cat||''} ${ss.dur?Math.round(ss.dur/60000)+'د':''}`).join(' | ');
+      const allItems=[sessItems,items].filter(Boolean).join(' | ');
+      csv += `${s.table||''},${allItems},"${r(s.cashAmt)}","${r(s.elecAmt)}","${r(s.total)}",${s.time||''}\n`;
+    });
+    csv += `إجمالي المبيعات,,${r(totalCash)},${r(totalElec)},${r(totalSales)},\n`;
+    csv += `\n`;
 
-    const boldW = {font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid'},alignment:{horizontal:'right'}};
-    const boldB = {font:{bold:true},alignment:{horizontal:'right'}};
-    const numS  = {alignment:{horizontal:'left'},numFmt:'#,##0.00'};
-    const muted = {font:{color:{rgb:'64748B'}},alignment:{horizontal:'right'}};
+    // سكشن المصاريف
+    csv += `المصاريف اليومية\n`;
+    csv += `التصنيف,المبلغ,الوقت,ملاحظة\n`;
+    exps.forEach(e=>{ csv += `${e.cat||''},${r(e.amt)},${e.time||''},${e.note||''}\n`; });
+    csv += `إجمالي المصاريف,${r(totalExps)},,,\n`;
+    csv += `\n`;
 
-    function titleRow(text) {
-      return [{v:text, s:{...boldW, fill:{patternType:'solid',...C_TITLE}}},'','','','',''];
-    }
-    function sectionRow(text) {
-      return [{v:text, s:{...boldW, fill:{patternType:'solid',...C_SECTION}}},'','','','',''];
-    }
-    function headerRow(...cols) {
-      return cols.map(c=>({v:c, s:{...boldW, fill:{patternType:'solid',...C_HEADER}}}));
-    }
-    function dataRow(...cols) {
-      return cols.map((c,i)=>({v:c, s: i>0 ? numS : {alignment:{horizontal:'right'}}}));
-    }
-    function totalRow(...cols) {
-      return cols.map((c,i)=>({v:c, s:{...boldB, fill:{patternType:'solid',...C_TOTAL}, ...(i>0?{numFmt:'#,##0.00'}:{})}}));
-    }
+    // صافي اليوم
+    csv += `صافي اليوم,${r(totalSales-totalExps)}\n`;
 
-    // ── العنوان ──
-    ws_data.push(titleRow(`تقرير يوم ${dateLabel}`));
-    ws_data.push([{v:'وقت الطباعة', s:muted}, {v:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}), s:muted},'','','','']);
-    ws_data.push(['','','','','','']);
-
-    // ── الملخص السريع ──
-    ws_data.push(sectionRow('📊 الملخص السريع'));
-    ws_data.push(headerRow('البند','المبلغ (ج)'));
-    ws_data.push(dataRow('إجمالي المبيعات (نقدي)', parseFloat(r(totalCash))));
-    ws_data.push(dataRow('إجمالي المبيعات (إلكتروني)', parseFloat(r(totalElec))));
-    ws_data.push(dataRow('إجمالي المبيعات', parseFloat(r(totalSales))));
-    ws_data.push(dataRow('إجمالي المصاريف', parseFloat(r(totalExps))));
-    const net = totalSales - totalExps;
-    ws_data.push([
-      {v:'✅ صافي اليوم', s:{font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',...(net>=0?C_NET_POS:C_NET_NEG)},alignment:{horizontal:'right'}}},
-      {v:parseFloat(r(net)), s:{font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',...(net>=0?C_NET_POS:C_NET_NEG)},numFmt:'#,##0.00'}},
-      '','','',''
-    ]);
-    ws_data.push(['','','','','','']);
-
-    // ── تفاصيل المبيعات ──
-    ws_data.push(sectionRow('📋 تفاصيل المبيعات'));
-    ws_data.push(headerRow('الطاولة','الأصناف','نقدي (ج)','إلكتروني (ج)','الإجمالي (ج)','الوقت'));
-    if(sessions.length){
-      sessions.forEach(s=>{
-        const items=(s.items||[]).map(i=>`${i.n||''} x${i.q||1}`).join(' | ');
-        const sessItems=(s.sessions||[]).map(ss=>`${ss.cat||''} ${ss.dur?Math.round(ss.dur/60000)+'د':''}`).join(' | ');
-        const allItems=[sessItems,items].filter(Boolean).join(' | ');
-        ws_data.push([
-          {v:s.table||'—', s:{alignment:{horizontal:'right'}}},
-          {v:allItems||'—', s:{alignment:{horizontal:'right'}}},
-          {v:parseFloat(r(s.cashAmt)), s:numS},
-          {v:parseFloat(r(s.elecAmt)), s:numS},
-          {v:parseFloat(r(s.total)), s:numS},
-          {v:s.time||'—', s:{alignment:{horizontal:'right'}}}
-        ]);
-      });
-      ws_data.push(totalRow('الإجمالي','', parseFloat(r(totalCash)), parseFloat(r(totalElec)), parseFloat(r(totalSales)),''));
-    } else {
-      ws_data.push(dataRow('—','لا يوجد مبيعات','—','—','—','—'));
-    }
-    ws_data.push(['','','','','','']);
-
-    // ── تفاصيل المصاريف ──
-    ws_data.push(sectionRow('💸 تفاصيل المصاريف'));
-    ws_data.push(headerRow('البند','المبلغ (ج)','الوقت','ملاحظة'));
-    if(exps.length){
-      exps.forEach(e=>{
-        ws_data.push([
-          {v:e.cat||'—', s:{alignment:{horizontal:'right'}}},
-          {v:parseFloat(r(e.amt)), s:numS},
-          {v:e.time||'—', s:{alignment:{horizontal:'right'}}},
-          {v:e.note||'—', s:{alignment:{horizontal:'right'}}}
-        ]);
-      });
-      ws_data.push(totalRow('الإجمالي', parseFloat(r(totalExps)),'',''));
-    } else {
-      ws_data.push(dataRow('—','لا يوجد مصاريف','—','—'));
-    }
-
-    // ── بناء الشيت ──
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-    // عرض الأعمدة
-    ws['!cols'] = [
-      {wch:30}, // A
-      {wch:35}, // B
-      {wch:16}, // C
-      {wch:18}, // D
-      {wch:16}, // E
-      {wch:12}, // F
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, 'التقرير');
-    XLSX.writeFile(wb, `تقرير_${dateLabel}.xlsx`);
-  }catch(e){alert('حصل خطأ في التصدير: '+e.message);}
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`تقرير_${dateLabel}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }catch(e){alert('حصل خطأ في التصدير');}
 };
 
 requireAuth(async(user,userData)=>{

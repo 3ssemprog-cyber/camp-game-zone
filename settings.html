@@ -427,20 +427,16 @@ window.addUser=async function(){
   const role=document.getElementById('u-role').value;
   if(!name||!email||!pass)return alert('اكتب الاسم والإيميل وكلمة السر');
   try{
-    const res=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBtdqDQMiEnElUykFb2Tmoe_xB43kgf9O4`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,password:pass,returnSecureToken:true})
-    });
-    const data=await res.json();
-    if(data.error)return alert('خطأ: '+(data.error.message==='EMAIL_EXISTS'?'الإيميل ده موجود بالفعل':data.error.message));
+    // إنشاء المستخدم عبر Supabase
+    const { supabase: _sb } = await import('./firebase.js');
+    const { data: authData, error: authErr } = await _sb.auth.signUp({ email, password: pass });
+    if(authErr) return alert('خطأ: ' + (authErr.message.includes('already') ? 'الإيميل ده موجود بالفعل' : authErr.message));
+    const newUid = authData?.user?.id;
+    if(!newUid) return alert('حصل خطأ في إنشاء المستخدم — جرب تاني');
     const defaultPerms={};
     Object.keys(PERMS_LABELS).forEach(k=>defaultPerms[k]=false);
-    if(role==='كاشير'||role==='مشرف'){
-      ['view_tables','open_table','add_item','close_table','print_client','print_bar',
-       'view_exp','add_daily','view_close','mark_attend'].forEach(k=>defaultPerms[k]=true);
-    }
-    await setDoc(doc(db,'users',data.localId),{name,role,email,permissions:defaultPerms,timestamp:serverTimestamp()});
-    USERS.push({id:data.localId,name,role,email,permissions:defaultPerms});
+    await setDoc(doc(db,'users',newUid),{name,role,email,permissions:defaultPerms,timestamp:serverTimestamp()});
+    USERS.push({id:newUid,name,role,email,permissions:defaultPerms});
     logTransaction(`إضافة مستخدم: ${name}`,role,'set');
     document.getElementById('u-name').value='';
     document.getElementById('u-email').value='';
@@ -867,7 +863,7 @@ async function loadTimerCats(){
     for(const d of snap.docs){
       const data=d.data();
       // Load items for each cat
-      const itemsSnap=await getDocs(collection(db,'timer_cats',d.id,'items'));
+      const itemsSnap=await getDocs(collection(db,'timer_cat_items'));
       const items=[];
       itemsSnap.forEach(i=>items.push({id:i.id,...i.data()}));
       TIMER_CATS.push({id:d.id,...data,items});
@@ -947,7 +943,7 @@ window.addTimerItem=async function(catId){
   if(!name)return alert('اكتب اسم الصنف');
   if(!rate||rate<=0)return alert('اكتب السعر');
   try{
-    const ref=await addDoc(collection(db,'timer_cats',catId,'items'),{name,rate,timestamp:serverTimestamp()});
+    const ref=await addDoc(collection(db,'timer_cat_items'),{name,rate,timestamp:serverTimestamp()});
     const cat=TIMER_CATS.find(c=>c.id===catId);
     if(cat){if(!cat.items)cat.items=[];cat.items.push({id:ref.id,name,rate});}
     logTransaction(`إضافة صنف تايمر: ${name}`,`${rate} ج/ساعة`,'set');
@@ -957,7 +953,7 @@ window.addTimerItem=async function(catId){
 
 window.delTimerItem=async function(catId,itemId){
   try{
-    await deleteDoc(doc(db,'timer_cats',catId,'items',itemId));
+    await deleteDoc(doc(db,'timer_cat_items',itemId));
     const cat=TIMER_CATS.find(c=>c.id===catId);
     if(cat)cat.items=cat.items.filter(i=>i.id!==itemId);
     renderTimerCats();
@@ -1224,7 +1220,7 @@ window.reSaveConfig=async function(){
 };
 
 requireAuth(async(user,userData)=>{
-  if(user.uid!==ADMIN_UID){alert('الإعدادات للأدمن فقط');window.location.href='dashboard.html';return;}
+  if((user.uid !== ADMIN_UID && user.id !== ADMIN_UID)){alert('الإعدادات للأدمن فقط');window.location.href='dashboard.html';return;}
   document.getElementById('uname').textContent='Admin';
   await Promise.all([loadUsers(),loadTables(),loadTimerCats(),loadCats()]);
   renderUsers();renderTables();renderTimerCats();

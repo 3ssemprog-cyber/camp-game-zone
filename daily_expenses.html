@@ -253,7 +253,7 @@ window.addDraw=async function(){
 };
 
 requireAuth(async(user,userData)=>{
-  const isAdm=user.uid===ADMIN_UID;
+  const isAdm=(user.uid === ADMIN_UID || user.id === ADMIN_UID);
   const p=userData?.permissions||{};
   canAdd=isAdm||p['exp.add_daily']===true;
   canDel=isAdm||p['exp.del_daily']===true;

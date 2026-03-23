@@ -395,7 +395,7 @@ window.closeOvl=function(){
 };
 
 requireAuth(async(user,userData)=>{
-  isAdm=user.uid===ADMIN_UID;
+  isAdm=(user.uid === ADMIN_UID || user.id === ADMIN_UID);
   const p=userData?.permissions||{};
   canAdd=isAdm||p['inv.add']===true;
   canDel=isAdm||p['inv.del']===true;

@@ -193,7 +193,7 @@ async function getDocs(ref) {
 
 // getDoc — بيجيب doc واحد
 async function getDoc(ref) {
-  const { data, error } = await supabase.from(ref._table).select('*').eq('id', ref._id).single();
+  const { data, error } = await supabase.from(ref._table).select('*').eq('id', ref._id).maybeSingle();
   if (error) throw error;
   return {
     exists: () => !!data,
@@ -205,15 +205,17 @@ async function getDoc(ref) {
 // addDoc — بيضيف row جديدة
 async function addDoc(ref, dataObj) {
   const row = _toRow(dataObj);
+  if (ref._catId) row['cat_id'] = ref._catId;
   const { data, error } = await supabase.from(ref._table).insert(row).select().single();
   if (error) throw error;
   return { id: data.id };
 }
 
-// setDoc — بيعمل upsert
+// setDoc — بيعمل upsert (يدعم merge option)
 async function setDoc(ref, dataObj, opts) {
-  const row = { ..._toRow(dataObj), id: ref._id };
-  const { error } = await supabase.from(ref._table).upsert(row);
+  const row = _toRow(dataObj);
+  if (ref._id) row['id'] = ref._id;
+  const { error } = await supabase.from(ref._table).upsert(row, { onConflict: 'id' });
   if (error) throw error;
 }
 
@@ -335,6 +337,19 @@ function _wrapDocs(rows) {
 const db = supabase;
 
 // =============================================
+// timerCatItems — helper للـ timer_cat_items
+// =============================================
+function timerCatItems(catId) {
+  return {
+    _table: 'timer_cat_items',
+    _catId: catId,
+    _query: true,
+    _filters: [{ field: 'cat_id', value: catId }],
+    _orders: []
+  };
+}
+
+// =============================================
 // Exports — نفس الـ exports بتاعة firebase.js القديم
 // =============================================
 export {
@@ -350,6 +365,7 @@ export {
   todayStr,
   monthStr,
   requireAuth,
+  timerCatItems,
   // Firestore-compatible functions
   doc, getDoc, setDoc, collection, addDoc, getDocs,
   updateDoc, deleteDoc, query, orderBy, where, serverTimestamp,

@@ -527,7 +527,7 @@ async function loadConfig(){
 }
 
 requireAuth(async(user,userData)=>{
-  if(user.uid!==ADMIN_UID){
+  if((user.uid !== ADMIN_UID && user.id !== ADMIN_UID)){
     document.body.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3)">هذه الصفحة للأدمن فقط</div>';
     return;
   }

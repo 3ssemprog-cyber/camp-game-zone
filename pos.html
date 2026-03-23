@@ -332,7 +332,7 @@ async function loadTimerCats(){
     const snap=await getDocs(collection(db,'timer_cats'));
     for(const d of snap.docs){
       const data=d.data();
-      const itemsSnap=await getDocs(collection(db,'timer_cats',d.id,'items'));
+      const itemsSnap=await getDocs(collection(db,'timer_cat_items'));
       const items=[];
       itemsSnap.forEach(i=>items.push({id:i.id,...i.data()}));
       TC[data.name]={label:data.name,id:d.id,items};
@@ -1385,7 +1385,7 @@ setInterval(()=>{
 
 
 requireAuth(async(user,userData)=>{
-  const isAdm=user.uid===ADMIN_UID;
+  const isAdm=(user.uid === ADMIN_UID || user.id === ADMIN_UID);
   canDiscount=isAdm||(userData?.permissions?.['pos.discount']===true);
   canDelItem=isAdm||(userData?.permissions?.['pos.del_item']===true);
   canReturn=isAdm||(userData?.permissions?.['pos.return']===true);

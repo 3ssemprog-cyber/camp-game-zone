@@ -141,7 +141,7 @@ window.delItem=async function(id){
 };
 
 requireAuth(async(user,userData)=>{
-  const isAdm=user.uid===ADMIN_UID;
+  const isAdm=(user.uid === ADMIN_UID || user.id === ADMIN_UID);
   const p=userData?.permissions||{};
   canAdd=isAdm||p['exp.add_monthly']===true;
   canDel=isAdm||p['exp.del_monthly']===true;

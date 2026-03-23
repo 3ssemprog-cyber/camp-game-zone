@@ -499,7 +499,7 @@ window.showReceipt=function(html){
 };
 
 requireAuth(async(user,userData)=>{
-  isAdm = user.uid===ADMIN_UID;
+  isAdm = (user.uid === ADMIN_UID || user.id === ADMIN_UID);
   const p = userData?.permissions||{};
   const hasPerm = (k) => isAdm || p[k]===true;
   document.getElementById('uname').textContent = isAdm?'Admin':(userData?.name||user.email);

@@ -405,7 +405,7 @@ function toast(msg) {
 }
 
 requireAuth(async function(user) {
-  if (user.uid !== ADMIN_UID) { window.location.href = 'dashboard.html'; return; }
+  if ((user.uid !== ADMIN_UID && user.id !== ADMIN_UID)) { window.location.href = 'dashboard.html'; return; }
   document.getElementById('uname').textContent = 'Admin';
   await loadItems();
   await loadCats();

@@ -838,7 +838,7 @@ window.addTable=async function(){
   const catType=document.getElementById('t-type').value||'';
   if(!name)return alert('اكتب اسم الطاولة');
   try{
-    const ref=await addDoc(collection(db,'tables'),{name,catType,busy:false,openAt:null,orderItems:[],sessions:[],timestamp:serverTimestamp()});
+    const ref=await addDoc(collection(db,'tables'),{name,catType,busy:false,openAt:null,order:[],sessions:[],timestamp:serverTimestamp()});
     TABLES.push({id:ref.id,name,catType,busy:false,order:[],sessions:[]});
     document.getElementById('t-name').value='';
     renderTables();

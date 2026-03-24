@@ -7,7 +7,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL  = 'https://lasatmuumpwjnmbollpd.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxhc2F0bXV1bXB3am5tYm9sbHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMDc4ODksImV4cCI6MjA4OTg4Mzg4OX0.Ad0yGhi15GH2rQIQ0fhCYF3Nw1YSggQkRMHoz92WT-k';
-const ADMIN_UID     = 'iJA776e48eQtWAhSREA3o1u9WJW2'; // هيتغير بعد ما تعمل الأدمن في Supabase Auth
+const ADMIN_UID     = 'b2bf5fd8-a428-47fb-ae1a-6045f3ab21dd'; // هيتغير بعد ما تعمل الأدمن في Supabase Auth
 
 export { ADMIN_UID };
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);

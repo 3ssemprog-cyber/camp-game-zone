@@ -120,7 +120,7 @@ window.applyFilter=function applyFilter(){
   if(fq) filtered=filtered.filter(l=>
     (l.action||'').toLowerCase().includes(fq)||
     (l.detail||'').toLowerCase().includes(fq)||
-    (l.user||'').toLowerCase().includes(fq)
+    (l.userName||l.user||'').toLowerCase().includes(fq)
   );
 
   document.getElementById('count-val').textContent=`${filtered.length} معاملة`;
@@ -137,7 +137,7 @@ window.applyFilter=function applyFilter(){
       <td>
         <div class="user-chip-sm">
           <div class="udot ${ROLE_DOT[l.role]||'dot-s'}"></div>
-          ${l.user||'—'}
+          ${l.userName||l.user||'—'}
         </div>
       </td>
       <td><span class="sec-badge ${SEC_CLASS[l.section]||'s-set'}">${SEC_LABEL[l.section]||l.section||'—'}</span></td>
@@ -154,7 +154,7 @@ setInterval(()=>{
 },1000);
 
 requireAuth(async(user,userData)=>{
-  document.getElementById('uname').textContent=(user.uid === ADMIN_UID || user.id === ADMIN_UID)?'Admin':(userData?.name||user.email);
+  document.getElementById('uname').textContent=user.uid===ADMIN_UID?'Admin':(userData?.name||user.email);
   await loadLogs();
   applyFilter();
 });

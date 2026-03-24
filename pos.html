@@ -291,7 +291,7 @@
 
 
 <script type="module">
-import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt,
+import { db, auth, ADMIN_UID, requireAuth, logTransaction, fmt, onSnapshot,
   collection, getDocs, getDoc, doc, setDoc, updateDoc, addDoc, serverTimestamp } from './firebase.js';
 
 let TC = {};  // loaded from Firebase timer_cats
@@ -321,7 +321,7 @@ async function loadTables(){
   try{
     const snap=await getDocs(collection(db,'tables'));
     TABLES=[];
-    snap.forEach(d=>{const data=d.data();TABLES.push({id:d.id,n:data.name,busy:data.busy||false,openAt:data.openAt||null,order:data.order||[],sessions:data.sessions||[],catType:data.catType||''});});
+    snap.forEach(d=>{const data=d.data();TABLES.push({id:d.id,n:data.name,busy:data.busy||false,openAt:data.openAt||null,order:data.orderItems||data.order||[],sessions:data.sessions||[],catType:data.catType||''});});
   }catch(e){ TABLES=[]; }
 }
 
@@ -332,7 +332,7 @@ async function loadTimerCats(){
     const snap=await getDocs(collection(db,'timer_cats'));
     for(const d of snap.docs){
       const data=d.data();
-      const itemsSnap=await getDocs(collection(db,'timer_cat_items'));
+      const itemsSnap=await getDocs(collection(db,'timer_cats',d.id,'items'));
       const items=[];
       itemsSnap.forEach(i=>items.push({id:i.id,...i.data()}));
       TC[data.name]={label:data.name,id:d.id,items};
@@ -386,7 +386,7 @@ async function loadMenu(){
 }
 
 async function saveTable(t){
-  try{await updateDoc(doc(db,'tables',t.id),{busy:t.busy,openAt:t.openAt,order:t.order,sessions:t.sessions});}catch(e){}
+  try{await updateDoc(doc(db,'tables',t.id),{busy:t.busy,openAt:t.openAt,orderItems:t.order,sessions:t.sessions});}catch(e){}
 }
 
 function updateBarNotif(){
@@ -1385,7 +1385,7 @@ setInterval(()=>{
 
 
 requireAuth(async(user,userData)=>{
-  const isAdm=(user.uid === ADMIN_UID || user.id === ADMIN_UID);
+  const isAdm=user.uid===ADMIN_UID;
   canDiscount=isAdm||(userData?.permissions?.['pos.discount']===true);
   canDelItem=isAdm||(userData?.permissions?.['pos.del_item']===true);
   canReturn=isAdm||(userData?.permissions?.['pos.return']===true);
@@ -1396,9 +1396,9 @@ requireAuth(async(user,userData)=>{
   await loadRcptConfig();
   if(CATS.length)cat=CATS[0];
   renderAll();
-  // ── تحميل الطلبات ──
+  // ── تحميل الطلبات بـ Realtime (مش polling) ──
   await loadOrders();
-  setInterval(loadOrders, 8000);
+  onSnapshot(collection(db,'menu_orders'), () => loadOrders());
 });
 
 // ===== ORDERS PANEL =====

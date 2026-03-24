@@ -1,374 +1,257 @@
-// =============================================
-// Camp Game Zone — Supabase Client
-// بديل Firebase — سمّيه firebase.js في مشروعك
-// =============================================
+// ============================================================
+//  Camp Game Zone — Supabase Client
+//  نفس الـ exports بتاعت Firebase — باقي الكود ما اتغيرش
+// ============================================================
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL  = 'https://vvxtdspxjbudmiewoadt.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2eHRkc3B4amJ1ZG1pZXdvYWR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMDU1MDcsImV4cCI6MjA4OTg4MTUwN30.BCcaIfK7xF5P1AlDKgWcLE4Im3a91aJdNt_mXquvnB0';
+const SUPABASE_URL  = 'https://lasatmuumpwjnmbollpd.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxhc2F0bXV1bXB3am5tYm9sbHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMDc4ODksImV4cCI6MjA4OTg4Mzg4OX0.Ad0yGhi15GH2rQIQ0fhCYF3Nw1YSggQkRMHoz92WT-k';
+const ADMIN_UID     = 'iJA776e48eQtWAhSREA3o1u9WJW2'; // هيتغير بعد ما تعمل الأدمن في Supabase Auth
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+export { ADMIN_UID };
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+export const db       = supabase;
 
-// =============================================
-// Auth helpers — نفس واجهة Firebase
-// =============================================
-const auth = {
-  get currentUser() { return supabase.auth.getUser ? _currentUser : null; },
-};
+// ─── camelCase ↔ snake_case تلقائي ───────────────────────────
+// الكود القديم بيستخدم camelCase — Supabase بيحب snake_case
+// الـ wrapper دي بتترجم تلقائياً في الاتجاهين
 
-let _currentUser = null;
-supabase.auth.onAuthStateChange((event, session) => {
-  _currentUser = session?.user || null;
-});
-
-// Admin UID — غيّره بالـ UID بتاعك من Supabase Auth
-const ADMIN_UID = '1755c914-51fa-47ef-b693-0264a45a7833';
-
-// =============================================
-// signInWithEmailAndPassword
-// =============================================
-async function signInWithEmailAndPassword(_auth, email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  _currentUser = data.user;
-  return data;
-}
-
-// =============================================
-// signOut
-// =============================================
-async function signOut(_auth) {
-  await supabase.auth.signOut();
-  _currentUser = null;
-}
-
-// =============================================
-// onAuthStateChanged — نفس واجهة Firebase
-// =============================================
-function onAuthStateChanged(_auth, callback) {
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    _currentUser = session?.user || null;
-    if (_currentUser) _currentUser.uid = _currentUser.id;
-    callback(_currentUser);
-  });
-  // تحقق فوري من الجلسة الحالية
-  supabase.auth.getSession().then(({ data }) => {
-    _currentUser = data.session?.user || null;
-    if (_currentUser) _currentUser.uid = _currentUser.id;
-    callback(_currentUser);
-  });
-}
-
-// =============================================
-// requireAuth
-// =============================================
-function requireAuth(callback) {
-  supabase.auth.getSession().then(async ({ data }) => {
-    const user = data.session?.user || null;
-    if (!user) { window.location.href = 'index.html'; return; }
-    _currentUser = user;
-    // إضافة uid للتوافق مع كود Firebase القديم اللي بيستخدم user.uid
-    user.uid = user.id;
-    if (user.id === ADMIN_UID) {
-      const adminData = { uid: user.id, email: user.email, role: 'أدمن', name: 'Admin', permissions: {} };
-      if (callback) callback(user, adminData);
-      return;
-    }
-    const userData = await getCurrentUserData();
-    if (callback) callback(user, userData);
-  });
-}
-
-// =============================================
-// getCurrentUserData
-// =============================================
-async function getCurrentUserData() {
-  const user = _currentUser;
-  if (!user) return null;
-  if (user.id === ADMIN_UID) {
-    return { uid: user.id, email: user.email, role: 'أدمن', name: 'Admin', permissions: {} };
-  }
-  try {
-    const { data } = await supabase.from('users').select('*').eq('uid', user.id).single();
-    if (data) return { uid: user.id, ...data };
-  } catch (e) {}
-  return null;
-}
-
-// =============================================
-// hasPermission
-// =============================================
-async function hasPermission(permKey) {
-  const user = _currentUser;
-  if (!user) return false;
-  if (user.id === ADMIN_UID) return true;
-  const userData = await getCurrentUserData();
-  if (!userData?.permissions) return false;
-  return userData.permissions[permKey] === true;
-}
-
-// =============================================
-// isAdmin
-// =============================================
-function isAdmin() {
-  return _currentUser && _currentUser.id === ADMIN_UID;
-}
-
-// =============================================
-// logTransaction
-// =============================================
-async function logTransaction(action, detail, section) {
-  try {
-    const user = _currentUser;
-    if (!user) return;
-    let userName = 'Admin', userRole = 'أدمن';
-    if (user.id !== ADMIN_UID) {
-      const userData = await getCurrentUserData();
-      userName = userData?.name || user.email || 'غير معروف';
-      userRole = userData?.role || 'موظف';
-    }
-    await supabase.from('transactions_log').insert({
-      action: String(action || ''),
-      detail: String(detail || ''),
-      section: String(section || ''),
-      user_name: userName,
-      role: userRole,
-      date: new Date().toLocaleDateString('ar-EG'),
-      time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-    });
-  } catch (e) { console.log('logTransaction error:', e); }
-}
-
-// =============================================
-// fmt
-// =============================================
-function fmt(n) {
-  return parseFloat(n || 0).toFixed(2) + ' ج';
-}
-
-function todayStr() {
-  return new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-function monthStr() {
-  return new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
-}
-
-// =============================================
-// Firestore-compatible helpers
-// كل الكود القديم بيستخدم collection() و getDocs() إلخ
-// الهيلبرز دي بتحوّل المكالمات دي لـ Supabase
-// =============================================
-
-// collection reference object
-function collection(_db, tableName) {
-  return { _table: tableName };
-}
-
-// doc reference object
-function doc(_db, tableName, id) {
-  return { _table: tableName, _id: id };
-}
-
-// getDocs — بيجيب كل الداتا من الجدول
-async function getDocs(ref) {
-  if (ref._query) {
-    // query object
-    let q = supabase.from(ref._table).select('*');
-    for (const filter of (ref._filters || [])) {
-      q = q.eq(filter.field, filter.value);
-    }
-    for (const o of (ref._orders || [])) {
-      q = q.order(o.field, { ascending: o.dir === 'asc' });
-    }
-    const { data, error } = await q;
-    if (error) throw error;
-    return _wrapDocs(data || []);
-  }
-  const { data, error } = await supabase.from(ref._table).select('*').order('created_at', { ascending: false });
-  if (error) throw error;
-  return _wrapDocs(data || []);
-}
-
-// getDoc — بيجيب doc واحد
-async function getDoc(ref) {
-  const { data, error } = await supabase.from(ref._table).select('*').eq('id', ref._id).maybeSingle();
-  if (error) throw error;
-  return {
-    exists: () => !!data,
-    data: () => _fixRow(data),
-    id: data?.id,
-  };
-}
-
-// addDoc — بيضيف row جديدة
-async function addDoc(ref, dataObj) {
-  const row = _toRow(dataObj);
-  if (ref._catId) row['cat_id'] = ref._catId;
-  const { data, error } = await supabase.from(ref._table).insert(row).select().single();
-  if (error) throw error;
-  return { id: data.id };
-}
-
-// setDoc — بيعمل upsert (يدعم merge option)
-async function setDoc(ref, dataObj, opts) {
-  const row = _toRow(dataObj);
-  if (ref._id) row['id'] = ref._id;
-  const { error } = await supabase.from(ref._table).upsert(row, { onConflict: 'id' });
-  if (error) throw error;
-}
-
-// updateDoc — بيعمل update لـ row
-async function updateDoc(ref, dataObj) {
-  const row = _toRow(dataObj);
-  const { error } = await supabase.from(ref._table).update(row).eq('id', ref._id);
-  if (error) throw error;
-}
-
-// deleteDoc — بيحذف row
-async function deleteDoc(ref) {
-  const { error } = await supabase.from(ref._table).delete().eq('id', ref._id);
-  if (error) throw error;
-}
-
-// query — بيبني query object
-function query(ref, ...constraints) {
-  const q = { _table: ref._table, _query: true, _filters: [], _orders: [] };
-  for (const c of constraints) {
-    if (c._type === 'where') q._filters.push(c);
-    if (c._type === 'orderBy') q._orders.push(c);
-  }
-  return q;
-}
-
-// where
-function where(field, op, value) {
-  // تحويل أسماء الحقول من camelCase لـ snake_case
-  const mapped = _mapField(field);
-  return { _type: 'where', field: mapped, value };
-}
-
-// orderBy
-function orderBy(field, dir) {
-  const mapped = _mapField(field);
-  return { _type: 'orderBy', field: mapped, dir: dir || 'asc' };
-}
-
-// serverTimestamp — مش محتاجه في Supabase بس موجود للتوافق
-function serverTimestamp() {
-  return new Date().toISOString();
-}
-
-// =============================================
-// Helper functions داخلية
-// =============================================
-
-// تحويل أسماء الحقول من Firebase camelCase لـ Supabase snake_case
-const FIELD_MAP = {
-  'monthKey':     'month_key',
-  'dayKey':       'day_key',
-  'shiftKey':     'shift_key',
-  'cashAmt':      'cash_amt',
-  'elecAmt':      'elec_amt',
-  'totalExp':     'total_exp',
-  'alertQty':     'alert_qty',
-  'imageUrl':     'image_url',
-  'empName':      'emp_name',
-  'isDeficit':    'is_deficit',
-  'doneTime':     'done_time',
-  'acceptedTime': 'accepted_time',
-  'dayClosedAt':  'day_closed_at',
-  'openedBy':     'opened_by',
-  'openedAt':     'opened_at',
-  'closedAt':     'closed_at',
-  'timestamp':    'created_at',
-  'table':        'table_name',
-  'user':         'user_name',
-};
-
-function _mapField(f) {
-  return FIELD_MAP[f] || f.replace(/([A-Z])/g, '_$1').toLowerCase();
-}
-
-// تحويل object من Firebase format لـ Supabase row
-function _toRow(obj) {
-  const row = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (v && v.toISOString) { row[_mapField(k)] = v.toISOString(); continue; }
-    if (v === null || v === undefined) continue;
-    row[_mapField(k)] = v;
-  }
-  // حذف timestamp لأن Supabase بيعملها تلقائي
-  delete row['timestamp'];
-  return row;
-}
-
-// تحويل row من Supabase لـ Firebase-like object
-function _fixRow(row) {
-  if (!row) return null;
-  const REVERSE_MAP = Object.fromEntries(Object.entries(FIELD_MAP).map(([k,v])=>[v,k]));
+function toSnake(obj) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
   const out = {};
-  for (const [k, v] of Object.entries(row)) {
-    const key = REVERSE_MAP[k] || k;
-    out[key] = v;
-  }
-  // إضافة timestamp-like object للتوافق
-  if (row.created_at) {
-    out.timestamp = {
-      seconds: Math.floor(new Date(row.created_at).getTime() / 1000),
-      toMillis: () => new Date(row.created_at).getTime(),
-    };
+  for (const [k, v] of Object.entries(obj)) {
+    const sk = k.replace(/([A-Z])/g, '_$1').toLowerCase();
+    out[sk] = v;
   }
   return out;
 }
 
-function _wrapDocs(rows) {
-  return {
-    forEach: (cb) => rows.forEach(r => cb({ id: r.id, data: () => _fixRow(r), ...r })),
-    docs: rows.map(r => ({ id: r.id, data: () => _fixRow(r) })),
-    size: rows.length,
-  };
+function toCamel(obj) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const ck = k.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    out[ck] = v;
+  }
+  return out;
 }
 
-// =============================================
-// db object للتوافق مع الكود القديم
-// =============================================
-const db = supabase;
-
-// =============================================
-// timerCatItems — helper للـ timer_cat_items
-// =============================================
-function timerCatItems(catId) {
-  return {
-    _table: 'timer_cat_items',
-    _catId: catId,
-    _query: true,
-    _filters: [{ field: 'cat_id', value: catId }],
-    _orders: []
-  };
+function cleanObj(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out;
 }
 
-// =============================================
-// Exports — نفس الـ exports بتاعة firebase.js القديم
-// =============================================
-export {
-  supabase,
-  db,
-  auth,
-  ADMIN_UID,
-  isAdmin,
-  getCurrentUserData,
-  hasPermission,
-  logTransaction,
-  fmt,
-  todayStr,
-  monthStr,
-  requireAuth,
-  timerCatItems,
-  // Firestore-compatible functions
-  doc, getDoc, setDoc, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, query, orderBy, where, serverTimestamp,
-  // Auth functions
-  signInWithEmailAndPassword, signOut, onAuthStateChanged,
-};
+// ─── Auth ────────────────────────────────────────────────────
+
+export const auth = { get currentUser() { return _cu; } };
+
+let _cu  = null;
+let _cud = null;
+
+supabase.auth.onAuthStateChange((_ev, session) => {
+  _cu  = session?.user ? { uid: session.user.id, email: session.user.email } : null;
+  _cud = null;
+});
+
+export async function signInWithEmailAndPassword(_a, email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+export async function signOut(_a) {
+  _cu = null; _cud = null;
+  await supabase.auth.signOut();
+}
+
+export function onAuthStateChanged(_a, cb) {
+  supabase.auth.getSession().then(({ data }) => {
+    const u = data.session?.user ?? null;
+    _cu = u ? { uid: u.id, email: u.email } : null;
+    cb(_cu);
+  });
+  supabase.auth.onAuthStateChange((_ev, session) => {
+    _cu  = session?.user ? { uid: session.user.id, email: session.user.email } : null;
+    _cud = null;
+    cb(_cu);
+  });
+}
+
+// ─── User & Permissions ──────────────────────────────────────
+
+export function isAdmin() { return _cu?.uid === ADMIN_UID; }
+
+export async function getCurrentUserData() {
+  if (!_cu) return null;
+  if (_cu.uid === ADMIN_UID)
+    return { uid: ADMIN_UID, email: _cu.email, role: 'أدمن', name: 'Admin', permissions: {} };
+  if (_cud) return _cud;
+  try {
+    const { data } = await supabase.from('users').select('*').eq('uid', _cu.uid).single();
+    _cud = { uid: _cu.uid, ...toCamel(data) };
+    return _cud;
+  } catch { return null; }
+}
+
+export async function hasPermission(permKey) {
+  if (!_cu) return false;
+  if (_cu.uid === ADMIN_UID) return true;
+  const ud = await getCurrentUserData();
+  return ud?.permissions?.[permKey] === true;
+}
+
+export function requireAuth(callback) {
+  supabase.auth.getSession().then(async ({ data }) => {
+    const u = data.session?.user;
+    if (!u) { window.location.href = 'index.html'; return; }
+    _cu = { uid: u.id, email: u.email };
+    const ud = await getCurrentUserData();
+    callback({ uid: u.id, email: u.email }, ud);
+  });
+}
+
+// ─── logTransaction ──────────────────────────────────────────
+
+export async function logTransaction(action, detail, section) {
+  try {
+    if (!_cu) return;
+    let userName = 'Admin', userRole = 'أدمن';
+    if (_cu.uid !== ADMIN_UID) {
+      const ud = await getCurrentUserData();
+      userName = ud?.name || _cu.email || 'غير معروف';
+      userRole = ud?.role || 'موظف';
+    }
+    await supabase.from('transactions_log').insert({
+      action:     String(action  || ''),
+      detail:     String(detail  || ''),
+      section:    String(section || ''),
+      user_name:  userName,
+      role:       userRole,
+      date:       new Date().toLocaleDateString('ar-EG'),
+      time:       new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+      created_at: new Date().toISOString()
+    });
+  } catch (e) { console.log('logTransaction error:', e); }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+export const fmt             = (n) => parseFloat(n || 0).toFixed(2) + ' ج';
+export const serverTimestamp = ()  => new Date().toISOString();
+export const todayStr        = ()  => new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+export const monthStr        = ()  => new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
+
+// ─── Firestore wrappers ──────────────────────────────────────
+
+export function collection(_db, table, parentId, subTable) {
+  if (subTable) return { _sub: true, table: subTable, parentId };
+  return table;
+}
+
+export function doc(_db, table, id) {
+  return { table, id };
+}
+
+export async function getDoc(ref) {
+  try {
+    const { data, error } = await supabase.from(ref.table).select('*').eq('id', ref.id).single();
+    const camel = data ? toCamel(data) : null;
+    return {
+      exists: () => !!data && !error,
+      data:   () => camel,
+      id:     ref.id
+    };
+  } catch {
+    return { exists: () => false, data: () => null, id: ref.id };
+  }
+}
+
+export async function setDoc(ref, data) {
+  const payload = { id: ref.id, ...toSnake(cleanObj(data)) };
+  const { error } = await supabase.from(ref.table).upsert(payload, { onConflict: 'id' });
+  if (error) throw error;
+}
+
+export async function addDoc(tableArg, data) {
+  const table   = typeof tableArg === 'string' ? tableArg : tableArg?.table || tableArg;
+  const payload = toSnake(cleanObj(data));
+  const { data: res, error } = await supabase.from(table).insert(payload).select().single();
+  if (error) throw error;
+  return { id: res.id };
+}
+
+export async function getDocs(tableOrQuery) {
+  let q;
+  if (typeof tableOrQuery === 'string') {
+    q = supabase.from(tableOrQuery).select('*');
+  } else if (tableOrQuery?._isQuery) {
+    q = tableOrQuery._q;
+  } else if (tableOrQuery?._sub) {
+    q = supabase.from(tableOrQuery.table).select('*').eq('parent_id', tableOrQuery.parentId);
+  } else {
+    q = supabase.from(tableOrQuery).select('*');
+  }
+  const { data, error } = await q;
+  if (error) throw error;
+  const docs = (data || []).map(row => {
+    const camel = toCamel(row);
+    return { id: row.id, data: () => ({ ...camel }) };
+  });
+  return { docs, forEach: fn => docs.forEach(fn), size: docs.length, empty: !docs.length };
+}
+
+export async function updateDoc(ref, data) {
+  const { error } = await supabase.from(ref.table).update(toSnake(cleanObj(data))).eq('id', ref.id);
+  if (error) throw error;
+}
+
+export async function deleteDoc(ref) {
+  const { error } = await supabase.from(ref.table).delete().eq('id', ref.id);
+  if (error) throw error;
+}
+
+export function query(table, ...cs) {
+  const tbl = typeof table === 'string' ? table : table;
+  let q = supabase.from(tbl).select('*');
+  for (const c of cs) {
+    if (c._t === 'w') {
+      const field = toSnake({ [c.f]: '' }); // convert field name
+      const snakeField = Object.keys(field)[0];
+      if      (c.op === '==') q = q.eq(snakeField, c.v);
+      else if (c.op === '!=') q = q.neq(snakeField, c.v);
+      else if (c.op === '>')  q = q.gt(snakeField, c.v);
+      else if (c.op === '>=') q = q.gte(snakeField, c.v);
+      else if (c.op === '<')  q = q.lt(snakeField, c.v);
+      else if (c.op === '<=') q = q.lte(snakeField, c.v);
+      else if (c.op === 'in') q = q.in(snakeField, c.v);
+    }
+    if (c._t === 'o') {
+      const snakeField = c.f.replace(/([A-Z])/g, '_$1').toLowerCase();
+      q = q.order(snakeField, { ascending: c.d !== 'desc' });
+    }
+    if (c._t === 'l') q = q.limit(c.v);
+  }
+  return { _isQuery: true, _q: q };
+}
+
+export const where   = (f, op, v) => ({ _t: 'w', f, op, v });
+export const orderBy = (f, d = 'asc') => ({ _t: 'o', f, d });
+export const limit   = (v) => ({ _t: 'l', v });
+
+// ─── onSnapshot — Realtime بدل setInterval ───────────────────
+
+export function onSnapshot(tableOrRef, callback) {
+  const table = typeof tableOrRef === 'string' ? tableOrRef : tableOrRef?.table || tableOrRef;
+  getDocs(table).then(snap => callback(snap));
+  const ch = supabase.channel('rt:' + table)
+    .on('postgres_changes', { event: '*', schema: 'public', table }, async () => {
+      const snap = await getDocs(table);
+      callback(snap);
+    })
+    .subscribe();
+  return () => supabase.removeChannel(ch);
+}

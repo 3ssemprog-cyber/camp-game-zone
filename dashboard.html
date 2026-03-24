@@ -73,7 +73,7 @@ const SECTIONS = [
 ];
 
 requireAuth(async (user, userData) => {
-  const isAdmin = ((user.uid === ADMIN_UID || user.id === ADMIN_UID) || user.id === ADMIN_UID);
+  const isAdmin = user.uid === ADMIN_UID;
   const name = isAdmin ? 'Admin' : (userData?.name || user.email);
   const role = isAdmin ? 'أدمن — صلاحية كاملة' : (userData?.role || 'موظف');
 

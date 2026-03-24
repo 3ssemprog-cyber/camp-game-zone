@@ -201,7 +201,7 @@ setInterval(load, 8000);
 
 requireAuth(async(user,userData) => {
   document.getElementById('uname').textContent =
-    (user.uid === ADMIN_UID || user.id === ADMIN_UID) ? 'Admin' : (userData?.name||user.email);
+    user.uid===ADMIN_UID ? 'Admin' : (userData?.name||user.email);
   await load();
 });
 </script>

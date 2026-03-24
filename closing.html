@@ -709,7 +709,7 @@ window.thermalPrint=function(html){
 };
 
 requireAuth(async(user,userData) => {
-  isAdm = (user.uid === ADMIN_UID || user.id === ADMIN_UID);
+  isAdm = user.uid === ADMIN_UID;
   currentUser = isAdm ? 'Admin' : (userData?.name||user.email);
   currentUserPerms = userData?.permissions || {};
 

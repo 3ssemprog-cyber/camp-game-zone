@@ -324,7 +324,7 @@ window.exportDay=async function(dayKey,dateLabel){
 };
 
 requireAuth(async(user,userData)=>{
-  document.getElementById('uname').textContent=(user.uid === ADMIN_UID || user.id === ADMIN_UID)?'Admin':(userData?.name||user.email);
+  document.getElementById('uname').textContent=user.uid===ADMIN_UID?'Admin':(userData?.name||user.email);
   await render();
 });
 </script>

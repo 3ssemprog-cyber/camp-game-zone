@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - إدارة المنيو</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #c8a96e;
+    --accent2: #e8c98e;
+    --text: #f0ebe3;
+    --text2: #9a9087;
+    --danger: #c0392b;
+    --success: #27ae60;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* LOGIN */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, #1c1509 0%, #0f0f0f 70%);
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    width: 340px;
+    text-align: center;
+  }
+  .login-box .logo { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .login-box h2 { font-size: 1.3rem; font-weight: 500; color: var(--accent); margin-bottom: 0.3rem; }
+  .login-box p { font-size: 0.85rem; color: var(--text2); margin-bottom: 1.8rem; }
+  .login-box input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--accent);
+    color: #1a1200;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:active { transform: scale(0.98); }
+  .error-msg { color: #e74c3c; font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
+
+  /* ADMIN LAYOUT */
+  #admin-screen { display: none; }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-title { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-ghost {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-accent {
+    padding: 0.5rem 1.2rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #1a1200;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-accent:hover { background: var(--accent2); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+  .stat-card .label { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; }
+  .stat-card .value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .form-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--accent); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 0.82rem; color: var(--text2); }
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface2); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-actions { display: flex; gap: 8px; margin-top: 1rem; justify-content: flex-end; }
+  .btn-cancel {
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .btn-cancel:hover { border-color: var(--danger); color: var(--danger); }
+  .btn-save {
+    padding: 0.6rem 1.5rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #1a1200;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-save:hover { background: var(--accent2); }
+
+  /* CATEGORIES TABS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .section-header h3 { font-size: 1rem; font-weight: 700; }
+  .cats-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .cat-tab {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cat-tab.active, .cat-tab:hover { background: var(--accent); color: #1a1200; border-color: var(--accent); font-weight: 700; }
+
+  /* ITEMS LIST */
+  .items-list { display: flex; flex-direction: column; gap: 10px; }
+  .item-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+  .item-row:hover { border-color: var(--accent); }
+  .item-img {
+    width: 54px;
+    height: 54px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--surface2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    overflow: hidden;
+  }
+  .item-img img { width: 100%; height: 100%; object-fit: cover; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-cat { font-size: 0.78rem; color: var(--text2); }
+  .item-desc { font-size: 0.82rem; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-price { font-size: 1.05rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-edit {
+    padding: 0.4rem 0.9rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-delete {
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-delete:hover { border-color: var(--danger); color: var(--danger); background: #2a1010; }
+
+  .badge-avail {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #0d2e1a;
+    color: var(--success);
+    border: 1px solid #1a5c32;
+  }
+  .badge-unavail {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background: #2a1010;
+    color: #e74c3c;
+    border: 1px solid #5c1a1a;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text2);
+    font-size: 0.95rem;
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+  /* QR MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+  }
+  .modal-box h3 { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
+  .modal-box p { font-size: 0.85rem; color: var(--text2); margin-bottom: 1.2rem; }
+  #qr-container { display: flex; justify-content: center; margin-bottom: 1.2rem; }
+  #qr-container canvas { border-radius: 8px; }
+  .menu-url {
+    font-size: 0.78rem;
+    color: var(--text2);
+    word-break: break-all;
+    background: var(--surface2);
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  .modal-close {
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'Tajawal', sans-serif;
+    cursor: pointer;
+  }
+
+  .loader { text-align: center; padding: 2rem; color: var(--text2); }
+  .spinner {
+    width: 30px; height: 30px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 0.75rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .item-row { flex-wrap: wrap; }
+    .topbar-title { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo">☕</div>
+    <h2>لوحة التحكم</h2>
+    <p>أدخل كلمة السر للدخول</p>
+    <input type="password" id="pwd-input" placeholder="••••••••" />
+    <button class="btn-primary" id="login-btn">دخول</button>
+    <div class="error-msg" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <div class="topbar">
+    <div class="topbar-title">☕ إدارة المنيو</div>
+    <div class="topbar-actions">
+      <button class="btn-ghost" id="btn-qr">🔗 QR Code</button>
+      <button class="btn-accent" id="btn-add">+ إضافة صنف</button>
+      <button class="btn-ghost" id="btn-logout">خروج</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">إجمالي الأصناف</div>
+        <div class="value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">الأقسام</div>
+        <div class="value" id="stat-cats">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">متاح الآن</div>
+        <div class="value" id="stat-avail">0</div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT FORM -->
+    <div class="form-card" id="item-form" style="display:none;">
+      <h3 id="form-title">إضافة صنف جديد</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>اسم الصنف *</label>
+          <input type="text" id="f-name" placeholder="مثال: كابتشينو" />
+        </div>
+        <div class="form-group">
+          <label>السعر (ج.م) *</label>
+          <input type="number" id="f-price" placeholder="65" min="0" />
+        </div>
+        <div class="form-group">
+          <label>القسم *</label>
+          <select id="f-category">
+            <option value="">اختر قسم...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الحالة</label>
+          <select id="f-available">
+            <option value="true">متاح ✓</option>
+            <option value="false">غير متاح ✗</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>وصف مختصر</label>
+          <textarea id="f-desc" placeholder="وصف قصير للصنف..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>رابط الصورة (اختياري)</label>
+          <input type="url" id="f-img" placeholder="https://..." />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" id="btn-cancel-form">إلغاء</button>
+        <button class="btn-save" id="btn-save-item">حفظ الصنف</button>
+      </div>
+    </div>
+
+    <!-- CATEGORIES MANAGEMENT -->
+    <div class="form-card" id="cats-manage-card">
+      <div class="section-header">
+        <h3>إدارة الأقسام</h3>
+        <button class="btn-accent" id="btn-toggle-cat">+ قسم جديد</button>
+      </div>
+      <div id="add-cat-row" style="display:none; gap:8px; margin-bottom:1rem; align-items:center;">
+        <input type="text" id="new-cat-input" placeholder="اسم القسم..." style="flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:Tajawal,sans-serif; font-size:0.95rem; padding:0.6rem 0.9rem; outline:none;" />
+        <button class="btn-save" id="btn-save-cat" style="white-space:nowrap;">إضافة</button>
+        <button class="btn-cancel" id="btn-cancel-cat" style="white-space:nowrap;">إلغاء</button>
+      </div>
+      <div id="cats-manage-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+    </div>
+
+    <!-- ITEMS LIST -->
+    <div class="form-card">
+      <div class="section-header">
+        <h3>الأصناف</h3>
+      </div>
+      <div class="cats-bar" id="cats-bar">
+        <button class="cat-tab active" data-cat="الكل" onclick="filterCat(this,'الكل')">الكل</button>
+      </div>
+      <div id="items-list" class="items-list">
+        <div class="loader"><div class="spinner"></div>جاري التحميل...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal-box">
+    <h3>QR Code المنيو</h3>
+    <p>العميل يسكن الكود ده يشوف المنيو</p>
+    <div id="qr-container"></div>
+    <div class="menu-url" id="menu-url-display"></div>
+    <button class="btn-accent" id="btn-download-qr" style="width:100%;margin-bottom:8px;">تحميل الصورة</button>
+    <button class="modal-close" id="btn-close-qr">إغلاق</button>
+  </div>
+</div>
+
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import {
+  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ===================== CONFIG =====================
+const ADMIN_PASSWORD = "cafe123123";
+const MENU_URL = window.location.origin + "/menu.html";
+// ==================================================
+
+let allItems = [];
+let allCategories = [];
+let editingId = null;
+let currentCat = "الكل";
+
+function doLogin() {
+  const val = document.getElementById('pwd-input').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadCategories();
+    loadItems();
+  } else {
+    document.getElementById('login-error').textContent = 'كلمة السر غلط!';
+  }
+}
+
+function doLogout() {
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+}
+
+// ---- CATEGORIES ----
+async function loadCategories() {
+  const docRef = doc(db, "settings", "categories");
+  onSnapshot(docRef, (snap) => {
+    allCategories = snap.exists() ? (snap.data().list || []) : [];
+    renderCategorySelect();
+    renderCatsManage();
+  });
+}
+
+function renderCategorySelect() {
+  const sel = document.getElementById('f-category');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">اختر قسم...</option>' +
+    allCategories.map(c => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+}
+
+function renderCatsManage() {
+  const list = document.getElementById('cats-manage-list');
+  if (!allCategories.length) {
+    list.innerHTML = '<span style="color:var(--text2); font-size:0.85rem;">لا يوجد أقسام بعد — اضغط قسم جديد</span>';
+    return;
+  }
+  list.innerHTML = allCategories.map(c => `
+    <div style="display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:0.35rem 0.75rem;">
+      <span style="font-size:0.88rem;">${c}</span>
+      <button onclick="deleteCategory('${c}')" style="background:none; border:none; color:var(--text2); cursor:pointer; font-size:1rem; padding:0; line-height:1;" title="حذف">×</button>
+    </div>
+  `).join('');
+}
+
+window.toggleAddCat = () => {
+  const row = document.getElementById('add-cat-row');
+  const isHidden = row.style.display === 'none' || row.style.display === '';
+  row.style.display = isHidden ? 'flex' : 'none';
+  if (isHidden) document.getElementById('new-cat-input').focus();
+};
+
+window.addCategory = async () => {
+  const name = document.getElementById('new-cat-input').value.trim();
+  if (!name) return;
+  if (allCategories.includes(name)) { alert('القسم موجود بالفعل!'); return; }
+  const newList = [...allCategories, name];
+  await setDoc(doc(db, "settings", "categories"), { list: newList });
+  document.getElementById('new-cat-input').value = '';
+  document.getElementById('add-cat-row').style.display = 'none';
+};
+
+window.deleteCategory = async (name) => {
+  const used = allItems.some(i => i.category === name);
+  if (used && !confirm(`القسم "${name}" فيه أصناف — تأكيد الحذف؟`)) return;
+  if (!used && !confirm(`حذف قسم "${name}"؟`)) return;
+  const newList = allCategories.filter(c => c !== name);
+  await setDoc(doc(db, "settings", "categories"), { list: newList });
+};
+
+// ---- LOAD ----
+function loadItems() {
+  const q = query(collection(db, "menuItems"), orderBy("category"));
+  onSnapshot(q, (snap) => {
+    allItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateStats();
+    buildCatTabs();
+    renderItems();
+  });
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allItems.length;
+  const cats = [...new Set(allItems.map(i => i.category))];
+  document.getElementById('stat-cats').textContent = cats.length;
+  document.getElementById('stat-avail').textContent = allItems.filter(i => i.available !== false).length;
+}
+
+function buildCatTabs() {
+  const cats = ['الكل', ...new Set(allItems.map(i => i.category).filter(Boolean))];
+  const bar = document.getElementById('cats-bar');
+  bar.innerHTML = cats.map(c =>
+    `<button class="cat-tab ${c === currentCat ? 'active' : ''}" onclick="filterCat(this,'${c}')">${c}</button>`
+  ).join('');
+}
+
+window.filterCat = (el, cat) => {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderItems();
+};
+
+function renderItems() {
+  const list = document.getElementById('items-list');
+  const filtered = currentCat === 'الكل' ? allItems : allItems.filter(i => i.category === currentCat);
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🍵</div>لا يوجد أصناف هنا بعد</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(item => `
+    <div class="item-row">
+      <div class="item-img">
+        ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}" onerror="this.parentElement.textContent='☕'">` : '☕'}
+      </div>
+      <div class="item-info">
+        <div class="item-name">${item.name}</div>
+        <div class="item-cat">${item.category || ''}</div>
+        ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+      </div>
+      <span class="${item.available !== false ? 'badge-avail' : 'badge-unavail'}">
+        ${item.available !== false ? 'متاح' : 'غير متاح'}
+      </span>
+      <div class="item-price">${item.price} ج.م</div>
+      <div class="item-actions">
+        <button class="btn-edit" onclick='openEditForm(${JSON.stringify(item)})'>تعديل</button>
+        <button class="btn-delete" onclick="deleteItem('${item.id}', '${item.name}')">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---- FORM ----
+window.openAddForm = () => {
+  editingId = null;
+  document.getElementById('form-title').textContent = 'إضافة صنف جديد';
+  clearForm();
+  document.getElementById('item-form').style.display = 'block';
+  document.getElementById('item-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.openEditForm = (item) => {
+  editingId = item.id;
+  document.getElementById('form-title').textContent = 'تعديل الصنف';
+  document.getElementById('f-name').value = item.name || '';
+  document.getElementById('f-price').value = item.price || '';
+  document.getElementById('f-category').value = item.category || '';
+  document.getElementById('f-desc').value = item.description || '';
+  document.getElementById('f-img').value = item.imageUrl || '';
+  document.getElementById('f-available').value = item.available !== false ? 'true' : 'false';
+  document.getElementById('item-form').style.display = 'block';
+  document.getElementById('item-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.closeForm = () => {
+  document.getElementById('item-form').style.display = 'none';
+  clearForm();
+  editingId = null;
+};
+
+function clearForm() {
+  ['f-name','f-price','f-category','f-desc','f-img'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-available').value = 'true';
+}
+
+window.saveItem = async () => {
+  const name = document.getElementById('f-name').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  const category = document.getElementById('f-category').value;
+  const description = document.getElementById('f-desc').value.trim();
+  const imageUrl = document.getElementById('f-img').value.trim();
+  const available = document.getElementById('f-available').value === 'true';
+
+  if (!name || !price || !category) {
+    alert('من فضلك ادخل الاسم والسعر والقسم');
+    return;
+  }
+
+  const data = { name, price, category, description, imageUrl, available, updatedAt: new Date() };
+
+  try {
+    if (editingId) {
+      await updateDoc(doc(db, "menuItems", editingId), data);
+    } else {
+      data.createdAt = new Date();
+      await addDoc(collection(db, "menuItems"), data);
+    }
+    closeForm();
+  } catch (e) {
+    alert('حصل خطأ: ' + e.message);
+  }
+};
+
+window.deleteItem = async (id, name) => {
+  if (!confirm(`تأكيد حذف "${name}"؟`)) return;
+  try {
+    await deleteDoc(doc(db, "menuItems", id));
+  } catch (e) {
+    alert('خطأ في الحذف: ' + e.message);
+  }
+};
+
+// ---- QR ----
+function showQR() {
+  document.getElementById('menu-url-display').textContent = MENU_URL;
+  document.getElementById('qr-container').innerHTML = '';
+  new QRCode(document.getElementById('qr-container'), {
+    text: MENU_URL,
+    width: 200,
+    height: 200,
+    colorDark: "#1a1200",
+    colorLight: "#c8a96e",
+  });
+  document.getElementById('qr-modal').classList.add('open');
+}
+
+function closeQR() {
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qr-container canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = 'menu-qr.png';
+  a.href = canvas.toDataURL();
+  a.click();
+}
+
+// ---- EVENT LISTENERS ----
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  document.getElementById('btn-qr').addEventListener('click', showQR);
+  document.getElementById('btn-add').addEventListener('click', openAddForm);
+  document.getElementById('btn-logout').addEventListener('click', doLogout);
+  document.getElementById('btn-toggle-cat').addEventListener('click', toggleAddCat);
+  document.getElementById('btn-save-cat').addEventListener('click', addCategory);
+  document.getElementById('btn-cancel-cat').addEventListener('click', toggleAddCat);
+  document.getElementById('btn-cancel-form').addEventListener('click', closeForm);
+  document.getElementById('btn-save-item').addEventListener('click', saveItem);
+  document.getElementById('btn-download-qr').addEventListener('click', downloadQR);
+  document.getElementById('btn-close-qr').addEventListener('click', closeQR);
+});
+</script>
+</body>
+</html>
